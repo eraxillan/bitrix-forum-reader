@@ -2,7 +2,6 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
 import ru.banki.reader 1.0
-//import QtWebKit 3.0
 
 ApplicationWindow
 {
@@ -18,7 +17,7 @@ ApplicationWindow
     }
 
     Component.onCompleted: {
-        // Add all user avatars
+        // Fill the post list
         var i = 0;
         for( ; i < reader.postCount(); i++ )
         {
@@ -151,87 +150,4 @@ ApplicationWindow
             }
         }
     }
-
-    /* ScrollView
-    {
-        width: 1280
-        height: 720
-
-        WebView
-        {
-            id: webview
-            url: "http://qt-project.org"
-            anchors.fill: parent
-            onNavigationRequested:
-            {
-                // detect URL scheme prefix, most likely an external link
-                var schemaRE = /^\w+:/;
-                if (schemaRE.test(request.url)) {
-                    request.action = WebView.AcceptRequest;
-                } else {
-                    request.action = WebView.IgnoreRequest;
-                    // delegate request.url here
-                }
-            }
-        }
-    }*/
 }
-/*
-import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Dialogs 1.2
-import QtWebKit 3.0
-
-ApplicationWindow {
-    visible: true
-    width: 640
-    height: 480
-    title: qsTr("Hello World")
-
-    menuBar: MenuBar {
-        Menu {
-            title: qsTr("File")
-            MenuItem {
-                text: qsTr("&Open")
-                onTriggered: console.log("Open action triggered");
-            }
-            MenuItem {
-                text: qsTr("Exit")
-                onTriggered: Qt.quit();
-            }
-        }
-    }
-
-    MainForm {
-        anchors.fill: parent
-        button1.onClicked: messageDialog.show(qsTr("Button 1 pressed"))
-        button2.onClicked: messageDialog.show(qsTr("Button 2 pressed"))
-    }
-
-    WebView {
-        id: postBrowser
-        url: "http://qt-project.org"
-        anchors.fill: parent
-        onNavigationRequested: {
-            // detect URL scheme prefix, most likely an external link
-            var schemaRE = /^\w+:/;
-            if (schemaRE.test(request.url)) {
-                request.action = WebView.AcceptRequest;
-            } else {
-                request.action = WebView.IgnoreRequest;
-                // delegate request.url here
-            }
-        }
-    }
-
-    MessageDialog {
-        id: messageDialog
-        title: qsTr("May I have your attention, please?")
-
-        function show(caption) {
-            messageDialog.text = caption;
-            messageDialog.open();
-        }
-    }
-}
-*/
