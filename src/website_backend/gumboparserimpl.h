@@ -40,6 +40,8 @@ private:
 public:
     // IForumPageReader implementation
     virtual int getPagePosts(QUrl webPageUrl, UserPosts& userPosts) override;
+
+    int getPagePosts(QString rawData, UserPosts& userPosts);
 };
 
 }

@@ -216,8 +216,7 @@ ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(GumboNode *userIn
 {
     UserBaseInfo result;
 
-    unsigned int idxForumUserName = 1;
-    GumboNode* userNameNode = gumboChildNodeByName(userInfoNode, GUMBO_TAG_DIV, idxForumUserName);
+    GumboNode* userNameNode = gumboChildNodeByClass(userInfoNode, "forum-user-name", GUMBO_TAG_DIV);
     Q_CHECK_PTR(userNameNode);
     Q_ASSERT(userNameNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(userNameNode) == 1);
@@ -257,8 +256,7 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(Gumbo
 {
     UserAdditionalInfo result;
 
-    unsigned int idxForumUserAdditional = 4;
-    GumboNode* userAdditionalNode = gumboChildNodeByName(userInfoNode, GUMBO_TAG_DIV, idxForumUserAdditional);
+    GumboNode* userAdditionalNode = gumboChildNodeByClass(userInfoNode, "forum-user-additional", GUMBO_TAG_DIV);
     Q_CHECK_PTR(userAdditionalNode);
     Q_ASSERT(userAdditionalNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(userAdditionalNode) >= 3 && gumboChildElementCount(userAdditionalNode) <= 5);
@@ -378,8 +376,8 @@ Image ForumPageParser::getUserAvatar(GumboNode *userInfoNode)
 {
     Image result;
 
-    unsigned int idxForumUserAvatar = 3;
-    GumboNode* userAvatarNode = gumboChildNodeByName(userInfoNode, GUMBO_TAG_DIV, idxForumUserAvatar);
+    GumboNode* userAvatarNode = gumboChildNodeByClass(userInfoNode, "forum-user-avatar", GUMBO_TAG_DIV);
+    if(!userAvatarNode) userAvatarNode = gumboChildNodeByClass(userInfoNode, "forum-user-register-avatar", GUMBO_TAG_DIV);
     Q_CHECK_PTR(userAvatarNode);
     Q_ASSERT(userAvatarNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(userAvatarNode) == 1);
@@ -434,18 +432,17 @@ User ForumPageParser::getPostUser(GumboNode *trNode1)
 {
     User userInfo;
 
-    unsigned int idxTd1 = 0;
-    GumboNode* userNode = gumboChildNodeByName(trNode1, GUMBO_TAG_TD, idxTd1);
+    GumboNode* userNode = gumboChildNodeByClass(trNode1, "forum-cell-user", GUMBO_TAG_TD);
     Q_CHECK_PTR(userNode);
     Q_ASSERT(userNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(userNode) == 1);
     Q_ASSERT(gumboElementClass(userNode) == "forum-cell-user");
 
-    unsigned int idxForumUserInfo = 0;
-    GumboNode* userInfoNode = gumboChildNodeByName(userNode, GUMBO_TAG_DIV, idxForumUserInfo);
+    GumboNode* userInfoNode = gumboChildNodeByClass(userNode, "forum-user-info", GUMBO_TAG_DIV);
+    if(!userInfoNode) userInfoNode = gumboChildNodeByClass(userNode, "forum-user-info w-el-dropDown", GUMBO_TAG_DIV);
     Q_CHECK_PTR(userInfoNode);
     Q_ASSERT(userInfoNode->type == GUMBO_NODE_ELEMENT);
-    Q_ASSERT(gumboChildElementCount(userInfoNode) == 5);
+    Q_ASSERT(gumboChildElementCount(userInfoNode) >= 4);
     Q_ASSERT(gumboElementClass(userInfoNode) == "forum-user-info w-el-dropDown" || gumboElementClass(userInfoNode) == "forum-user-info");
 
     // Get user base info: id, name, profile URL
@@ -484,23 +481,20 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
 {
     Post postInfo;
 
-    unsigned int idxTd1 = 1;
-    GumboNode* postNode = gumboChildNodeByName(trNode1, GUMBO_TAG_TD, idxTd1);
+    GumboNode* postNode = gumboChildNodeByClass(trNode1, "forum-cell-post", GUMBO_TAG_TD);
     Q_CHECK_PTR(postNode);
     Q_ASSERT(postNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(postNode) == 2);
     Q_ASSERT(gumboElementClass(postNode) == "forum-cell-post");
 
     // 1) <div class="forum-post-date">
-    unsigned int idxPostDateNode = 0;
-    GumboNode* postDateNode = gumboChildNodeByName(postNode, GUMBO_TAG_DIV, idxPostDateNode);
+    GumboNode* postDateNode = gumboChildNodeByClass(postNode, "forum-post-date", GUMBO_TAG_DIV);
     Q_ASSERT(postDateNode);
     Q_ASSERT(postDateNode->type == GUMBO_NODE_ELEMENT);
-    Q_ASSERT(gumboChildElementCount(postDateNode) == 3);
+    Q_ASSERT(gumboChildElementCount(postDateNode) <= 3);
     Q_ASSERT(gumboElementClass(postDateNode) == "forum-post-date");
 
-    unsigned int idxSpanNode = 2;
-    GumboNode* spanNode = gumboChildNodeByName(postDateNode, GUMBO_TAG_SPAN, idxSpanNode);
+    GumboNode* spanNode = gumboChildNodeByClass(postDateNode, "", GUMBO_TAG_SPAN /*, idxSpanNode*/);
     Q_ASSERT(spanNode);
     Q_ASSERT(spanNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(spanNode) == 0);
@@ -510,15 +504,13 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
     Q_ASSERT(postDate.isValid());
 
     // 2) <div class="forum-post-entry" style="font-size: 14px;">
-    unsigned int idxPostEntryNode = idxPostDateNode + 1;
-    GumboNode* postEntryNode = gumboChildNodeByName(postNode, GUMBO_TAG_DIV, idxPostEntryNode);
+    GumboNode* postEntryNode = gumboChildNodeByClass(postNode, "forum-post-entry", GUMBO_TAG_DIV);
     Q_ASSERT(postEntryNode);
     Q_ASSERT(postEntryNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(postEntryNode) <= 3);
     Q_ASSERT(gumboElementClass(postEntryNode) == "forum-post-entry");
 
-    unsigned int idxPostText = 0;
-    GumboNode* postTextNode = gumboChildNodeByName(postEntryNode, GUMBO_TAG_DIV, idxPostText);
+    GumboNode* postTextNode = gumboChildNodeByClass(postEntryNode, "forum-post-text", GUMBO_TAG_DIV);
     Q_ASSERT(postTextNode);
     Q_ASSERT(postTextNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(postTextNode) > 0 || gumboChildTextNodeCount(postTextNode) > 0);
@@ -542,11 +534,30 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
     messageText = messageText.trimmed();
 
     // NOTE: adopt post quote style to poor Qt-supported HTML subset
-    messageText = messageText.replace("\n", "<br>");
+    messageText = messageText.replace("\r", "");
+    messageText = messageText.replace("<br />", "\n");
+/*    messageText = messageText.replace("\n", "<br>");
     messageText = messageText.replace("class=\"forum-quote\"", "border='1'");
     // src='/bitrix/images/forum/smile/ag.gif' --> src='http://www.banki.ru/bitrix/images/forum/smile/ag.gif'
     messageText = messageText.replace("/bitrix/", g_bankiRuHost + "/bitrix/");
-    messageText = messageText.replace("<th>", "<th bgcolor='darkgrey' align='left' valign='middle' style='white-space: normal'>");
+    messageText = messageText.replace("<th>", "<th bgcolor='darkgrey' align='left' valign='middle' style='white-space: normal'>");*/
+
+    // FIXME: parse quotes
+    const QString tableOpenTag = "<table";
+    const QString tableCloseTag = "</table>";
+    while(true)
+    {
+        int idxQuoteBegin = messageText.indexOf(tableOpenTag);
+        int idxQuoteEnd   = messageText.indexOf(tableCloseTag);
+        if( idxQuoteBegin == -1 ) break;
+
+        Q_ASSERT( idxQuoteBegin != -1 && idxQuoteEnd != -1 );
+
+        // Extract quote text
+        // FIXME: just remove it to test
+        messageText = messageText.remove(idxQuoteBegin, idxQuoteEnd - idxQuoteBegin + tableCloseTag.size());
+        qDebug() << messageText;
+    }
 
     // Read user signature
     QString userSignatureStr;
@@ -557,7 +568,7 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
         Q_ASSERT(gumboChildElementCount(postSignatureNode) == 2);
         Q_ASSERT(gumboElementClass(postSignatureNode) == "forum-user-signature");
 
-        idxSpanNode = 0;
+        unsigned int idxSpanNode = 0;
         spanNode = gumboChildNodeByName(postSignatureNode, GUMBO_TAG_SPAN, idxSpanNode);
         Q_ASSERT(spanNode);
         Q_ASSERT(spanNode->type == GUMBO_NODE_ELEMENT);
@@ -590,12 +601,10 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
 int ForumPageParser::getLikeCounterValue(GumboNode *trNode2)
 {
     // tr2:
-    unsigned int idxTd2 = 0;
-    GumboNode* contactsNode = gumboChildNodeByName(trNode2, GUMBO_TAG_TD, idxTd2);
+    GumboNode* contactsNode = gumboChildNodeByClass(trNode2, "forum-cell-contact", GUMBO_TAG_TD);
     Q_ASSERT(gumboElementClass(contactsNode) == "forum-cell-contact");
 
-    idxTd2 = idxTd2 + 1;
-    GumboNode* actionsNode = gumboChildNodeByName(trNode2, GUMBO_TAG_TD, idxTd2);
+    GumboNode* actionsNode = gumboChildNodeByClass(trNode2, "forum-cell-actions", GUMBO_TAG_TD);
     Q_CHECK_PTR(actionsNode);
     Q_ASSERT(actionsNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(actionsNode) == 1);
@@ -603,36 +612,31 @@ int ForumPageParser::getLikeCounterValue(GumboNode *trNode2)
 
     // Get the "like" count
     // NOTE: it is type on the site, not my own
-    unsigned int idxContainerActionLinks = 0;
-    GumboNode* actionLinksNode = gumboChildNodeByName(actionsNode, GUMBO_TAG_DIV, idxContainerActionLinks);
+    GumboNode* actionLinksNode = gumboChildNodeByClass(actionsNode, "conainer-action-links", GUMBO_TAG_DIV);
     Q_CHECK_PTR(actionLinksNode);
     Q_ASSERT(actionLinksNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(actionLinksNode) == 2);
     Q_ASSERT(gumboElementClass(actionLinksNode) == "conainer-action-links");
 
-    unsigned int idxActionLinks = 0;
-    GumboNode* floatLeftNode = gumboChildNodeByName(actionLinksNode, GUMBO_TAG_DIV, idxActionLinks);
+    GumboNode* floatLeftNode = gumboChildNodeByClass(actionLinksNode, "float-left", GUMBO_TAG_DIV);
     Q_CHECK_PTR(floatLeftNode);
     Q_ASSERT(floatLeftNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(floatLeftNode) == 1);
     Q_ASSERT(gumboElementClass(floatLeftNode) == "float-left");
 
-    unsigned int idxLike = 0;
-    GumboNode* likeNode = gumboChildNodeByName(floatLeftNode, GUMBO_TAG_DIV, idxLike);
+    GumboNode* likeNode = gumboChildNodeByClass(floatLeftNode, "like", GUMBO_TAG_DIV);
     Q_CHECK_PTR(likeNode);
     Q_ASSERT(likeNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(likeNode) == 1);
     Q_ASSERT(gumboElementClass(likeNode) == "like");
 
-    unsigned int idxLikeWidgetNode = 0;
-    GumboNode* likeWidgetNode = gumboChildNodeByName(likeNode, GUMBO_TAG_DIV, idxLikeWidgetNode);
+    GumboNode* likeWidgetNode = gumboChildNodeByClass(likeNode, "like__widget", GUMBO_TAG_DIV);
     Q_CHECK_PTR(likeWidgetNode);
     Q_ASSERT(likeWidgetNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(likeWidgetNode) >= 2 && gumboChildElementCount(likeWidgetNode) <= 5);
     Q_ASSERT(gumboElementClass(likeWidgetNode) == "like__widget");
 
-    unsigned int idxLikeCounter = 1;
-    GumboNode* likeCounterNode = gumboChildNodeByName(likeWidgetNode, GUMBO_TAG_SPAN, idxLikeCounter);
+    GumboNode* likeCounterNode = gumboChildNodeByClass(likeWidgetNode, "like__counter", GUMBO_TAG_SPAN);
     Q_CHECK_PTR(likeCounterNode);
     Q_ASSERT(likeCounterNode->type == GUMBO_NODE_ELEMENT);
     Q_ASSERT(gumboChildElementCount(likeCounterNode) == 0);
@@ -750,6 +754,27 @@ int ForumPageParser::getPagePosts(QUrl webPageUrl, UserPosts& userPosts)
 
     // Convert to UTF-8: Gumbo library understands only this encoding
     QString htmlFileString = htmlCodec->toUnicode(htmlFileRawContents);
+    QByteArray htmlFileUtf8Contents = htmlFileString.toUtf8();
+
+    // Parse web page contents
+    GumboOutput* output = gumbo_parse(htmlFileUtf8Contents.constData());
+    fillPostList(output->root, userPosts);
+    gumbo_destroy_output(&kGumboDefaultOptions, output);
+
+    // TODO: implement error handling with different return code
+    return 0;
+}
+
+int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts)
+{
+    // First determine HTML page encoding
+    QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
+#ifdef RUBANOK_DEBUG
+    qDebug() << "ru.banki.reader: HTML encoding/charset is" << htmlCodec->name();
+#endif
+
+    // Convert to UTF-8: Gumbo library understands only this encoding
+    QString htmlFileString = htmlCodec->toUnicode(rawData.toLocal8Bit());
     QByteArray htmlFileUtf8Contents = htmlFileString.toUtf8();
 
     // Parse web page contents

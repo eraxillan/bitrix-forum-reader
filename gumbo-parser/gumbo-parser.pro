@@ -15,8 +15,6 @@ UI_DIR      = $${buildmode}
 OBJECTS_DIR = $${buildmode}
 MOC_DIR     = $${buildmode}
 
-DEFINES += GUMBOPARSER_LIBRARY
-
 HEADERS += \
         src/attribute.h \
         src/char_ref.h \

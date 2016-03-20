@@ -11,13 +11,13 @@
 
 // FIXME: save full post history to the LOCAL database
 // FIXME: add sorting by user/post reputation option
+// FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
     qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
-    qmlRegisterType<ForumModel>( "ru.banki.reader", 1, 0, "ForumModel");
 
     QQmlApplicationEngine engine;
 	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
