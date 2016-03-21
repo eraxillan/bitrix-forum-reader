@@ -9,14 +9,14 @@
 //		</div>
 // </div>
 
-//#define RUBANOK_DEBUG
+#define RUBANOK_DEBUG
 
 using namespace BankiRuForum;
 
 namespace {
 static const QString g_bankiRuHost = "http://www.banki.ru";
 
-static QString gumboElementTypeToString(GumboNodeType gnt)
+/*static QString gumboElementTypeToString(GumboNodeType gnt)
 {
     switch (gnt)
     {
@@ -29,7 +29,7 @@ static QString gumboElementTypeToString(GumboNodeType gnt)
     case GUMBO_NODE_TEMPLATE: return QString("template");
     default: Q_ASSERT(0); return QString();
     }
-}
+}*/
 
 static QString gumboElementAttributeValue(GumboNode* node, const char* attrName)
 {
@@ -312,7 +312,7 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(Gumbo
     Q_ASSERT(gumboChildElementCount(spanNode1) == 0);
     Q_ASSERT(gumboChildTextNodeCount(spanNode1) == 1);
     QString registrationDateStr = gumboChildTextNodeValue(spanNode1);
-    QDate registrationDate = QDate::fromString(registrationDateStr, Qt::SystemLocaleShortDate);
+    QDate registrationDate = QDate::fromString(registrationDateStr, "dd.MM.yyyy");
     Q_ASSERT(registrationDate.isValid());
 
     // Read the reputation value
@@ -500,7 +500,7 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
     Q_ASSERT(gumboChildElementCount(spanNode) == 0);
     Q_ASSERT(gumboChildTextNodeCount(spanNode) == 1);
     QString postDateStr = gumboChildTextNodeValue(spanNode);
-    QDateTime postDate = QDateTime::fromString(postDateStr, Qt::SystemLocaleShortDate /*"dd.MM.yyyy hh:mm"*/);
+    QDateTime postDate = QDateTime::fromString(postDateStr, "dd.MM.yyyy hh:mm");
     Q_ASSERT(postDate.isValid());
 
     // 2) <div class="forum-post-entry" style="font-size: 14px;">
@@ -774,8 +774,14 @@ int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts)
 #endif
 
     // Convert to UTF-8: Gumbo library understands only this encoding
+#if defined( Q_OS_WIN )
     QString htmlFileString = htmlCodec->toUnicode(rawData.toLocal8Bit());
     QByteArray htmlFileUtf8Contents = htmlFileString.toUtf8();
+#elif defined( Q_OS_ANDROID )
+    QByteArray htmlFileUtf8Contents = rawData.toUtf8();
+#else
+    #error "Unsupported platform, needs testing"
+#endif
 
     // Parse web page contents
     GumboOutput* output = gumbo_parse(htmlFileUtf8Contents.constData());

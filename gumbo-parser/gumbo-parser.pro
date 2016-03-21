@@ -1,4 +1,4 @@
-QT       -= gui
+QT -= gui
 
 TARGET = gumbo-parser
 TEMPLATE = lib
@@ -46,13 +46,13 @@ SOURCES += \
         src/util.c \
         src/vector.c
 
-win32
-{
+win32 {
     INCLUDEPATH += $$PWD/visualc/include
 }
 
-unix
-{
+unix {
     target.path = /usr/lib
     INSTALLS += target
 }
+
+android: QMAKE_CFLAGS += -std=c11
