@@ -1,4 +1,5 @@
 import QtQuick 2.6
+import QtQuick.Window 2.2
 import QtQuick.Controls 1.5
 import QtQuick.Dialogs 1.2
 import ru.banki.reader 1.0
@@ -6,10 +7,13 @@ import ru.banki.reader 1.0
 ApplicationWindow
 {
     visible: true
-    width: 1280
-    height: 720
+    width: Screen.width
+    height: Screen.height
     title: qsTr("banki.ru forum viewer")
     color: "white"
+
+    function dp(x) { return x * (displayDpi / 160); }
+    function sp(x) { return x * (displayDpi / 160) * textScaleFactor; }
 
     ForumReader
     {
@@ -59,13 +63,14 @@ ApplicationWindow
     {
         id: view
 
-        anchors.margins: 10
+        anchors.margins: dp(10)
         anchors.fill: parent
-        spacing: 10
+        spacing: dp(10)
         model: dataModel
 
         clip: true
 
+        // Current item highlighting setup
         highlight: Rectangle {
             color: "skyblue"
         }
@@ -76,54 +81,59 @@ ApplicationWindow
             property var isCurrent: ListView.isCurrentItem
 
             width: view.width
-            height: 300
+            height: Math.max( clmnUserInfo.height, clmnPost.height )
 
             Row
             {
-                spacing: 10
+                spacing: dp(10)
                 anchors.fill: parent
 
                 Column
                 {
-                    spacing: 5
+                    id: clmnUserInfo
+                    spacing: dp(5)
 
                     Text
                     {
                         id: txtUserName
                         text: "<b>" + model.postAuthor + "</b>"
                         color: "blue"
-                        font.family: "Helvetica"
-                        font.pointSize: 12
 
-                        width: 100
-                        height: 30
+                        font.pixelSize: sp(2)
                     }
 
                     Image
                     {
                         id: imgUserAvatar
                         source: reader.convertToUrl( model.postAvatar )
+                        visible: model.postAvatar !== ""
 
-                        width:  model.postAvatarWidth === -1  ? 100 : model.postAvatarWidth
-                        height: model.postAvatarHeight === -1 ? 100 : model.postAvatarHeight
+                        width:  model.postAvatarWidth === -1  ? dp(100) : dp(model.postAvatarWidth)
+                        height: model.postAvatarHeight === -1 ? dp(100) : dp(model.postAvatarHeight)
                     }
 
                     Text
                     {
                         id: txtAuthorPostCount
                         text: "Post count: " + model.authorPostCount
+
+                        font.pixelSize: sp(2)
                     }
 
                     Text
                     {
                         id: txtAuthorRegistrationDate
                         text: "Registration date: " + Qt.formatDate( model.authorRegistrationDate )
+
+                        font.pixelSize: sp(2)
                     }
 
                     Text
                     {
                         id: txtAuthorReputation
                         text: "Reputation: " + model.authorReputation
+
+                        font.pixelSize: sp(2)
                     }
 
                     Text
@@ -131,15 +141,16 @@ ApplicationWindow
                         id: txtAuthorCity
                         visible: model.authorCity !== ""
                         text: "City: " + model.authorCity
+
+                        font.pixelSize: sp(2)
                     }
                 }
 
                 Rectangle
                 {
                     id: rctItem
-
                     width: parent.width - imgUserAvatar.width - parent.spacing
-                    height: parent.height
+                    height: clmnPost.height
 
                     radius: 0
                     color: isCurrent ? "skyblue" : model.color
@@ -156,44 +167,43 @@ ApplicationWindow
 
                     Column
                     {
-                        spacing: 10
-                        leftPadding: 20
-                        rightPadding: 20
+                        id: clmnPost
+
+                        spacing: dp(5)
+                        leftPadding: dp(10)
+                        rightPadding: dp(10)
 
                         Text
                         {
                             id: txtPostDateTime
-                            width: rctItem.width
-                            //height: 20
-                            padding: 5
+                            width: rctItem.width - parent.rightPadding - parent.leftPadding
+                            topPadding: dp(5)
+                            padding: dp(0)
+                            horizontalAlignment: Text.AlignLeft
+                            verticalAlignment: Text.AlignVCenter
+                            clip: false
 
-                            //renderType: Text.NativeRendering
-                            text: Qt.formatDateTime( model.postDateTime )
+                            font.pixelSize: sp(2)
+                            text: Qt.formatDateTime(model.postDateTime)
                         }
 
                         Rectangle
                         {
-                            width: rctItem.width - 100
-                            height: 2
-                            border.width: 0
+                            width: rctItem.width - parent.rightPadding - parent.leftPadding
+                            height: dp(1)
+                            border.width: dp(0)
                             color: "lightslategrey"
                         }
 
                         Text
                         {
                             id: txtPost
-                            width: rctItem.width - 100
-                            height: rctItem.height - 200
-                            padding: 5
+                            width: rctItem.width - parent.rightPadding - parent.leftPadding
 
-                            font.pixelSize: 14
+                            font.pixelSize: sp(2)
 
-                            //renderType: Text.NativeRendering
                             text: model.postText
-                            // FIXME: implement nice QML-based quote, HTML one is UGLY
-                            //textFormat: Text.RichText
                             textFormat: Text.PlainText
-                            clip: false
                             elide: Text.ElideRight
                             wrapMode: Text.WordWrap
                         }
@@ -201,9 +211,9 @@ ApplicationWindow
                         Rectangle
                         {
                             visible: model.authorSignature !== ""
-                            width: rctItem.width - 100
-                            height: 2
-                            border.width: 0
+                            width: rctItem.width - parent.rightPadding - parent.leftPadding
+                            height: dp(1)
+                            border.width: dp(0)
                             color: "lightslategrey"
                         }
 
@@ -211,13 +221,11 @@ ApplicationWindow
                         {
                             id: txtPostAuthorSignature
                             visible: model.authorSignature !== ""
-
-                            width: rctItem.width - 100
-                            height: 20
-                            padding: 5
+                            width: rctItem.width - parent.rightPadding - parent.leftPadding
 
                             color: "lightslategrey"
                             font.italic: true
+                            font.pixelSize: sp(2)
 
                             renderType: Text.NativeRendering
                             text: model.authorSignature
@@ -230,9 +238,9 @@ ApplicationWindow
                         Rectangle
                         {
                             visible: model.postLikeCount > 0
-                            width: rctItem.width - 100
-                            height: 2
-                            border.width: 0
+                            width: rctItem.width - parent.rightPadding - parent.leftPadding
+                            height: dp(1)
+                            border.width: dp(0)
                             color: "lightslategrey"
                         }
 
@@ -240,15 +248,11 @@ ApplicationWindow
                         {
                             id: txtPostLikeCounter
                             visible: model.postLikeCount > 0
+                            width: rctItem.width - parent.rightPadding - parent.leftPadding
+                            color: "lightslategrey"
 
-                            color: "black"
                             font.bold: true
-                            font.pointSize: 10
-
-                            width: rctItem.width - 100
-                            height: 50
-                            padding: 5
-
+                            font.pixelSize: sp(2)
                             text: model.postLikeCount + " like(s)"
                         }
                     }
@@ -258,7 +262,7 @@ ApplicationWindow
 
         header: Rectangle {
             width: view.width
-            height: 40
+            height: dp(40)
             border {
                 color: "black"
                 width: 1
@@ -273,7 +277,7 @@ ApplicationWindow
 
         footer: Rectangle {
             width: view.width
-            height: 40
+            height: dp(40)
             border {
                 color: "black"
                 width: 1

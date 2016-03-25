@@ -14,6 +14,7 @@ OBJECTS_DIR = $${buildmode}
 MOC_DIR     = $${buildmode}
 
 QT += qml quick widgets network
+android: QT += androidextras
 
 CONFIG += c++11
 
