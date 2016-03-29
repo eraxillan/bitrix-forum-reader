@@ -93,6 +93,8 @@ UserAvatarImageProvider::UserAvatarImageProvider(BankiRuForum::UserPosts userPos
 
 QPixmap UserAvatarImageProvider::requestPixmap(const QString& id, QSize* size, const QSize& requestedSize)
 {
+    Q_UNUSED(id);
+
     BankiRuForum::Image imgAvatar = m_userPosts[m_idxCurrentUser].first.m_userAvatar;
     if (size)
     {
