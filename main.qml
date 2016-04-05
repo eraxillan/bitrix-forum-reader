@@ -20,36 +20,40 @@ ApplicationWindow
         id: reader
     }
 
+    function xhrCallback(xhr)
+    {
+        if (xhr.readyState == XMLHttpRequest.DONE )
+        {
+            var resp = xhr.responseText;
+
+            // Parse the page HTML data
+            reader.parseForumPage( resp )
+
+            // Fill the post list
+            var i = 0;
+            for( ; i < reader.postCount(); i++ )
+            {
+                dataModel.append( {  "color"                  : "lightgrey",
+                                     "postAuthor"             : reader.postAuthor(i),
+                                     "postAvatar"             : reader.postAvatarUrl(i),
+                                     "postAvatarWidth"        : reader.postAvatarWidth(i),
+                                     "postAvatarHeight"       : reader.postAvatarHeight(i),
+                                     "postDateTime"           : reader.postDateTime(i),
+                                     "postText"               : reader.postText(i),
+                                     "postLikeCount"          : reader.postLikeCount(i),
+                                     "authorPostCount"        : reader.postAuthorPostCount(i),
+                                     "authorRegistrationDate" : reader.postAuthorRegistrationDate(i),
+                                     "authorReputation"       : reader.postAuthorReputation(i),
+                                     "authorCity"             : reader.postAuthorCity(i),
+                                     "authorSignature"        : reader.postAuthorSignature(i)
+                                 } );
+            }
+        }
+    }
+
     Component.onCompleted: {
         var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState == XMLHttpRequest.DONE ) {
-                var resp = xhr.responseText;
-
-                // Parse the page HTML data
-                reader.parseForumPage( resp )
-
-                // Fill the post list
-                var i = 0;
-                for( ; i < reader.postCount(); i++ )
-                {
-                    dataModel.append( {  "color"                  : "lightgrey",
-                                         "postAuthor"             : reader.postAuthor(i),
-                                         "postAvatar"             : reader.postAvatarUrl(i),
-                                         "postAvatarWidth"        : reader.postAvatarWidth(i),
-                                         "postAvatarHeight"       : reader.postAvatarHeight(i),
-                                         "postDateTime"           : reader.postDateTime(i),
-                                         "postText"               : reader.postText(i),
-                                         "postLikeCount"          : reader.postLikeCount(i),
-                                         "authorPostCount"        : reader.postAuthorPostCount(i),
-                                         "authorRegistrationDate" : reader.postAuthorRegistrationDate(i),
-                                         "authorReputation"       : reader.postAuthorReputation(i),
-                                         "authorCity"             : reader.postAuthorCity(i),
-                                         "authorSignature"        : reader.postAuthorSignature(i)
-                                     } );
-                }
-            }
-        };
+        xhr.onreadystatechange = function() { xhrCallback(xhr); }
         xhr.open("GET", "http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=30#forum-message-list")
         xhr.send()
     }
