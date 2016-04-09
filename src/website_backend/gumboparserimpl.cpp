@@ -572,8 +572,8 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
         spanNode = gumboChildNodeByName(postSignatureNode, GUMBO_TAG_SPAN, idxSpanNode);
         Q_ASSERT(spanNode);
         Q_ASSERT(spanNode->type == GUMBO_NODE_ELEMENT);
-        Q_ASSERT(gumboChildElementCount(spanNode) == 0);
-        Q_ASSERT(gumboChildTextNodeCount(spanNode) == 1);
+        Q_ASSERT(gumboChildElementCount(spanNode) <= 2);
+        Q_ASSERT(gumboChildTextNodeCount(spanNode) <= 2);
         userSignatureStr = gumboChildTextNodeValue(spanNode);
     }
 
