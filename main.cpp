@@ -26,6 +26,8 @@ int getDpi(float& textScaleFactor)
 #if defined(Q_OS_WIN)
     dpi = screen->logicalDotsPerInch() * qApp->devicePixelRatio();
 #elif defined(Q_OS_ANDROID)
+    Q_UNUSED(screen);
+
     QAndroidJniObject qtActivity = QAndroidJniObject::callStaticObjectMethod(
                 "org/qtproject/qt5/android/QtNative",
                 "activity",
