@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE QString postAvatarUrl(int index) const;
     Q_INVOKABLE int postAvatarWidth(int index) const;
     Q_INVOKABLE int postAvatarHeight(int index) const;
+    Q_INVOKABLE int postAvatarMaxWidth() const;
 
     Q_INVOKABLE QDateTime postDateTime(int index) const;
     Q_INVOKABLE QString postText(int index) const;

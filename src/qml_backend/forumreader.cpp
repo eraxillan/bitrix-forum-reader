@@ -62,6 +62,17 @@ int ForumReader::postAvatarHeight(int index) const
     return m_userPosts[index].first.m_userAvatar.m_height;
 }
 
+int ForumReader::postAvatarMaxWidth() const
+{
+    int maxWidth = 100;
+    for(int i = 0; i < m_userPosts.size(); ++i)
+    {
+        int width = m_userPosts[i].first.m_userAvatar.m_width;
+        if(width > maxWidth) maxWidth = width;
+    }
+    return maxWidth;
+}
+
 QDateTime ForumReader::postDateTime(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_userPosts.size());

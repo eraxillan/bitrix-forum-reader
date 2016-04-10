@@ -69,7 +69,7 @@ ApplicationWindow
 
         anchors.margins: dp(10)
         anchors.fill: parent
-        spacing: dp(10)
+        spacing: dp(5)
         model: dataModel
 
         clip: true
@@ -80,81 +80,100 @@ ApplicationWindow
         }
         highlightFollowsCurrentItem: true
 
-        delegate: Item {
+        delegate:
+        Item
+        {
             property var view: ListView.view
             property var isCurrent: ListView.isCurrentItem
 
             width: view.width
-            height: Math.max( clmnUserInfo.height, clmnPost.height )
+            height: Math.max( clmnUserInfo.height, clmnPost.height ) + clmnUserInfo.padding
 
             Row
             {
-                spacing: dp(10)
                 anchors.fill: parent
+                spacing: 0
+                padding: 0
 
-                Column
+                Rectangle
                 {
-                    id: clmnUserInfo
-                    spacing: dp(5)
+                    id: rectUserInfo
+                    width: dp(reader.postAvatarMaxWidth()) + 2*clmnUserInfo.padding
+                    height: parent.height
 
-                    Text
-                    {
-                        id: txtUserName
-                        text: "<b>" + model.postAuthor + "</b>"
-                        color: "blue"
-
-                        font.pixelSize: sp(2)
+                    radius: 0
+                    color: isCurrent ? "skyblue" : model.color
+                    border {
+                        color: "black"
+                        width: 1
                     }
 
-                    Image
+                    Column
                     {
-                        id: imgUserAvatar
-                        source: reader.convertToUrl( model.postAvatar )
-                        visible: model.postAvatar !== ""
+                        id: clmnUserInfo
+                        spacing: dp(2)
+                        padding: dp(5)
+                        width: parent.width
 
-                        width:  model.postAvatarWidth === -1  ? dp(100) : dp(model.postAvatarWidth)
-                        height: model.postAvatarHeight === -1 ? dp(100) : dp(model.postAvatarHeight)
-                    }
+                        Text
+                        {
+                            id: txtUserName
+                            text: "<b>" + model.postAuthor + "</b>"
+                            color: "blue"
 
-                    Text
-                    {
-                        id: txtAuthorPostCount
-                        text: "Post count: " + model.authorPostCount
+                            font.pixelSize: sp(2)
+                        }
 
-                        font.pixelSize: sp(2)
-                    }
+                        Image
+                        {
+                            id: imgUserAvatar
+                            source: reader.convertToUrl( model.postAvatar )
+                            visible: model.postAvatar !== ""
 
-                    Text
-                    {
-                        id: txtAuthorRegistrationDate
-                        text: "Registration date: " + Qt.formatDate( model.authorRegistrationDate )
+                            width:  model.postAvatarWidth === -1  ? dp(100) : dp(model.postAvatarWidth)
+                            height: model.postAvatarHeight === -1 ? dp(100) : dp(model.postAvatarHeight)
+                        }
 
-                        font.pixelSize: sp(2)
-                    }
+                        Text
+                        {
+                            id: txtAuthorPostCount
+                            text: "Post count: " + model.authorPostCount
 
-                    Text
-                    {
-                        id: txtAuthorReputation
-                        text: "Reputation: " + model.authorReputation
+                            font.pixelSize: sp(2)
+                        }
 
-                        font.pixelSize: sp(2)
-                    }
+                        Text
+                        {
+                            id: txtAuthorRegistrationDate
+                            text: "Registration date: " + Qt.formatDate( model.authorRegistrationDate )
 
-                    Text
-                    {
-                        id: txtAuthorCity
-                        visible: model.authorCity !== ""
-                        text: "City: " + model.authorCity
+                            font.pixelSize: sp(2)
+                        }
 
-                        font.pixelSize: sp(2)
+                        Text
+                        {
+                            id: txtAuthorReputation
+                            text: "Reputation: " + model.authorReputation
+
+                            font.pixelSize: sp(2)
+                        }
+
+                        Text
+                        {
+                            id: txtAuthorCity
+                            visible: model.authorCity !== ""
+                            text: "City: " + model.authorCity
+
+                            font.pixelSize: sp(2)
+                        }
                     }
                 }
 
                 Rectangle
                 {
                     id: rctItem
-                    width: parent.width - imgUserAvatar.width - parent.spacing
-                    height: clmnPost.height
+                    width: parent.width - dp(reader.postAvatarMaxWidth()) - parent.spacing
+                    height: parent.height
 
                     radius: 0
                     color: isCurrent ? "skyblue" : model.color
