@@ -567,49 +567,22 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
 
     // NOTE: adopt post quote style to poor Qt-supported HTML subset
     messageText = messageText.replace("\r", "");
-    messageText = messageText.replace("<br />", "\n");
-/*    messageText = messageText.replace("\n", "<br>");
-    messageText = messageText.replace("class=\"forum-quote\"", "border='1'");
-    // src='/bitrix/images/forum/smile/ag.gif' --> src='http://www.banki.ru/bitrix/images/forum/smile/ag.gif'
+    messageText = messageText.replace("\n", "<br>");
+    messageText = messageText.replace("class=\"forum-quote\"", "border='1' bgcolor='aliceblue' width='100%'");
+    messageText = messageText.replace("class=\"forum-code\"", "border='1' bgcolor='aliceblue'");
+    messageText = messageText.replace("<th>", "<th align='left' valign='middle' style='white-space: normal'>");
     messageText = messageText.replace("/bitrix/", g_bankiRuHost + "/bitrix/");
-    messageText = messageText.replace("<th>", "<th bgcolor='darkgrey' align='left' valign='middle' style='white-space: normal'>");*/
-
-    // FIXME: parse quotes
-    const QString tableOpenTag = "<table";
-    const QString tableCloseTag = "</table>";
-    while(true)
-    {
-        int idxQuoteBegin = messageText.indexOf(tableOpenTag);
-        int idxQuoteEnd   = messageText.indexOf(tableCloseTag);
-        if( idxQuoteBegin == -1 ) break;
-
-        Q_ASSERT( idxQuoteBegin != -1 && idxQuoteEnd != -1 );
-
-        // Extract quote text
-        // FIXME: just remove it to test
-        messageText = messageText.remove(idxQuoteBegin, idxQuoteEnd - idxQuoteBegin + tableCloseTag.size());
-#ifdef RUBANOK_DEBUG
-        qDebug() << messageText;
-#endif
-    }
 
     // Read user signature
-    QString userSignatureStr;
-    GumboNode* postSignatureNode = gumboChildNodeByClass(postEntryNode, "forum-user-signature");
-    if (postSignatureNode)
-    {
-        Q_ASSERT(postSignatureNode->type == GUMBO_NODE_ELEMENT);
-        Q_ASSERT(gumboChildElementCount(postSignatureNode) == 2);
-        Q_ASSERT(gumboElementClass(postSignatureNode) == "forum-user-signature");
+    QString userSignatureStr = getPostUserSignature(postEntryNode);
 
-        unsigned int idxSpanNode = 0;
-        spanNode = gumboChildNodeByName(postSignatureNode, GUMBO_TAG_SPAN, idxSpanNode);
-        Q_ASSERT(spanNode);
-        Q_ASSERT(spanNode->type == GUMBO_NODE_ELEMENT);
-        Q_ASSERT(gumboChildElementCount(spanNode) <= 2);
-        Q_ASSERT(gumboChildTextNodeCount(spanNode) <= 2);
-        userSignatureStr = gumboChildTextNodeValue(spanNode);
-    }
+    userSignatureStr = userSignatureStr.replace("\r", "");
+    userSignatureStr = userSignatureStr.replace("\n", "<br>");
+
+    // FIXME: implement
+    // Read "Изменено:" block
+    //
+    //
 
 #ifdef RUBANOK_DEBUG
     qDebug() << "Post:";
@@ -630,6 +603,60 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
 //  postInfo.m_permalink = "";
 
     return postInfo;
+}
+
+QString ForumPageParser::getPostUserSignature(GumboNode* postEntryNode)
+{
+    // Read user signature
+    QString userSignatureStr;
+    GumboNode* postSignatureNode = gumboChildNodeByClass(postEntryNode, "forum-user-signature");
+    if (!postSignatureNode) return QString();
+
+    Q_ASSERT(postSignatureNode->type == GUMBO_NODE_ELEMENT);
+    Q_ASSERT(gumboChildElementCount(postSignatureNode) == 2);
+    Q_ASSERT(gumboElementClass(postSignatureNode) == "forum-user-signature");
+
+    unsigned int idxSpanNode = 0;
+    GumboNode* spanNode = gumboChildNodeByName(postSignatureNode, GUMBO_TAG_SPAN, idxSpanNode);
+    Q_ASSERT(spanNode);
+    Q_ASSERT(spanNode->type == GUMBO_NODE_ELEMENT);
+    Q_ASSERT(gumboChildElementCount(spanNode) <= 2);
+    Q_ASSERT(gumboChildTextNodeCount(spanNode) <= 2);
+    userSignatureStr = gumboChildTextNodeValue(spanNode);
+
+    // Parse HTML user signatures
+    GumboVector* spanChild = &spanNode->v.element.children;
+    for (unsigned int i = 0; i < spanChild->length; ++i)
+    {
+        GumboNode* tempNode = static_cast<GumboNode*>(spanChild->data[i]);
+        if (tempNode->type == GUMBO_NODE_ELEMENT)
+        {
+            GumboElement tempElement = tempNode->v.element;
+            switch (tempElement.tag)
+            {
+            case GUMBO_TAG_A:
+            {
+                Q_ASSERT(tempElement.attributes.length == 3);
+
+                QString hrefAttrValue = gumboElementAttributeValue(tempNode, "href");
+                QString targetAttrValue = gumboElementAttributeValue(tempNode, "target");
+                QString relAttrValue = gumboElementAttributeValue(tempNode, "rel");
+                userSignatureStr +=
+                        "<a href=\"" + hrefAttrValue + "\" "
+                        + "target=\"" + targetAttrValue + "\" "
+                        + "rel=\"" + relAttrValue + "\"" + ">"  + gumboChildTextNodeValue(tempNode) + "</a>";
+                break;
+            }
+            case GUMBO_TAG_BR:
+            {
+                break;
+            }
+                // FIXME: implement other cases
+            default: Q_ASSERT(0);
+            }
+        }
+    }
+    return userSignatureStr;
 }
 
 int ForumPageParser::getLikeCounterValue(GumboNode *trNode2)

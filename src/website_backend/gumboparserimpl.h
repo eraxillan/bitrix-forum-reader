@@ -34,6 +34,7 @@ private:
     Image getUserAvatar(GumboNode *userInfoNode);
     User getPostUser(GumboNode *trNode1);
     Post getPostValue(GumboNode *trNode1);
+    QString getPostUserSignature(GumboNode* postEntryNode);
     int getLikeCounterValue(GumboNode *trNode2);
     int getPostId(GumboNode *msdivNode);
     void fillPostList(GumboNode *node, UserPosts &posts);

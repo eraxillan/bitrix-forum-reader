@@ -251,7 +251,8 @@ ApplicationWindow
                             font.pixelSize: sp(2)
 
                             text: model.postText
-                            textFormat: Text.PlainText
+                            textFormat: Text.RichText
+
                             elide: Text.ElideRight
                             wrapMode: Text.WordWrap
                         }
@@ -276,8 +277,10 @@ ApplicationWindow
                             font.pixelSize: sp(2)
 
                             renderType: Text.NativeRendering
+
                             text: model.authorSignature
-                            textFormat: Text.PlainText
+                            textFormat: Text.RichText
+
                             clip: false
                             elide: Text.ElideRight
                             wrapMode: Text.WordWrap
