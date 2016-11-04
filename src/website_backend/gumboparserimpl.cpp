@@ -153,6 +153,35 @@ static GumboNode* gumboChildNodeByClass(GumboNode* node, QString className, Gumb
     return nullptr;
 }
 
+// Recursive search for the first child node with specified class name and tag (div by default)
+static QVector<GumboNode*> gumboChildNodesByClassRecursive(GumboNode* node, QString className, GumboTag childTag = GUMBO_TAG_DIV)
+{
+    QVector<GumboNode*> result;
+
+    Q_CHECK_PTR(node);
+    Q_ASSERT(node->type == GUMBO_NODE_ELEMENT);
+
+    GumboVector* childNodes = &node->v.element.children;
+    Q_CHECK_PTR(childNodes);
+
+    for (unsigned int i = 0; i < childNodes->length; ++i)
+    {
+        GumboNode* childNode = static_cast<GumboNode*>(childNodes->data[i]);
+        Q_CHECK_PTR(childNode);
+        if (childNode->type != GUMBO_NODE_ELEMENT) continue;
+
+        if ((childNode->v.element.tag == childTag) && (QString::compare(gumboElementClass(childNode), className, Qt::CaseInsensitive) == 0))
+        {
+            result << childNode;
+        }
+
+        QVector<GumboNode*> childResult = gumboChildNodesByClassRecursive(childNode, className, childTag);
+        if (!childResult.empty()) result << childResult;
+    }
+
+    return result;
+}
+
 }
 
 void ForumPageParser::printTagsRecursively(GumboNode *node, int &level)
@@ -167,7 +196,10 @@ void ForumPageParser::printTagsRecursively(GumboNode *node, int &level)
     GumboAttribute* classAttr = gumbo_get_attribute(&node->v.element.attributes, "class");
     QString classAttrValue;
     if (classAttr) classAttrValue = QString(", class = ") + classAttr->value;
+
+#ifdef RUBANOK_DEBUG
     qDebug().noquote() << levelStr << gumbo_normalized_tagname(node->v.element.tag) << idAttrValue << classAttrValue;
+#endif
 
     GumboVector* children = &node->v.element.children;
     for (unsigned int i = 0; i < children->length; ++i)
@@ -556,7 +588,9 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
         // Extract quote text
         // FIXME: just remove it to test
         messageText = messageText.remove(idxQuoteBegin, idxQuoteEnd - idxQuoteBegin + tableCloseTag.size());
+#ifdef RUBANOK_DEBUG
         qDebug() << messageText;
+#endif
     }
 
     // Read user signature
@@ -662,6 +696,33 @@ int ForumPageParser::getPostId(GumboNode *msdivNode)
     return messageId;
 }
 
+void ForumPageParser::findPageCount(GumboNode *node, int &pageCount)
+{
+    pageCount = 0;
+
+    QVector<GumboNode*> paginationNodes = gumboChildNodesByClassRecursive(node, "ui-pagination__item", GUMBO_TAG_LI);
+    Q_ASSERT(paginationNodes.size() == 16);
+    if (paginationNodes.size() != 16) return;
+
+    GumboNode *lastPageNode = paginationNodes[7];
+    Q_CHECK_PTR(lastPageNode);
+    if (!lastPageNode) return;
+
+    uint lastPageHrefNodeIndex = 0;
+    GumboNode *lastPageHrefNode = gumboChildNodeByName(lastPageNode, GUMBO_TAG_A, lastPageHrefNodeIndex);
+    Q_CHECK_PTR(lastPageHrefNode);
+    if (!lastPageHrefNode) return;
+
+    QString pageCountStr = gumboChildTextNodeValue(lastPageHrefNode);
+    Q_ASSERT(!pageCountStr.isEmpty());
+    if(pageCountStr.isEmpty()) return;
+
+    bool pageCountOk = false;
+    pageCount = pageCountStr.toInt(&pageCountOk);
+    Q_ASSERT(pageCount);
+    if(!pageCountOk) { pageCount = 0; return; }
+}
+
 void ForumPageParser::fillPostList(GumboNode *node, UserPosts& posts)
 {
     // XPath: *[@id="msdiv4453758"]
@@ -724,48 +785,7 @@ void ForumPageParser::fillPostList(GumboNode *node, UserPosts& posts)
     }
 }
 
-int ForumPageParser::getPagePosts(QUrl webPageUrl, UserPosts& userPosts)
-{
-    QByteArray htmlFileRawContents;
-
-    // Read HTML file contents
-    if(webPageUrl.isLocalFile())
-    {
-        QFile htmlFile( webPageUrl.toLocalFile() );
-        if( !htmlFile.open( QFile::ReadOnly ) )
-        {
-            qDebug() << "I/O: unable to open HTML file ";
-            return 1;
-        }
-        htmlFileRawContents = htmlFile.readAll();
-        htmlFile.close();
-    }
-    else
-    {
-        // FIXME: implement, use FileDownloader
-        Q_ASSERT(0);
-    }
-
-    // First determine HTML page encoding
-    QTextCodec* htmlCodec = QTextCodec::codecForHtml(htmlFileRawContents);
-#ifdef RUBANOK_DEBUG
-    qDebug() << "ru.banki.reader: HTML encoding/charset is" << htmlCodec->name();
-#endif
-
-    // Convert to UTF-8: Gumbo library understands only this encoding
-    QString htmlFileString = htmlCodec->toUnicode(htmlFileRawContents);
-    QByteArray htmlFileUtf8Contents = htmlFileString.toUtf8();
-
-    // Parse web page contents
-    GumboOutput* output = gumbo_parse(htmlFileUtf8Contents.constData());
-    fillPostList(output->root, userPosts);
-    gumbo_destroy_output(&kGumboDefaultOptions, output);
-
-    // TODO: implement error handling with different return code
-    return 0;
-}
-
-int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts)
+int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts, int &pageCount)
 {
     // First determine HTML page encoding
     QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
@@ -785,6 +805,7 @@ int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts)
 
     // Parse web page contents
     GumboOutput* output = gumbo_parse(htmlFileUtf8Contents.constData());
+    findPageCount(output->root, pageCount);
     fillPostList(output->root, userPosts);
     gumbo_destroy_output(&kGumboDefaultOptions, output);
 

@@ -26,22 +26,21 @@ class ForumPageParser : public IForumPageReader
     };
 
 private:
-    void printTagsRecursively(GumboNode* node, int& level);
-    void findMsdivNodesRecursively(GumboNode* node, QVector<GumboNode*>& msdivNodes);
-    UserBaseInfo getUserBaseInfo(GumboNode* userInfoNode);
-    UserAdditionalInfo getUserAdditionalInfo(GumboNode* userInfoNode);
-    Image getUserAvatar(GumboNode* userInfoNode);
-    User getPostUser(GumboNode* trNode1);
-    Post getPostValue(GumboNode* trNode1);
-    int getLikeCounterValue(GumboNode* trNode2);
-    int getPostId(GumboNode* msdivNode);
-    void fillPostList(GumboNode* node, UserPosts& posts);
+    void printTagsRecursively(GumboNode *node, int &level);
+    void findMsdivNodesRecursively(GumboNode *node, QVector<GumboNode*> &msdivNodes);
+    void findPageCount(GumboNode *node, int &pageCount);
+    UserBaseInfo getUserBaseInfo(GumboNode *userInfoNode);
+    UserAdditionalInfo getUserAdditionalInfo(GumboNode *userInfoNode);
+    Image getUserAvatar(GumboNode *userInfoNode);
+    User getPostUser(GumboNode *trNode1);
+    Post getPostValue(GumboNode *trNode1);
+    int getLikeCounterValue(GumboNode *trNode2);
+    int getPostId(GumboNode *msdivNode);
+    void fillPostList(GumboNode *node, UserPosts &posts);
 
 public:
     // IForumPageReader implementation
-    virtual int getPagePosts(QUrl webPageUrl, UserPosts& userPosts) override;
-
-    int getPagePosts(QString rawData, UserPosts& userPosts);
+    virtual int getPagePosts(QString rawData, UserPosts& userPosts, int &pageCount) Q_DECL_OVERRIDE;
 };
 
 }

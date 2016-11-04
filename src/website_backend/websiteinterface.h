@@ -57,7 +57,7 @@ namespace BankiRuForum
     public:
         virtual ~IForumPageReader() {}
 
-        virtual int getPagePosts(QUrl webPageUrl, UserPosts& userPosts) = 0;
+        virtual int getPagePosts(QString rawData, UserPosts& userPosts, int& pageCount) = 0;
     };
 
 }
