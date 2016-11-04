@@ -13,7 +13,7 @@ ForumReader::~ForumReader()
 {
 }
 
-ForumReader::ForumReader(BankiRuForum::UserPosts userPosts, QObject *parent) : QObject(parent), m_userPosts(userPosts)
+ForumReader::ForumReader(BankiRuForum::UserPosts userPosts, QObject *parent) : QObject(parent), m_userPosts(userPosts), m_pageCount(0)
 {
 }
 
@@ -24,9 +24,17 @@ QUrl ForumReader::convertToUrl(QString urlStr) const
 
 bool ForumReader::parseForumPage(QString forumPageRawHtml)
 {
+    m_userPosts.clear();
+    m_pageCount = 0;
+
     BankiRuForum::ForumPageParser fpp;
-    int result = fpp.getPagePosts( forumPageRawHtml, m_userPosts );
+    int result = fpp.getPagePosts(forumPageRawHtml, m_userPosts, m_pageCount);
     return (result == 0);
+}
+
+int ForumReader::pageCount() const
+{
+    return m_pageCount;
 }
 
 int ForumReader::postCount() const

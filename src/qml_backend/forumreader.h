@@ -10,6 +10,7 @@ class ForumReader : public QObject
     Q_OBJECT
 
     BankiRuForum::UserPosts m_userPosts;
+    int m_pageCount;
 
 public:
     ForumReader();
@@ -20,6 +21,11 @@ public:
     // Helper functions
     Q_INVOKABLE QUrl convertToUrl(QString urlStr) const;
     Q_INVOKABLE bool parseForumPage(QString forumPageRawHtml);
+
+    // Topic functions
+    Q_INVOKABLE int pageCount() const;
+
+    // Page functions
 
     // Total post count on the page
     Q_INVOKABLE int postCount() const;
