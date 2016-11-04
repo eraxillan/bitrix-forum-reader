@@ -6,6 +6,7 @@ import ru.banki.reader 1.0
 
 ApplicationWindow
 {
+    id: wndMain
     visible: true
     width: Screen.width
     height: Screen.height
@@ -15,12 +16,16 @@ ApplicationWindow
     function dp(x) { return x * (displayDpi / 160); }
     function sp(x) { return x * (displayDpi / 160) * textScaleFactor; }
 
+    property bool pageLoaded: false
+    property int totalPageCount: 31
+    property int currentPageIndex: 30
+
     ForumReader
     {
         id: reader
     }
 
-    function xhrCallback(xhr)
+    function xhrCallback(xhr, pageNo)
     {
         if (xhr.readyState == XMLHttpRequest.DONE )
         {
@@ -28,6 +33,10 @@ ApplicationWindow
 
             // Parse the page HTML data
             reader.parseForumPage( resp )
+
+            // Fill the page counter
+            totalPageCount = reader.pageCount();
+            currentPageIndex = pageNo;
 
             // Fill the post list
             var i = 0;
@@ -48,14 +57,30 @@ ApplicationWindow
                                      "authorSignature"        : reader.postAuthorSignature(i)
                                  } );
             }
+            pageLoaded = true;
         }
     }
 
-    Component.onCompleted: {
+    function loadForumPage(pageNo)
+    {
+        //totalPageCount = 0;
+        pageLoaded = false;
+        dataModel.clear();
+
         var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() { xhrCallback(xhr); }
-        xhr.open("GET", "http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=30#forum-message-list")
+        xhr.onreadystatechange = function() { xhrCallback(xhr, pageNo); }
+        xhr.open("GET", "http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=" + pageNo.toString() + "#forum-message-list")
         xhr.send()
+    }
+
+    Component.onCompleted: {
+        loadForumPage(currentPageIndex)
+    }
+
+    BusyIndicator
+    {
+        anchors.centerIn: parent
+        running: !pageLoaded
     }
 
     ListModel
@@ -98,7 +123,7 @@ ApplicationWindow
                 Rectangle
                 {
                     id: rectUserInfo
-                    width: dp(reader.postAvatarMaxWidth()) + 2*clmnUserInfo.padding
+                    width: clmnUserInfo.width + 2*clmnUserInfo.padding
                     height: parent.height
 
                     radius: 0
@@ -113,7 +138,7 @@ ApplicationWindow
                         id: clmnUserInfo
                         spacing: dp(2)
                         padding: dp(5)
-                        width: parent.width
+                        // NOTE: width will be calculated automatically
 
                         Text
                         {
@@ -172,7 +197,7 @@ ApplicationWindow
                 Rectangle
                 {
                     id: rctItem
-                    width: parent.width - dp(reader.postAvatarMaxWidth()) - parent.spacing
+                    width: parent.width - clmnUserInfo.width - 2*clmnUserInfo.padding
                     height: parent.height
 
                     radius: 0
@@ -283,18 +308,85 @@ ApplicationWindow
             }
         }
 
-        header: Rectangle {
+        header: Row {
+            enabled: pageLoaded
+
             width: view.width
             height: dp(40)
-            border {
-                color: "black"
-                width: 1
+
+            property int childCount: 6
+            property int childHeight: height
+
+            Button {
+                id: btnFirstPage
+                enabled: parent.enabled && (cmbPage.value >= 2)
+                width: parent.width / childCount
+                height: childHeight
+
+                text: "<<"
+
+                onClicked: { loadForumPage(cmbPage.value - 1); }
             }
 
-            Text {
-                anchors.centerIn: parent
-                renderType: Text.NativeRendering
-                text: "Header"
+            Button {
+                id: btPrevPage
+                enabled: parent.enabled && (cmbPage.value >= 2)
+                width: parent.width / childCount
+                height: childHeight
+
+                text: "<"
+
+                onClicked: { loadForumPage(cmbPage.value - 1); }
+            }
+
+            SpinBox {
+                id: cmbPage
+                width: parent.width / childCount
+                height: childHeight
+
+                // FIXME: cause a crash in a Qt Quick internals :(
+//                onEditingFinished: { loadForumPage(value); }
+//                onEditingFinished: btnGotoPage.clicked();
+
+                minimumValue: 1
+                maximumValue: totalPageCount
+                value: currentPageIndex
+                stepSize: 1
+                decimals: 0
+            }
+
+            // FIXME: this button isn't really required, just a workaround for the crash above in SpinBox
+            Button {
+                id: btnGotoPage
+                width: parent.width / childCount
+                height: childHeight
+
+                isDefault: true
+                text: "Go"
+
+                onClicked: { loadForumPage(cmbPage.value); }
+            }
+
+            Button {
+                id: btnNextPage
+                enabled: parent.enabled && (cmbPage.value <= totalPageCount - 1)
+                width: parent.width / childCount
+                height: childHeight
+
+                text: ">"
+
+                onClicked: { loadForumPage(cmbPage.value + 1); }
+            }
+
+            Button {
+                id: btnLastPage
+                enabled: parent.enabled && (cmbPage.value <= totalPageCount - 1)
+                width: parent.width / childCount
+                height: childHeight
+
+                text: ">>"
+
+                onClicked: { loadForumPage(cmbPage.value + 1); }
             }
         }
 

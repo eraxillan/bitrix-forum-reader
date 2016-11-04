@@ -14,17 +14,18 @@
 #include "src/qml_backend/useravatarimageprovider.h"
 #include "src/qml_backend/forumreader.h"
 
+// FIXME: add full error stack storage code like PCode do
 // FIXME: save full post history to the LOCAL database
 // FIXME: add sorting by user/post reputation option
 // FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
-
 int getDpi(float& textScaleFactor)
 {
     QScreen* screen = qApp->primaryScreen();
 
     qreal dpi = 0;
 #if defined(Q_OS_WIN)
-    dpi = screen->logicalDotsPerInch() * qApp->devicePixelRatio();
+    textScaleFactor = 15.0f;
+    dpi = /*3 **/ screen->logicalDotsPerInch() * qApp->devicePixelRatio();
 #elif defined(Q_OS_ANDROID)
     Q_UNUSED(screen);
 
