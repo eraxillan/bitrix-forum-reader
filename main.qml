@@ -253,6 +253,7 @@ ApplicationWindow
 
                             text: model.postText
                             textFormat: Text.RichText
+                            onLinkActivated: Qt.openUrlExternally(link)
 
                             elide: Text.ElideRight
                             wrapMode: Text.WordWrap                            
@@ -272,6 +273,7 @@ ApplicationWindow
 
                             text: model.postLastEdit
                             textFormat: Text.RichText
+                            onLinkActivated: Qt.openUrlExternally(link)
 
                             clip: false
                             elide: Text.ElideRight
@@ -301,6 +303,7 @@ ApplicationWindow
 
                             text: model.authorSignature
                             textFormat: Text.RichText
+                            onLinkActivated: Qt.openUrlExternally(link)
 
                             clip: false
                             elide: Text.ElideRight
