@@ -572,7 +572,7 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
     messageText = messageText.replace("class=\"forum-code\"", "border='1' bgcolor='aliceblue'");
     messageText = messageText.replace("<th>", "<th align='left' valign='middle' style='white-space: normal'>");
     messageText = messageText.replace("/bitrix/", g_bankiRuHost + "/bitrix/");
-    messageText = messageText.replace("/forum/", g_bankiRuHost + "/forum/");
+    messageText = messageText.replace("/forum/?", g_bankiRuHost + "/forum/?");
 
     // Read user signature
     QString userSignatureStr = getPostUserSignature(postEntryNode);
