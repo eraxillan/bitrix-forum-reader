@@ -572,17 +572,18 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
     messageText = messageText.replace("class=\"forum-code\"", "border='1' bgcolor='aliceblue'");
     messageText = messageText.replace("<th>", "<th align='left' valign='middle' style='white-space: normal'>");
     messageText = messageText.replace("/bitrix/", g_bankiRuHost + "/bitrix/");
+    messageText = messageText.replace("/forum/", g_bankiRuHost + "/forum/");
 
     // Read user signature
     QString userSignatureStr = getPostUserSignature(postEntryNode);
-
     userSignatureStr = userSignatureStr.replace("\r", "");
     userSignatureStr = userSignatureStr.replace("\n", "<br>");
 
-    // FIXME: implement
-    // Read "Изменено:" block
-    //
-    //
+    // Read post last edit "credentials" (optional)
+    QString lastEditStr = getPostLastEdit(postEntryNode);
+    lastEditStr = lastEditStr.replace("\r", "");
+    lastEditStr = lastEditStr.replace("\n", "<br>");
+    lastEditStr = lastEditStr.replace("/profile/", g_bankiRuHost + "/profile/");
 
 #ifdef RUBANOK_DEBUG
     qDebug() << "Post:";
@@ -597,12 +598,75 @@ Post ForumPageParser::getPostValue(GumboNode *trNode1)
 //  postInfo.m_postNumber = -1;
     postInfo.m_likeCounter = -1;	// NOTE: will be filled later
     postInfo.m_text = messageText;
+    postInfo.m_lastEdit = lastEditStr;
 //  postInfo.m_style = "";
     postInfo.m_userSignature = userSignatureStr;
     postInfo.m_date = postDate;
 //  postInfo.m_permalink = "";
 
     return postInfo;
+}
+
+QString ForumPageParser::getPostLastEdit(GumboNode* postEntryNode)
+{
+    // Read post last edit "credentials" (optional)
+    QString lastEditStr;
+    GumboNode* postLastEditNode = gumboChildNodeByClass(postEntryNode, "forum-post-lastedit", GUMBO_TAG_DIV);
+    if (!postLastEditNode) return QString();
+
+    Q_ASSERT(postLastEditNode->type == GUMBO_NODE_ELEMENT);
+    Q_ASSERT(gumboChildElementCount(postLastEditNode) == 1);
+    Q_ASSERT(gumboElementClass(postLastEditNode) == "forum-post-lastedit");
+
+    GumboNode* postLastEditSpanNode = gumboChildNodeByClass(postLastEditNode, "forum-post-lastedit", GUMBO_TAG_SPAN);
+    Q_ASSERT(postLastEditSpanNode);
+    Q_ASSERT(postLastEditSpanNode->type == GUMBO_NODE_ELEMENT);
+    Q_ASSERT(gumboChildElementCount(postLastEditSpanNode) >= 2);
+
+    GumboNode* postLastEditUserNode = gumboChildNodeByClass(postLastEditSpanNode, "forum-post-lastedit-user", GUMBO_TAG_SPAN);
+    Q_ASSERT(postLastEditUserNode);
+    Q_ASSERT(postLastEditUserNode->type == GUMBO_NODE_ELEMENT);
+    Q_ASSERT(gumboChildElementCount(postLastEditUserNode) == 1);
+    unsigned int noIndexStartPos = 0;
+    GumboNode* postLastEditUserIndexNode = gumboChildNodeByName(postLastEditUserNode, GUMBO_TAG_UNKNOWN, noIndexStartPos);
+    Q_ASSERT(postLastEditUserIndexNode);
+    Q_ASSERT(postLastEditUserIndexNode->type == GUMBO_NODE_ELEMENT);
+    Q_ASSERT(gumboChildElementCount(postLastEditUserIndexNode) == 1);
+    unsigned int userLinkStartPos = 0;
+    GumboNode* postLastEditUserLinkNode = gumboChildNodeByName(postLastEditUserIndexNode, GUMBO_TAG_A, userLinkStartPos);
+    Q_ASSERT(postLastEditUserLinkNode);
+    Q_ASSERT(postLastEditUserLinkNode->type == GUMBO_NODE_ELEMENT);
+    Q_ASSERT(gumboChildElementCount(postLastEditUserLinkNode) == 0);
+    Q_ASSERT(postLastEditUserLinkNode->v.element.attributes.length == 2);
+    QString userNameRelStr = gumboElementAttributeValue(postLastEditUserLinkNode, "rel");
+    QString userNameHrefStr = gumboElementAttributeValue(postLastEditUserLinkNode, "href");
+    QString userNameStr = gumboChildTextNodeValue(postLastEditUserLinkNode);
+
+    GumboNode* postLastEditDateNode = gumboChildNodeByClass(postLastEditSpanNode, "forum-post-lastedit-date", GUMBO_TAG_SPAN);
+    Q_ASSERT(postLastEditDateNode);
+    Q_ASSERT(postLastEditDateNode->type == GUMBO_NODE_ELEMENT);
+    Q_ASSERT(gumboChildElementCount(postLastEditDateNode) == 0);
+    QString lastEditDateStr = gumboChildTextNodeValue(postLastEditDateNode);
+
+    QString lastEditReasonStr;
+    GumboNode* postLastEditReasonNode = gumboChildNodeByClass(postLastEditSpanNode, "forum-post-lastedit-reason", GUMBO_TAG_SPAN);
+    if (postLastEditReasonNode)
+    {
+        Q_ASSERT(postLastEditReasonNode->type == GUMBO_NODE_ELEMENT);
+        Q_ASSERT(gumboChildElementCount(postLastEditReasonNode) == 1);
+        lastEditReasonStr = gumboChildTextNodeValue(postLastEditReasonNode);
+        Q_ASSERT(lastEditReasonStr == "()");
+        lastEditReasonStr.clear();
+
+        unsigned int reasonSpanNodeIdx = 0;
+        GumboNode* reasonSpanNode = gumboChildNodeByName(postLastEditReasonNode, GUMBO_TAG_SPAN, reasonSpanNodeIdx);
+        Q_ASSERT(reasonSpanNode);
+        lastEditReasonStr = "(" + gumboChildTextNodeValue(reasonSpanNode) + ")";
+    }
+
+    lastEditStr = "Изменено: <a href=\"" + userNameHrefStr + "\" " + "rel=\"" + userNameRelStr + "\">" + userNameStr + "</a> - " + lastEditDateStr + " " + lastEditReasonStr;
+
+    return lastEditStr;
 }
 
 QString ForumPageParser::getPostUserSignature(GumboNode* postEntryNode)

@@ -49,6 +49,7 @@ ApplicationWindow
                                      "postAvatarHeight"       : reader.postAvatarHeight(i),
                                      "postDateTime"           : reader.postDateTime(i),
                                      "postText"               : reader.postText(i),
+                                     "postLastEdit"           : reader.postLastEdit(i),
                                      "postLikeCount"          : reader.postLikeCount(i),
                                      "authorPostCount"        : reader.postAuthorPostCount(i),
                                      "authorRegistrationDate" : reader.postAuthorRegistrationDate(i),
@@ -253,6 +254,26 @@ ApplicationWindow
                             text: model.postText
                             textFormat: Text.RichText
 
+                            elide: Text.ElideRight
+                            wrapMode: Text.WordWrap                            
+                        }
+
+                        Text
+                        {
+                            id: txtLastEdit
+                            visible: model.lastEdit !== ""
+                            width: rctItem.width - parent.rightPadding - parent.leftPadding
+
+                            color: "lightslategrey"
+                            font.italic: true
+                            font.pixelSize: sp(2)
+
+                            renderType: Text.NativeRendering
+
+                            text: model.postLastEdit
+                            textFormat: Text.RichText
+
+                            clip: false
                             elide: Text.ElideRight
                             wrapMode: Text.WordWrap
                         }

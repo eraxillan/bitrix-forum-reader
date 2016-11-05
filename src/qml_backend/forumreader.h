@@ -39,6 +39,7 @@ public:
 
     Q_INVOKABLE QDateTime postDateTime(int index) const;
     Q_INVOKABLE QString postText(int index) const;
+    Q_INVOKABLE QString postLastEdit(int index) const;
     Q_INVOKABLE int postLikeCount(int index) const;
 
     Q_INVOKABLE int postAuthorPostCount(int index) const;

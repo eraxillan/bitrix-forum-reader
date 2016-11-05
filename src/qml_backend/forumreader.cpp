@@ -95,6 +95,13 @@ QString ForumReader::postText(int index) const
     return m_userPosts[index].second.m_text;
 }
 
+QString ForumReader::postLastEdit(int index) const
+{
+    Q_ASSERT(index >= 0 && index < m_userPosts.size());
+
+    return m_userPosts[index].second.m_lastEdit;
+}
+
 int ForumReader::postLikeCount(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_userPosts.size());

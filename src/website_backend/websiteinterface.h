@@ -42,6 +42,7 @@ namespace BankiRuForum
 
         QString m_text;
 //		QString m_style;
+        QString m_lastEdit;
         QString m_userSignature;
         QDateTime m_date;
 //		QUrl m_permalink;
