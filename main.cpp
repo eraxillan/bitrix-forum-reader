@@ -52,6 +52,8 @@ int getDpi(float& textScaleFactor)
 
 int main(int argc, char *argv[])
 {
+    qsrand(1);
+
     QApplication app(argc, argv);
 
     qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");

@@ -28,7 +28,7 @@ class UserAvatarImageResponse : public QQuickImageResponse, public QRunnable
 
     QString m_id;
     QSize m_requestedSize;
-    BankiRuForum::Image m_avatarInfo;
+    QSharedPointer<BankiRuForum::PostImage> m_avatarInfo;
     QQuickTextureFactory* m_texture = nullptr;
     bool m_cancelled = false;
     FileDownloader* m_pImgCtrl = nullptr;
@@ -37,7 +37,7 @@ private slots:
     void loadImage();
 
 public:
-    UserAvatarImageResponse(const QString& id, const QSize& requestedSize, BankiRuForum::Image& avatarInfo);
+    UserAvatarImageResponse(const QString& id, const QSize& requestedSize, QSharedPointer<BankiRuForum::PostImage> avatarInfo);
 
     QQuickTextureFactory* textureFactory() const override;
     void run() override;

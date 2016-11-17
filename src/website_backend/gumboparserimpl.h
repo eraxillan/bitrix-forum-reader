@@ -1,9 +1,8 @@
 #ifndef GUMBOPARSERIMPL_H
 #define GUMBOPARSERIMPL_H
 
-#include <QtCore/QtCore>
-#include "gumbo.h"
 #include "src/website_backend/websiteinterface.h"
+#include "qtgumbodocument.h"
 
 namespace BankiRuForum {
 
@@ -26,19 +25,24 @@ class ForumPageParser : public IForumPageReader
     };
 
 private:
-    void printTagsRecursively(GumboNode *node, int &level);
-    void findMsdivNodesRecursively(GumboNode *node, QVector<GumboNode*> &msdivNodes);
-    void findPageCount(GumboNode *node, int &pageCount);
-    UserBaseInfo getUserBaseInfo(GumboNode *userInfoNode);
-    UserAdditionalInfo getUserAdditionalInfo(GumboNode *userInfoNode);
-    Image getUserAvatar(GumboNode *userInfoNode);
-    User getPostUser(GumboNode *trNode1);
-    Post getPostValue(GumboNode *trNode1);
-    QString getPostLastEdit(GumboNode* postEntryNode);
-    QString getPostUserSignature(GumboNode* postEntryNode);
-    int getLikeCounterValue(GumboNode *trNode2);
-    int getPostId(GumboNode *msdivNode);
-    void fillPostList(GumboNode *node, UserPosts &posts);
+    void printTagsRecursively(QtGumboNode node, int &level);
+    void findMsdivNodesRecursively(QtGumboNode node, QVector<QtGumboNode> &msdivNodes);
+    void findPageCount(QtGumboNode node, int &pageCount);
+    UserBaseInfo getUserBaseInfo(QtGumboNode userInfoNode);
+    UserAdditionalInfo getUserAdditionalInfo(QtGumboNode userInfoNode);
+    QSharedPointer<PostImage> getUserAvatar(QtGumboNode userInfoNode);
+    User getPostUser(QtGumboNode trNode1);
+    Post getPostValue(QtGumboNode trNode1);
+    QString getPostLastEdit(QtGumboNode postEntryNode);
+    QString getPostUserSignature(QtGumboNode postEntryNode);
+    int getLikeCounterValue(QtGumboNode trNode2);
+    int getPostId(QtGumboNode msdivNode);
+    void fillPostList(QtGumboNode node, UserPosts &posts);
+
+    QSharedPointer<PostHyperlink> parseHyperlink(QtGumboNode aNode) const;
+    QSharedPointer<PostImage> parseImage(QtGumboNode imgNode) const;
+    QSharedPointer<PostQuote> parseQuote(QtGumboNode tableNode) const;
+    void parseMessage(QtGumboNodes nodes, IPostObjectList& postObjects) const;
 
 public:
     // IForumPageReader implementation

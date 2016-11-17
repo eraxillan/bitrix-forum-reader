@@ -53,21 +53,24 @@ QString ForumReader::postAvatarUrl(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_userPosts.size());
 
-    return m_userPosts[index].first.m_userAvatar.m_url.toString();
+    if (m_userPosts[index].first.m_userAvatar.isNull()) return QString();
+    return m_userPosts[index].first.m_userAvatar->m_url;
 }
 
 int ForumReader::postAvatarWidth(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_userPosts.size());
 
-    return m_userPosts[index].first.m_userAvatar.m_width;
+    if (m_userPosts[index].first.m_userAvatar.isNull()) return -1;
+    return m_userPosts[index].first.m_userAvatar->m_width;
 }
 
 int ForumReader::postAvatarHeight(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_userPosts.size());
 
-    return m_userPosts[index].first.m_userAvatar.m_height;
+    if (m_userPosts[index].first.m_userAvatar.isNull()) return -1;
+    return m_userPosts[index].first.m_userAvatar->m_height;
 }
 
 int ForumReader::postAvatarMaxWidth() const
@@ -75,7 +78,8 @@ int ForumReader::postAvatarMaxWidth() const
     int maxWidth = 100;
     for(int i = 0; i < m_userPosts.size(); ++i)
     {
-        int width = m_userPosts[i].first.m_userAvatar.m_width;
+        if (m_userPosts[i].first.m_userAvatar.isNull()) continue;
+        int width = m_userPosts[i].first.m_userAvatar->m_width;
         if(width > maxWidth) maxWidth = width;
     }
     return maxWidth;
@@ -91,8 +95,37 @@ QDateTime ForumReader::postDateTime(int index) const
 QString ForumReader::postText(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_userPosts.size());
+    if (m_userPosts[index].second.m_data.empty()) return "";
 
-    return m_userPosts[index].second.m_text;
+    QString qmlStr;
+    qmlStr =
+            "import QtMultimedia 5.6;\n"
+            "import QtQuick 2.6;\n"
+            "import QtQuick.Window 2.2;\n"
+            "import QtQuick.Controls 1.5;\n"
+            "import QtQuick.Dialogs 1.2;\n\n";
+
+    BankiRuForum::IPostObjectList::const_iterator iObj = m_userPosts[index].second.m_data.begin();
+    int validItemsCount = 0;
+    for (; iObj != m_userPosts[index].second.m_data.end(); ++iObj)
+    {
+        if (!(*iObj)->isValid() || (*iObj)->getQmlString().isEmpty()) continue;
+
+        validItemsCount++;
+    }
+
+    if (validItemsCount == 0) return QString();
+    if (validItemsCount == 1) return qmlStr + m_userPosts[index].second.m_data[0]->getQmlString();
+
+    iObj = m_userPosts[index].second.m_data.begin();
+    qmlStr += "Column {\n";
+    for (; iObj != m_userPosts[index].second.m_data.end(); ++iObj)
+    {
+        qmlStr += (*iObj)->getQmlString();
+        qmlStr = qmlStr.trimmed();
+    }
+    qmlStr += "}\n";
+    return qmlStr;
 }
 
 QString ForumReader::postLastEdit(int index) const
@@ -143,3 +176,79 @@ QString ForumReader::postAuthorSignature(int index) const
 
     return m_userPosts[index].second.m_userSignature;
 }
+
+QString ForumReader::postFooterQml() const
+{
+    const QString qmlStr =
+            "import QtQuick 2.6;\n"
+            "Column {\n"
+            "   Text {\n"
+            "       id: txtLastEdit\n"
+            "       visible: model.lastEdit !== \"\"\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
+            "\n"
+            "       color: \"lightslategrey\"\n"
+            "       font.italic: true\n"
+            "       font.pixelSize: sp(2)\n"
+            "\n"
+            "       renderType: Text.NativeRendering\n"
+            "\n"
+            "       text: model.postLastEdit\n"
+            "       textFormat: Text.RichText\n"
+            "       onLinkActivated: Qt.openUrlExternally(link)\n"
+            "\n"
+            "       clip: false\n"
+            "       elide: Text.ElideRight\n"
+            "       wrapMode: Text.WordWrap\n"
+            "   }\n"
+            "\n"
+            "   Rectangle {\n"
+            "       visible: model.authorSignature !== \"\"\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
+            "       height: dp(1)\n"
+            "       border.width: dp(0)\n"
+            "       color: \"lightslategrey\"\n"
+            "   }\n"
+            "\n"
+            "   Text {\n"
+            "       id: txtPostAuthorSignature\n"
+            "       visible: model.authorSignature !== \"\"\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
+            "\n"
+            "       color: \"lightslategrey\"\n"
+            "       font.italic: true\n"
+            "       font.pixelSize: sp(2)\n"
+            "\n"
+            "       renderType: Text.NativeRendering\n"
+            "\n"
+            "       text: model.authorSignature\n"
+            "       textFormat: Text.RichText\n"
+            "       onLinkActivated: Qt.openUrlExternally(link)\n"
+            "\n"
+            "       clip: false\n"
+            "       elide: Text.ElideRight\n"
+            "       wrapMode: Text.WordWrap\n"
+            "   }\n"
+            "\n"
+            "   Rectangle {\n"
+            "       visible: model.postLikeCount > 0\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
+            "       height: dp(1)\n"
+            "       border.width: dp(0)\n"
+            "       color: \"lightslategrey\"\n"
+            "   }\n"
+            "\n"
+            "   Text {\n"
+            "       id: txtPostLikeCounter\n"
+            "       visible: model.postLikeCount > 0\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
+            "       color: \"lightslategrey\"\n"
+            "\n"
+            "       font.bold: true\n"
+            "       font.pixelSize: sp(2)\n"
+            "       text: model.postLikeCount + \" like(s)\"\n"
+            "   }\n"
+            "}\n";
+            return qmlStr;
+}
+

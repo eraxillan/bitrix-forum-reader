@@ -21,7 +21,7 @@ void UserAvatarImageResponse::loadImage()
 }
 
 
-UserAvatarImageResponse::UserAvatarImageResponse(const QString& id, const QSize& requestedSize, BankiRuForum::Image& avatarInfo):
+UserAvatarImageResponse::UserAvatarImageResponse(const QString& id, const QSize& requestedSize, QSharedPointer<BankiRuForum::PostImage> avatarInfo):
     m_id(id), m_requestedSize(requestedSize), m_avatarInfo(avatarInfo), m_texture(nullptr), m_cancelled(false)
 {
     setAutoDelete(false);
@@ -67,7 +67,7 @@ QQuickImageResponse* UserAvatarAsyncImageProvider::requestImageResponse(const QS
     qDebug() << "Loading user avatar image" << id;
 
     // Search for user with specified name
-    BankiRuForum::Image avatarInfo;
+    QSharedPointer<BankiRuForum::PostImage> avatarInfo;
     for( int i = 0; i < m_userPosts.size(); ++i )
     {
         auto currentUser = m_userPosts[i].first;
@@ -95,10 +95,10 @@ QPixmap UserAvatarImageProvider::requestPixmap(const QString& id, QSize* size, c
 {
     Q_UNUSED(id);
 
-    BankiRuForum::Image imgAvatar = m_userPosts[m_idxCurrentUser].first.m_userAvatar;
+    QSharedPointer<BankiRuForum::PostImage> imgAvatar = m_userPosts[m_idxCurrentUser].first.m_userAvatar;
     if (size)
     {
-        *size = QSize(imgAvatar.m_width, imgAvatar.m_height);
+        *size = QSize(imgAvatar->m_width, imgAvatar->m_height);
     }
 
     // FIXME: use real avatar id

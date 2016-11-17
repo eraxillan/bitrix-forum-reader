@@ -2,18 +2,128 @@
 #define WEBSITEINTERFACE_H
 
 #include <QtCore/QtCore>
+#include <QtNetwork/QtNetwork>
+#include <QtWidgets/QApplication>
+
+#define RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
 
 namespace BankiRuForum
 {
-    //--------------------------------------------------------------------------------------------
-    // Data structures
-    struct Image
+    struct IPostObject
     {
+        virtual ~IPostObject();
+
+        virtual bool isValid() const = 0;
+        virtual QString getQmlString() const = 0;
+    };
+    typedef QList< QSharedPointer<IPostObject> > IPostObjectList;
+
+    // NOTE: quote text is HTML
+    struct PostQuote : IPostObject
+    {
+        QString m_title;
+        QString m_userName;
         QUrl m_url;
+        IPostObjectList m_data;
+
+        PostQuote();
+
+        bool isValid() const override;
+        QString getQmlString() const override;
+    };
+
+    struct PostImage : IPostObject
+    {
+        QString m_url;
         int m_width = -1;
         int m_height = -1;
+        int m_border = -1;
+        QString m_altName;
+        QString m_id;
+        QString m_className;
 
-        bool isValid() const { return !m_url.isEmpty() && (m_width > 0 && m_height > 0); }
+        PostImage();
+        PostImage(QString url, int width, int height, int border = 0, QString altName = QString(), QString id = QString(), QString className = QString());
+
+        bool isValid() const override;
+        QString getQmlString() const override;
+    };
+
+    struct PostPlainText : IPostObject
+    {
+        QString m_text;
+
+        PostPlainText();
+        PostPlainText(QString text);
+
+        bool isValid() const override;
+        virtual QString getQmlString() const override;
+    };
+
+    struct PostRichText : IPostObject
+    {
+        QString m_text;
+        bool m_isBold = false;
+        bool m_isItalic = false;
+        bool m_isUnderlined = false;
+
+        PostRichText();
+        PostRichText(QString text, bool isBold, bool isItalic, bool isUnderlined);
+
+        bool isValid() const override;
+        virtual QString getQmlString() const override;
+    };
+
+    struct PostVideo : IPostObject
+    {
+        // URL
+        QString m_urlStr;
+        QUrl m_url;
+
+        PostVideo();
+        PostVideo(QString urlStr);
+
+        bool isValid() const override;
+        virtual QString getQmlString() const override;
+    };
+
+    struct PostHyperlink : IPostObject
+    {
+        // URL
+        QString m_urlStr;
+        QUrl m_url;
+
+        // Display name
+        QString m_title;
+
+        // Balloon tip
+        QString m_tip;
+
+        QString m_rel;
+
+        PostHyperlink();
+        PostHyperlink(QString urlStr, QString title, QString tip, QString rel = QString());
+
+        bool isValid() const override;
+        QString getQmlString() const override;
+    };
+
+    // -------------------------------------------------
+
+    struct Post
+    {
+        int m_id;
+//      int m_postNumber;
+        int m_likeCounter;
+
+        //QString m_text;
+        IPostObjectList m_data;
+
+//		QString m_style;
+        QString m_lastEdit;
+        QString m_userSignature;
+        QDateTime m_date;
+//		QUrl m_permalink;
     };
 
     struct User
@@ -24,7 +134,7 @@ namespace BankiRuForum
         QUrl m_userProfileUrl;
 
         // Avatar info
-        Image m_userAvatar;
+        QSharedPointer<PostImage> m_userAvatar;
 
         // Additional info
         QUrl m_allPostsUrl;
@@ -34,21 +144,7 @@ namespace BankiRuForum
         QString m_city;
     };
 
-    struct Post
-    {
-        int m_id;
-        //int m_postNumber;
-        int m_likeCounter;
-
-        QString m_text;
-//		QString m_style;
-        QString m_lastEdit;
-        QString m_userSignature;
-        QDateTime m_date;
-//		QUrl m_permalink;
-    };
-
-    typedef QVector<QPair<User, Post>> UserPosts;
+    typedef QVector< QPair<User, Post> > UserPosts;
 
     //---------------------------------------------------------------------------------------------
     // Interfaces
@@ -56,7 +152,7 @@ namespace BankiRuForum
     class IForumPageReader
     {
     public:
-        virtual ~IForumPageReader() {}
+        virtual ~IForumPageReader();
 
         virtual int getPagePosts(QString rawData, UserPosts& userPosts, int& pageCount) = 0;
     };

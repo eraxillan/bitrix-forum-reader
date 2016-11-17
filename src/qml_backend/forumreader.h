@@ -48,6 +48,8 @@ public:
     Q_INVOKABLE QString postAuthorCity(int index) const;
 
     Q_INVOKABLE QString postAuthorSignature(int index) const;
+
+    Q_INVOKABLE QString postFooterQml() const;
 };
 
 #endif // FORUMREADER_H

@@ -51,6 +51,7 @@ ApplicationWindow
                                      "postText"               : reader.postText(i),
                                      "postLastEdit"           : reader.postLastEdit(i),
                                      "postLikeCount"          : reader.postLikeCount(i),
+                                     "postFooterQml"          : reader.postFooterQml(),
                                      "authorPostCount"        : reader.postAuthorPostCount(i),
                                      "authorRegistrationDate" : reader.postAuthorRegistrationDate(i),
                                      "authorReputation"       : reader.postAuthorReputation(i),
@@ -171,7 +172,7 @@ ApplicationWindow
                         Text
                         {
                             id: txtAuthorRegistrationDate
-                            text: "Registration date: " + Qt.formatDate( model.authorRegistrationDate )
+                            text: "Registered: " + Qt.formatDate( model.authorRegistrationDate )
 
                             font.pixelSize: sp(2)
                         }
@@ -222,6 +223,23 @@ ApplicationWindow
                         leftPadding: dp(10)
                         rightPadding: dp(10)
 
+                        function createItem() {
+                            if (!pageLoaded) return;
+                            if (model.postText === "") return;
+
+                            var postObj = Qt.createQmlObject(model.postText, clmnPost, "dynamicPostObject");
+                            var postFooterObj = Qt.createQmlObject(model.postFooterQml, clmnPost, "dynamicPostAdditionalInfo");
+
+                            if (postObj === null)
+                            {
+                                console.log("Post QML object creation FAILED:");
+                                console.log(">>>--------------------------------------------------------");
+                                console.log(model.postText);
+                                console.log("<<<--------------------------------------------------------");
+                            }
+                        }
+                        Component.onCompleted: clmnPost.createItem();
+
                         Text
                         {
                             id: txtPostDateTime
@@ -242,93 +260,6 @@ ApplicationWindow
                             height: dp(1)
                             border.width: dp(0)
                             color: "lightslategrey"
-                        }
-
-                        Text
-                        {
-                            id: txtPost
-                            width: rctItem.width - parent.rightPadding - parent.leftPadding
-
-                            font.pixelSize: sp(2)
-
-                            text: model.postText
-                            textFormat: Text.RichText
-                            onLinkActivated: Qt.openUrlExternally(link)
-
-                            elide: Text.ElideRight
-                            wrapMode: Text.WordWrap                            
-                        }
-
-                        Text
-                        {
-                            id: txtLastEdit
-                            visible: model.lastEdit !== ""
-                            width: rctItem.width - parent.rightPadding - parent.leftPadding
-
-                            color: "lightslategrey"
-                            font.italic: true
-                            font.pixelSize: sp(2)
-
-                            renderType: Text.NativeRendering
-
-                            text: model.postLastEdit
-                            textFormat: Text.RichText
-                            onLinkActivated: Qt.openUrlExternally(link)
-
-                            clip: false
-                            elide: Text.ElideRight
-                            wrapMode: Text.WordWrap
-                        }
-
-                        Rectangle
-                        {
-                            visible: model.authorSignature !== ""
-                            width: rctItem.width - parent.rightPadding - parent.leftPadding
-                            height: dp(1)
-                            border.width: dp(0)
-                            color: "lightslategrey"
-                        }
-
-                        Text
-                        {
-                            id: txtPostAuthorSignature
-                            visible: model.authorSignature !== ""
-                            width: rctItem.width - parent.rightPadding - parent.leftPadding
-
-                            color: "lightslategrey"
-                            font.italic: true
-                            font.pixelSize: sp(2)
-
-                            renderType: Text.NativeRendering
-
-                            text: model.authorSignature
-                            textFormat: Text.RichText
-                            onLinkActivated: Qt.openUrlExternally(link)
-
-                            clip: false
-                            elide: Text.ElideRight
-                            wrapMode: Text.WordWrap
-                        }
-
-                        Rectangle
-                        {
-                            visible: model.postLikeCount > 0
-                            width: rctItem.width - parent.rightPadding - parent.leftPadding
-                            height: dp(1)
-                            border.width: dp(0)
-                            color: "lightslategrey"
-                        }
-
-                        Text
-                        {
-                            id: txtPostLikeCounter
-                            visible: model.postLikeCount > 0
-                            width: rctItem.width - parent.rightPadding - parent.leftPadding
-                            color: "lightslategrey"
-
-                            font.bold: true
-                            font.pixelSize: sp(2)
-                            text: model.postLikeCount + " like(s)"
                         }
                     }
                 }
