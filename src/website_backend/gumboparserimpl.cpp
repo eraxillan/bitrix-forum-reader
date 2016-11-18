@@ -238,8 +238,9 @@ User ForumPageParser::getPostUser(QtGumboNode trNode1)
     QSharedPointer<PostImage> userAvatar = getUserAvatar(userInfoNode);
 
 #ifdef  RUBANOK_DEBUG
-    qDebug() << QString::number(ubi.m_id) + ", " + ubi.m_name + ", " + ubi.m_profileUrl.toDisplayString() + ", "
-                + userAvatar.m_url.toString() + ": " + QString::number(userAvatar.m_width) + " x " + QString::number(userAvatar.m_height);
+    qDebug() << "User info:" << QString::number(ubi.m_id) + ", " + ubi.m_name + ", " + ubi.m_profileUrl.toDisplayString();
+    if (userAvatar)
+    qDebug() << "User avatar info:" << userAvatar->m_url + ": " + QString::number(userAvatar->m_width) + " x " + QString::number(userAvatar->m_height);
 #endif // RUBANOK_DEBUG
 
     // Base info
@@ -306,47 +307,6 @@ Post ForumPageParser::getPostValue(QtGumboNode trNode1)
     QtGumboNodes postTextNodeChildren = postTextNode.getChildren(false);
     parseMessage(postTextNodeChildren, postInfo.m_data);
 
-    // Read post message text as raw HTML
-    /*unsigned int messageTextBegin = postTextNode.getTagLength();
-    unsigned int messageTextLength = postTextNode.getEndPos() - postTextNode.getStartPos();
-    QString fullPostHtml = postTextNode.getHtml();
-    int idxEndDiv = fullPostHtml.indexOf("</div>", 0, Qt::CaseInsensitive);
-    messageTextLength -= static_cast<size_t>(idxEndDiv);
-    QString messageText = fullPostHtml.mid(static_cast<int>(messageTextBegin), static_cast<int>(idxEndDiv) - static_cast<int>(messageTextBegin));
-    messageText = messageText.trimmed();
-
-    // NOTE: adopt post quote style to poor Qt-supported HTML subset
-    messageText = messageText.replace("\r", "");
-    // FIXME: temp
-    //messageText = messageText.replace("\n", "<br>");
-    messageText = messageText.replace("<br />", "");
-    messageText = messageText.replace("<br/>", "");
-    messageText = messageText.replace(QRegExp("\\s+"), " ");
-
-    messageText = messageText.replace("class=\"forum-quote\"", "border='1' bgcolor='aliceblue' width='100%'");
-    messageText = messageText.replace("class=\"forum-code\"", "border='1' bgcolor='aliceblue'");
-    messageText = messageText.replace("<th>", "<th align='left' valign='middle' style='white-space: normal'>");
-    messageText = messageText.replace("/bitrix/", g_bankiRuHost + "/bitrix/");
-    messageText = messageText.replace("/forum/?", g_bankiRuHost + "/forum/?");*/
-
-    // FIXME: temp!
-    // FIXME: parse quotes
-    /*const QString tableOpenTag = "<table";
-    const QString tableCloseTag = "</table>";
-    while(true)
-    {
-        int idxQuoteBegin = messageText.indexOf(tableOpenTag);
-        int idxQuoteEnd   = messageText.indexOf(tableCloseTag);
-        if( idxQuoteBegin == -1 ) break;
-
-        Q_ASSERT( idxQuoteBegin != -1 && idxQuoteEnd != -1 );
-
-        // Extract quote text
-        // FIXME: just remove it
-        // FIXME: we should convert it to QML in future
-        messageText = messageText.remove(idxQuoteBegin, idxQuoteEnd - idxQuoteBegin + tableCloseTag.size());
-    }*/
-
     // Read user signature
     QString userSignatureStr = getPostUserSignature(postEntryNode);
     userSignatureStr = userSignatureStr.replace("\r", "");
@@ -361,7 +321,6 @@ Post ForumPageParser::getPostValue(QtGumboNode trNode1)
 #ifdef RUBANOK_DEBUG
     qDebug() << "Post:";
     qDebug() << "	ID: " << id;
-    qDebug() << "	Text: " << messageText;
     if (!userSignatureStr.isEmpty())
         qDebug() << "   User signature: " << userSignatureStr;
     qDebug() << "	Date: " << postDate;
@@ -370,8 +329,6 @@ Post ForumPageParser::getPostValue(QtGumboNode trNode1)
     postInfo.m_id = id;
 //  postInfo.m_postNumber = -1;
     postInfo.m_likeCounter = -1;	// NOTE: will be filled later
-    // FIXME: implement
-    //postInfo.m_text = messageText;
     postInfo.m_lastEdit = lastEditStr;
 //  postInfo.m_style = "";
     postInfo.m_userSignature = userSignatureStr;
