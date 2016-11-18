@@ -9,7 +9,7 @@
 //		</div>
 // </div>
 
-#define RUBANOK_DEBUG
+//#define RUBANOK_DEBUG
 
 using namespace BankiRuForum;
 
