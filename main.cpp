@@ -11,7 +11,6 @@
 #endif
 
 #include "src/website_backend/gumboparserimpl.h"
-#include "src/qml_backend/useravatarimageprovider.h"
 #include "src/qml_backend/forumreader.h"
 
 // FIXME: add full error stack storage code like PCode do

@@ -27,7 +27,6 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
     src/network/filedownloader.cpp \
-    src/qml_backend/useravatarimageprovider.cpp \
     src/website_backend/gumboparserimpl.cpp \
     src/qml_backend/forumreader.cpp \
     src/website_backend/websiteinterface.cpp \
@@ -35,7 +34,6 @@ SOURCES += main.cpp \
 
 HEADERS += \
     src/network/filedownloader.h \
-    src/qml_backend/useravatarimageprovider.h \
     src/website_backend/gumboparserimpl.h \
     src/website_backend/websiteinterface.h \
     src/qml_backend/forumreader.h \
