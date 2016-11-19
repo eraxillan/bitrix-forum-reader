@@ -103,7 +103,7 @@ QtGumboNode QtGumboNode::gumboChildNodeByName(HtmlTag childTag, int startPos, in
 {
     QtGumboNodes children = getChildren();
     // NOTE: not all chilren are elements
-    //       Q_ASSERT(startPos < children.size()); if (startPos >= children.size()) return QtGumboNode();
+//  Q_ASSERT(startPos < children.size()); if (startPos >= children.size()) return QtGumboNode();
 
     int elementIndex = 0;
     for (QtGumboNodes::iterator iChild = children.begin(); iChild != children.end(); ++iChild)
@@ -117,6 +117,33 @@ QtGumboNode QtGumboNode::gumboChildNodeByName(HtmlTag childTag, int startPos, in
     }
 
     return QtGumboNode();
+}
+
+QtGumboNode QtGumboNode::childNodeByTag(std::initializer_list< std::pair< HtmlTag, int> > tagDescsInitList)
+{
+    typedef std::pair<HtmlTag, int> TagDesc;
+    typedef std::initializer_list<TagDesc> InitList;
+
+    QVector<TagDesc> tagDescs;
+    for (InitList::iterator iItem = tagDescsInitList.begin(); iItem != tagDescsInitList.end(); ++iItem)
+    {
+        tagDescs << std::make_pair(iItem->first, iItem->second);
+    }
+
+    QtGumboNode result = *this;
+    while (!tagDescs.isEmpty())
+    {
+        auto tagDesc = tagDescs.first();
+        tagDescs.removeFirst();
+
+        result = result.gumboChildNodeByName(tagDesc.first, tagDesc.second);
+        if (!result.isValid())
+        {
+            result = QtGumboNode();
+            break;
+        }
+    }
+    return result;
 }
 
 QtGumboNode QtGumboNode::gumboChildNodeByClass(QString className, HtmlTag childTag) const
