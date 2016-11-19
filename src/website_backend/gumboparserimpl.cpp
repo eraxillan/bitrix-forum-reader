@@ -91,11 +91,11 @@ ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(QtGumboNode userI
 {
     UserBaseInfo result;
 
-    QtGumboNode userNameNode = userInfoNode.gumboChildNodeByClass("forum-user-name", HtmlTag::DIV);
+    QtGumboNode userNameNode = userInfoNode.getElementByClass("forum-user-name", HtmlTag::DIV);
     Q_ASSERT(userNameNode.isValid()); if (!userNameNode.isValid()) return result;
-    Q_ASSERT(userNameNode.gumboChildElementCount() == 1); if (userNameNode.gumboChildElementCount() != 1) return result;
+    Q_ASSERT(userNameNode.getChildElementCount() == 1); if (userNameNode.getChildElementCount() != 1) return result;
 
-    QSharedPointer<PostHyperlink> userProfileRef = parseHyperlink(userNameNode.childNodeByTag({HtmlTag::A, 0}));
+    QSharedPointer<PostHyperlink> userProfileRef = parseHyperlink(userNameNode.getElementByTag({HtmlTag::A, 0}));
     Q_ASSERT(!userProfileRef.isNull() && userProfileRef->isValid());
     result.m_id = parseUserId(userProfileRef->m_urlStr);
     result.m_name = userProfileRef->m_tip;
@@ -109,11 +109,11 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
 {
     UserAdditionalInfo result;
 
-    QtGumboNode userAdditionalNode = userInfoNode.gumboChildNodeByClass("forum-user-additional", HtmlTag::DIV);
-    Q_ASSERT(userAdditionalNode.gumboChildElementCount() >= 3 && userAdditionalNode.gumboChildElementCount() <= 5);
+    QtGumboNode userAdditionalNode = userInfoNode.getElementByClass("forum-user-additional", HtmlTag::DIV);
+    Q_ASSERT(userAdditionalNode.getChildElementCount() >= 3 && userAdditionalNode.getChildElementCount() <= 5);
 
     // Read the all message URL and the post count
-    QtGumboNode postLinkNode = userAdditionalNode.childNodeByTag({{HtmlTag::SPAN, 0}, {HtmlTag::SPAN, 0}, {HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}});
+    QtGumboNode postLinkNode = userAdditionalNode.getElementByTag({{HtmlTag::SPAN, 0}, {HtmlTag::SPAN, 0}, {HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}});
     QSharedPointer<PostHyperlink> userPostsLinks = parseHyperlink(postLinkNode);
 
     QString userAllPosts = userPostsLinks->m_urlStr;
@@ -122,15 +122,15 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
     Q_ASSERT(postCountOk);
 
     // Read the registration date
-    QtGumboNode regDateNode = userAdditionalNode.childNodeByTag({{HtmlTag::SPAN, 1}, {HtmlTag::SPAN, 0}});
-    Q_ASSERT(regDateNode.gumboChildElementCount() == 0);
-    Q_ASSERT(regDateNode.gumboChildTextNodeCount() == 1);
-    QString registrationDateStr = regDateNode.gumboChildTextNodeValue();
+    QtGumboNode regDateNode = userAdditionalNode.getElementByTag({{HtmlTag::SPAN, 1}, {HtmlTag::SPAN, 0}});
+    Q_ASSERT(regDateNode.getChildElementCount() == 0);
+    Q_ASSERT(regDateNode.getTextChildrenCount() == 1);
+    QString registrationDateStr = regDateNode.getChildrenInnerText();
     QDate registrationDate = QDate::fromString(registrationDateStr, "dd.MM.yyyy");
     Q_ASSERT(registrationDate.isValid());
 
     // Read the reputation value
-    QtGumboNode userReputationRefNode = userAdditionalNode.childNodeByTag({{HtmlTag::SPAN, 2}, {HtmlTag::SPAN, 0}, {HtmlTag::A, 0}});
+    QtGumboNode userReputationRefNode = userAdditionalNode.getElementByTag({{HtmlTag::SPAN, 2}, {HtmlTag::SPAN, 0}, {HtmlTag::A, 0}});
     QSharedPointer<PostHyperlink> userReputationRef = parseHyperlink(userReputationRefNode);
     bool reputationOk = false;
     int reputation = userReputationRef->m_title.toInt(&reputationOk);
@@ -138,16 +138,16 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
 
     // NOTE: city is optional field, instead the rest of others
     QString cityStr;
-    QtGumboNode userCityNode = userAdditionalNode.childNodeByTag({HtmlTag::SPAN, 3});
+    QtGumboNode userCityNode = userAdditionalNode.getElementByTag({HtmlTag::SPAN, 3});
     if (userCityNode.isValid())
     {
-        Q_ASSERT(userCityNode.gumboChildElementCount() == 1);
+        Q_ASSERT(userCityNode.getChildElementCount() == 1);
 
-        QtGumboNode spanNode1 = userCityNode.childNodeByTag({HtmlTag::SPAN, 0});
+        QtGumboNode spanNode1 = userCityNode.getElementByTag({HtmlTag::SPAN, 0});
 
-        Q_ASSERT(spanNode1.gumboChildElementCount() == 0);
-        Q_ASSERT(spanNode1.gumboChildTextNodeCount() == 1);
-        cityStr = spanNode1.gumboChildTextNodeValue();
+        Q_ASSERT(spanNode1.getChildElementCount() == 0);
+        Q_ASSERT(spanNode1.getTextChildrenCount() == 1);
+        cityStr = spanNode1.getChildrenInnerText();
     }
 
 #ifdef  RUBANOK_DEBUG
@@ -167,14 +167,14 @@ QSharedPointer<PostImage> ForumPageParser::getUserAvatar(QtGumboNode userInfoNod
 {
     QSharedPointer<PostImage> result;
 
-    QtGumboNode userAvatarNode = userInfoNode.gumboChildNodeByClass("forum-user-avatar", HtmlTag::DIV);
-    if(!userAvatarNode.isValid()) userAvatarNode = userInfoNode.gumboChildNodeByClass("forum-user-register-avatar", HtmlTag::DIV);
+    QtGumboNode userAvatarNode = userInfoNode.getElementByClass("forum-user-avatar", HtmlTag::DIV);
+    if(!userAvatarNode.isValid()) userAvatarNode = userInfoNode.getElementByClass("forum-user-register-avatar", HtmlTag::DIV);
     Q_ASSERT(userAvatarNode.isValid());
-    Q_ASSERT(userAvatarNode.gumboChildElementCount() == 1);
+    Q_ASSERT(userAvatarNode.getChildElementCount() == 1);
     Q_ASSERT(userAvatarNode.getClassAttribute() == "forum-user-avatar" || userAvatarNode.getClassAttribute() == "forum-user-register-avatar");
     if (userAvatarNode.getClassAttribute() == "forum-user-avatar")
     {
-        QtGumboNode imageNode = userAvatarNode.childNodeByTag({{HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}, {HtmlTag::IMG, 0}});
+        QtGumboNode imageNode = userAvatarNode.getElementByTag({{HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}, {HtmlTag::IMG, 0}});
         result = parseImage(imageNode);
     }
 
@@ -185,15 +185,15 @@ User ForumPageParser::getPostUser(QtGumboNode trNode1)
 {
     User userInfo;
 
-    QtGumboNode userNode = trNode1.gumboChildNodeByClass("forum-cell-user", HtmlTag::TD);
+    QtGumboNode userNode = trNode1.getElementByClass("forum-cell-user", HtmlTag::TD);
     Q_ASSERT(userNode.isValid());
-    Q_ASSERT(userNode.gumboChildElementCount() == 1);
+    Q_ASSERT(userNode.getChildElementCount() == 1);
     Q_ASSERT(userNode.getClassAttribute() == "forum-cell-user");
 
-    QtGumboNode userInfoNode = userNode.gumboChildNodeByClass("forum-user-info", HtmlTag::DIV);
-    if(!userInfoNode.isValid()) userInfoNode = userNode.gumboChildNodeByClass("forum-user-info w-el-dropDown", HtmlTag::DIV);
+    QtGumboNode userInfoNode = userNode.getElementByClass("forum-user-info", HtmlTag::DIV);
+    if(!userInfoNode.isValid()) userInfoNode = userNode.getElementByClass("forum-user-info w-el-dropDown", HtmlTag::DIV);
     Q_ASSERT(userInfoNode.isValid());
-    Q_ASSERT(userInfoNode.gumboChildElementCount() >= 4);
+    Q_ASSERT(userInfoNode.getChildElementCount() >= 4);
     Q_ASSERT(userInfoNode.getClassAttribute() == "forum-user-info w-el-dropDown" || userInfoNode.getClassAttribute() == "forum-user-info");
 
     // Get user base info: id, name, profile URL
@@ -233,34 +233,34 @@ Post ForumPageParser::getPostValue(QtGumboNode trNode1)
 {
     Post postInfo;
 
-    QtGumboNode postNode = trNode1.gumboChildNodeByClass("forum-cell-post", HtmlTag::TD);
+    QtGumboNode postNode = trNode1.getElementByClass("forum-cell-post", HtmlTag::TD);
     Q_ASSERT(postNode.isValid());
-    Q_ASSERT(postNode.gumboChildElementCount() == 2);
+    Q_ASSERT(postNode.getChildElementCount() == 2);
     Q_ASSERT(postNode.getClassAttribute() == "forum-cell-post");
 
     // 1) <div class="forum-post-date">
-    QtGumboNode postDateNode = postNode.gumboChildNodeByClass("forum-post-date", HtmlTag::DIV);
+    QtGumboNode postDateNode = postNode.getElementByClass("forum-post-date", HtmlTag::DIV);
     Q_ASSERT(postDateNode.isValid());
-    Q_ASSERT(postDateNode.gumboChildElementCount() <= 3);
+    Q_ASSERT(postDateNode.getChildElementCount() <= 3);
     Q_ASSERT(postDateNode.getClassAttribute() == "forum-post-date");
 
-    QtGumboNode spanNode = postDateNode.gumboChildNodeByClass("", HtmlTag::SPAN);
+    QtGumboNode spanNode = postDateNode.getElementByTag({HtmlTag::SPAN, 0});
     Q_ASSERT(spanNode.isValid());
-    Q_ASSERT(spanNode.gumboChildElementCount() == 0);
-    Q_ASSERT(spanNode.gumboChildTextNodeCount() == 1);
-    QString postDateStr = spanNode.gumboChildTextNodeValue();
+    Q_ASSERT(spanNode.getChildElementCount() == 0);
+    Q_ASSERT(spanNode.getTextChildrenCount() == 1);
+    QString postDateStr = spanNode.getChildrenInnerText();
     QDateTime postDate = QDateTime::fromString(postDateStr, "dd.MM.yyyy hh:mm");
     Q_ASSERT(postDate.isValid());
 
     // 2) <div class="forum-post-entry" style="font-size: 14px;">
-    QtGumboNode postEntryNode = postNode.gumboChildNodeByClass("forum-post-entry", HtmlTag::DIV);
+    QtGumboNode postEntryNode = postNode.getElementByClass("forum-post-entry", HtmlTag::DIV);
     Q_ASSERT(postEntryNode.isValid());
-    Q_ASSERT(postEntryNode.gumboChildElementCount() <= 3);
+    Q_ASSERT(postEntryNode.getChildElementCount() <= 3);
     Q_ASSERT(postEntryNode.getClassAttribute() == "forum-post-entry");
 
-    QtGumboNode postTextNode = postEntryNode.gumboChildNodeByClass("forum-post-text", HtmlTag::DIV);
+    QtGumboNode postTextNode = postEntryNode.getElementByClass("forum-post-text", HtmlTag::DIV);
     Q_ASSERT(postTextNode.isValid());
-    Q_ASSERT(postTextNode.gumboChildElementCount() > 0 || postTextNode.gumboChildTextNodeCount() > 0);
+    Q_ASSERT(postTextNode.getChildElementCount() > 0 || postTextNode.getTextChildrenCount() > 0);
     Q_ASSERT(postTextNode.getClassAttribute() == "forum-post-text");
 
     // Read message id
@@ -317,17 +317,17 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             // Rich text
             case HtmlTag::B:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->gumboChildTextNodeValue(), true, false, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), true, false, false));
                 break;
             }
             case HtmlTag::I:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->gumboChildTextNodeValue(), false, true, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, true, false));
                 break;
             }
             case HtmlTag::U:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->gumboChildTextNodeValue(), false, false, true));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, false, true));
                 break;
             }
 
@@ -375,7 +375,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             }
             case HtmlTag::SCRIPT:
             {
-                QString text = iChild->gumboChildTextNodeValue().trimmed();
+                QString text = iChild->getChildrenInnerText().trimmed();
                 Q_ASSERT(text.startsWith("window.bxPlayerOnloadbx_flv_player"));
 
                 // 'file':'https://www.youtube.com/watch?v=PI9o3v4nttU',
@@ -401,7 +401,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
         }
         else if (iChild->isText())
         {
-            postObjects << QSharedPointer<PostPlainText>(new PostPlainText(iChild->getText().trimmed()));
+            postObjects << QSharedPointer<PostPlainText>(new PostPlainText(iChild->getInnerText().trimmed()));
         }
         // FIXME: unknown item type
         //else Q_ASSERT(0);
@@ -412,43 +412,43 @@ QString ForumPageParser::getPostLastEdit(QtGumboNode postEntryNode)
 {
     // Read post last edit "credentials" (optional)
     QString lastEditStr;
-    QtGumboNode postLastEditNode = postEntryNode.gumboChildNodeByClass("forum-post-lastedit", HtmlTag::DIV);
+    QtGumboNode postLastEditNode = postEntryNode.getElementByClass("forum-post-lastedit", HtmlTag::DIV);
     if (!postLastEditNode.isValid()) return QString();
 
-    Q_ASSERT(postLastEditNode.gumboChildElementCount() == 1);
+    Q_ASSERT(postLastEditNode.getChildElementCount() == 1);
     Q_ASSERT(postLastEditNode.getClassAttribute() == "forum-post-lastedit");
 
-    QtGumboNode postLastEditSpanNode = postLastEditNode.gumboChildNodeByClass("forum-post-lastedit", HtmlTag::SPAN);
+    QtGumboNode postLastEditSpanNode = postLastEditNode.getElementByClass("forum-post-lastedit", HtmlTag::SPAN);
     Q_ASSERT(postLastEditSpanNode.isValid());
-    Q_ASSERT(postLastEditSpanNode.gumboChildElementCount() >= 2);
+    Q_ASSERT(postLastEditSpanNode.getChildElementCount() >= 2);
 
-    QtGumboNode postLastEditUserNode = postLastEditSpanNode.gumboChildNodeByClass("forum-post-lastedit-user", HtmlTag::SPAN);
+    QtGumboNode postLastEditUserNode = postLastEditSpanNode.getElementByClass("forum-post-lastedit-user", HtmlTag::SPAN);
     Q_ASSERT(postLastEditUserNode.isValid());
-    Q_ASSERT(postLastEditUserNode.gumboChildElementCount() == 1);
-    QtGumboNode posLastEditUserLinkNode = postLastEditUserNode.childNodeByTag({{HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}});
+    Q_ASSERT(postLastEditUserNode.getChildElementCount() == 1);
+    QtGumboNode posLastEditUserLinkNode = postLastEditUserNode.getElementByTag({{HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}});
     QSharedPointer<PostHyperlink> postLastEditUserLink = parseHyperlink(posLastEditUserLinkNode);
 
     QString userNameRelStr = postLastEditUserLink->m_rel;
     QString userNameHrefStr = postLastEditUserLink->m_urlStr;
     QString userNameStr = postLastEditUserLink->m_title;
 
-    QtGumboNode postLastEditDateNode = postLastEditSpanNode.gumboChildNodeByClass("forum-post-lastedit-date", HtmlTag::SPAN);
+    QtGumboNode postLastEditDateNode = postLastEditSpanNode.getElementByClass("forum-post-lastedit-date", HtmlTag::SPAN);
     Q_ASSERT(postLastEditDateNode.isValid());
-    Q_ASSERT(postLastEditDateNode.gumboChildElementCount() == 0);
-    QString lastEditDateStr = postLastEditDateNode.gumboChildTextNodeValue();
+    Q_ASSERT(postLastEditDateNode.getChildElementCount() == 0);
+    QString lastEditDateStr = postLastEditDateNode.getChildrenInnerText();
 
     QString lastEditReasonStr;
-    QtGumboNode postLastEditReasonNode = postLastEditSpanNode.gumboChildNodeByClass("forum-post-lastedit-reason", HtmlTag::SPAN);
+    QtGumboNode postLastEditReasonNode = postLastEditSpanNode.getElementByClass("forum-post-lastedit-reason", HtmlTag::SPAN);
     if (postLastEditReasonNode.isValid())
     {
-        Q_ASSERT(postLastEditReasonNode.gumboChildElementCount() == 1);
-        lastEditReasonStr = postLastEditReasonNode.gumboChildTextNodeValue();
+        Q_ASSERT(postLastEditReasonNode.getChildElementCount() == 1);
+        lastEditReasonStr = postLastEditReasonNode.getChildrenInnerText();
         Q_ASSERT(lastEditReasonStr == "()");
         lastEditReasonStr.clear();
 
-        QtGumboNode reasonSpanNode = postLastEditReasonNode.childNodeByTag({HtmlTag::SPAN, 0});
+        QtGumboNode reasonSpanNode = postLastEditReasonNode.getElementByTag({HtmlTag::SPAN, 0});
         Q_ASSERT(reasonSpanNode.isValid());
-        lastEditReasonStr = "(" + reasonSpanNode.gumboChildTextNodeValue() + ")";
+        lastEditReasonStr = "(" + reasonSpanNode.getChildrenInnerText() + ")";
     }
 
     lastEditStr = "Изменено: <a href=\"" + userNameHrefStr + "\" " + "rel=\"" + userNameRelStr + "\">" + userNameStr + "</a> - " + lastEditDateStr + " " + lastEditReasonStr;
@@ -460,17 +460,17 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
 {
     // Read user signature
     QString userSignatureStr;
-    QtGumboNode postSignatureNode = postEntryNode.gumboChildNodeByClass("forum-user-signature");
+    QtGumboNode postSignatureNode = postEntryNode.getElementByClass("forum-user-signature");
     if (!postSignatureNode.isValid()) return QString();
 
-    Q_ASSERT(postSignatureNode.gumboChildElementCount() == 2);
+    Q_ASSERT(postSignatureNode.getChildElementCount() == 2);
     Q_ASSERT(postSignatureNode.getClassAttribute() == "forum-user-signature");
 
-    QtGumboNode spanNode = postSignatureNode.childNodeByTag({HtmlTag::SPAN, 0});
+    QtGumboNode spanNode = postSignatureNode.getElementByTag({HtmlTag::SPAN, 0});
     Q_ASSERT(spanNode.isValid());
-    Q_ASSERT(spanNode.gumboChildElementCount() <= 2);
-    Q_ASSERT(spanNode.gumboChildTextNodeCount() <= 2);
-    userSignatureStr = spanNode.gumboChildTextNodeValue();
+    Q_ASSERT(spanNode.getChildElementCount() <= 2);
+    Q_ASSERT(spanNode.getTextChildrenCount() <= 2);
+    userSignatureStr = spanNode.getChildrenInnerText();
 
     // Parse HTML user signatures
     QtGumboNodes children = spanNode.getChildren();
@@ -488,7 +488,7 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
             userSignatureStr +=
                     "<a href=\"" + hrefAttrValue + "\" "
                     + "target=\"" + targetAttrValue + "\" "
-                    + "rel=\"" + relAttrValue + "\"" + ">"  + iChild->gumboChildTextNodeValue() + "</a>";
+                    + "rel=\"" + relAttrValue + "\"" + ">"  + iChild->getChildrenInnerText() + "</a>";
             break;
         }
         case HtmlTag::BR:
@@ -505,44 +505,44 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
 int ForumPageParser::getLikeCounterValue(QtGumboNode trNode2)
 {
     // tr2:
-    QtGumboNode contactsNode = trNode2.gumboChildNodeByClass("forum-cell-contact", HtmlTag::TD);
+    QtGumboNode contactsNode = trNode2.getElementByClass("forum-cell-contact", HtmlTag::TD);
     Q_ASSERT(contactsNode.isValid());
     Q_ASSERT(contactsNode.getClassAttribute() == "forum-cell-contact");
 
-    QtGumboNode actionsNode = trNode2.gumboChildNodeByClass("forum-cell-actions", HtmlTag::TD);
+    QtGumboNode actionsNode = trNode2.getElementByClass("forum-cell-actions", HtmlTag::TD);
     Q_ASSERT(actionsNode.isValid());
-    Q_ASSERT(actionsNode.gumboChildElementCount() == 1);
+    Q_ASSERT(actionsNode.getChildElementCount() == 1);
     Q_ASSERT(actionsNode.getClassAttribute() == "forum-cell-actions");
 
     // Get the "like" count
     // NOTE: it is type on the site, not my own
-    QtGumboNode actionLinksNode = actionsNode.gumboChildNodeByClass("conainer-action-links", HtmlTag::DIV);
+    QtGumboNode actionLinksNode = actionsNode.getElementByClass("conainer-action-links", HtmlTag::DIV);
     Q_ASSERT(actionLinksNode.isValid());
-    Q_ASSERT(actionLinksNode.gumboChildElementCount() == 2);
+    Q_ASSERT(actionLinksNode.getChildElementCount() == 2);
     Q_ASSERT(actionLinksNode.getClassAttribute() == "conainer-action-links");
 
-    QtGumboNode floatLeftNode = actionLinksNode.gumboChildNodeByClass("float-left", HtmlTag::DIV);
+    QtGumboNode floatLeftNode = actionLinksNode.getElementByClass("float-left", HtmlTag::DIV);
     Q_ASSERT(floatLeftNode.isValid());
-    Q_ASSERT(floatLeftNode.gumboChildElementCount() == 1);
+    Q_ASSERT(floatLeftNode.getChildElementCount() == 1);
     Q_ASSERT(floatLeftNode.getClassAttribute() == "float-left");
 
-    QtGumboNode likeNode = floatLeftNode.gumboChildNodeByClass("like", HtmlTag::DIV);
+    QtGumboNode likeNode = floatLeftNode.getElementByClass("like", HtmlTag::DIV);
     Q_ASSERT(likeNode.isValid());
-    Q_ASSERT(likeNode.gumboChildElementCount() == 1);
+    Q_ASSERT(likeNode.getChildElementCount() == 1);
     Q_ASSERT(likeNode.getClassAttribute() == "like");
 
-    QtGumboNode likeWidgetNode = likeNode.gumboChildNodeByClass("like__widget", HtmlTag::DIV);
+    QtGumboNode likeWidgetNode = likeNode.getElementByClass("like__widget", HtmlTag::DIV);
     Q_ASSERT(likeWidgetNode.isValid());
-    Q_ASSERT(likeWidgetNode.gumboChildElementCount() >= 2 && likeWidgetNode.gumboChildElementCount() <= 5);
+    Q_ASSERT(likeWidgetNode.getChildElementCount() >= 2 && likeWidgetNode.getChildElementCount() <= 5);
     Q_ASSERT(likeWidgetNode.getClassAttribute() == "like__widget");
 
-    QtGumboNode likeCounterNode = likeWidgetNode.gumboChildNodeByClass("like__counter", HtmlTag::SPAN);
+    QtGumboNode likeCounterNode = likeWidgetNode.getElementByClass("like__counter", HtmlTag::SPAN);
     Q_ASSERT(likeCounterNode.isValid());
-    Q_ASSERT(likeCounterNode.gumboChildElementCount() == 0);
+    Q_ASSERT(likeCounterNode.getChildElementCount() == 0);
     Q_ASSERT(likeCounterNode.getClassAttribute() == "like__counter");
-    Q_ASSERT(likeCounterNode.gumboChildTextNodeCount() == 1);
+    Q_ASSERT(likeCounterNode.getTextChildrenCount() == 1);
 
-    QString likeCounterStr = likeCounterNode.gumboChildTextNodeValue();
+    QString likeCounterStr = likeCounterNode.getChildrenInnerText();
     bool likeNumberOk = false;
     int likeCount = likeCounterStr.toInt(&likeNumberOk);
     Q_ASSERT(likeNumberOk);
@@ -565,14 +565,14 @@ void ForumPageParser::findPageCount(QtGumboNode node, int &pageCount)
 {
     pageCount = 0;
 
-    QtGumboNodes paginationNodes = node.gumboChildNodesByClassRecursive("ui-pagination__item", HtmlTag::LI);
+    QtGumboNodes paginationNodes = node.getElementsByClassRecursive("ui-pagination__item", HtmlTag::LI);
     Q_ASSERT(paginationNodes.size() == 16);
     if (paginationNodes.size() != 16) return;
 
     QtGumboNode lastPageNode = paginationNodes[7];
     Q_ASSERT(lastPageNode.isValid()); if (!lastPageNode.isValid()) return;
 
-    QSharedPointer<PostHyperlink> lastPageHref = parseHyperlink(lastPageNode.childNodeByTag({HtmlTag::A, 0}));
+    QSharedPointer<PostHyperlink> lastPageHref = parseHyperlink(lastPageNode.getElementByTag({HtmlTag::A, 0}));
     QString pageCountStr = lastPageHref->m_title;
 
     bool pageCountOk = false;
@@ -595,18 +595,18 @@ void ForumPageParser::fillPostList(QtGumboNode node, UserPosts& posts)
         QtGumboNode msdivNode = msdivNodes[i];
 
         Q_ASSERT(msdivNode.isValid());
-        Q_ASSERT(msdivNode.gumboChildElementCount() == 1);
-        QtGumboNode tbodyNode = msdivNode.childNodeByTag({{HtmlTag::TABLE, 0}, {HtmlTag::TBODY, 0}});
+        Q_ASSERT(msdivNode.getChildElementCount() == 1);
+        QtGumboNode tbodyNode = msdivNode.getElementByTag({{HtmlTag::TABLE, 0}, {HtmlTag::TBODY, 0}});
 
         // two tr tags
         int idxTr1 = 0;
-        QtGumboNode trNode1 = tbodyNode.childNodeByTag({HtmlTag::TR, idxTr1}, &idxTr1);
+        QtGumboNode trNode1 = tbodyNode.getElementByTag({HtmlTag::TR, idxTr1}, &idxTr1);
         int idxTr2 = idxTr1 + 1;
-        QtGumboNode trNode2 = tbodyNode.childNodeByTag({HtmlTag::TR, idxTr2}, &idxTr2);
+        QtGumboNode trNode2 = tbodyNode.getElementByTag({HtmlTag::TR, idxTr2}, &idxTr2);
         Q_ASSERT(trNode1.isValid());
         Q_ASSERT(trNode2.isValid());
-        Q_ASSERT(trNode1.gumboChildElementCount() == 2);
-        Q_ASSERT(trNode2.gumboChildElementCount() == 2);
+        Q_ASSERT(trNode1.getChildElementCount() == 2);
+        Q_ASSERT(trNode2.getChildElementCount() == 2);
         Q_ASSERT(idxTr1 == 0);
         Q_ASSERT(idxTr2 == 1);
 
@@ -641,7 +641,7 @@ QSharedPointer<PostHyperlink> ForumPageParser::parseHyperlink(QtGumboNode aNode)
     QString relStr = aNode.getAttribute("rel");
 
     // Read hyperlink display name
-    QString titleStr = aNode.gumboChildTextNodeValue();
+    QString titleStr = aNode.getChildrenInnerText();
 
     result.reset(new PostHyperlink(urlStr, titleStr, tipStr, relStr));
     return result;
@@ -703,26 +703,26 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
     QSharedPointer<PostQuote> result(new PostQuote);
 
     // Read the quote title
-    QtGumboNode theadTrThNode = tableNode.childNodeByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}});
+    QtGumboNode theadTrThNode = tableNode.getElementByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}});
     Q_ASSERT(theadTrThNode.isValid());
-    result->m_title = theadTrThNode.gumboChildTextNodeValue();
+    result->m_title = theadTrThNode.getChildrenInnerText();
 
     int tbodyTrTdNodeChildIndex = 0;
-    QtGumboNode tbodyTrTdNode = tableNode.childNodeByTag({{HtmlTag::TBODY, 0}, {HtmlTag::TR, 0}, {HtmlTag::TD, 0}});
+    QtGumboNode tbodyTrTdNode = tableNode.getElementByTag({{HtmlTag::TBODY, 0}, {HtmlTag::TR, 0}, {HtmlTag::TD, 0}});
     Q_ASSERT(tbodyTrTdNode.isValid());
 
     // Read the quote author and source: e.g.
     // <b>QWASQ</b> <a href="/forum/?PAGE_NAME=message&FID=22&TID=74420&MID=4453640#message4453640" target="_blank" rel="nofollow">пишет</a>:<br />
     // <b>
     // NOTE: optional
-    QtGumboNode tbodyTrTdBNode = tbodyTrTdNode.childNodeByTag({HtmlTag::B, 0});
+    QtGumboNode tbodyTrTdBNode = tbodyTrTdNode.getElementByTag({HtmlTag::B, 0});
     if (tbodyTrTdBNode.isValid())
     {
         tbodyTrTdNodeChildIndex++;
-        result->m_userName = tbodyTrTdBNode.gumboChildTextNodeValue();
+        result->m_userName = tbodyTrTdBNode.getChildrenInnerText();
 
         // <a>
-        QtGumboNode tbodyTrTdANode = tbodyTrTdNode.childNodeByTag({HtmlTag::A, 0});
+        QtGumboNode tbodyTrTdANode = tbodyTrTdNode.getElementByTag({HtmlTag::A, 0});
         tbodyTrTdNodeChildIndex++;
         Q_ASSERT(tbodyTrTdANode.isValid());
         QString quoteSourceUrl = tbodyTrTdANode.getAttribute("href");
@@ -734,14 +734,14 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
         tbodyTrTdNodeChildIndex++;
 
         // <br>
-        QtGumboNode tbodyTrTdBrNode = tbodyTrTdNode.childNodeByTag({HtmlTag::BR, 0});
+        QtGumboNode tbodyTrTdBrNode = tbodyTrTdNode.getElementByTag({HtmlTag::BR, 0});
         tbodyTrTdNodeChildIndex++;
         Q_ASSERT(tbodyTrTdBrNode.isValid());
     }
 
     // Read the quote body
     // NOTE: quote text is HTML
-    Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode.gumboChildElementCount(false));
+    Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode.getChildElementCount(false));
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode.getChildren(false);
     parseMessage(tbodyTrTdChildren.mid(tbodyTrTdNodeChildIndex), result->m_data);
     return result;
