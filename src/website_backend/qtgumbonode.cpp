@@ -99,16 +99,16 @@ QString QtGumboNode::gumboChildTextNodeValue()
     return value;
 }
 
-QtGumboNode QtGumboNode::gumboChildNodeByName(HtmlTag childTag, int startPos, int *foundPos)
+QtGumboNode QtGumboNode::childNodeByTag(std::pair< HtmlTag, int > tagDesc, int *foundPos)
 {
     QtGumboNodes children = getChildren();
-    // NOTE: not all chilren are elements
+    // NOTE: not all chilren are elements, so the assert below can fail:
 //  Q_ASSERT(startPos < children.size()); if (startPos >= children.size()) return QtGumboNode();
 
     int elementIndex = 0;
     for (QtGumboNodes::iterator iChild = children.begin(); iChild != children.end(); ++iChild)
     {
-        if ((iChild->getTag() == childTag) && (elementIndex >= startPos))
+        if ((iChild->getTag() == tagDesc.first) && (elementIndex >= tagDesc.second))
         {
             if (foundPos) *foundPos = elementIndex;
             return *iChild;
@@ -119,7 +119,7 @@ QtGumboNode QtGumboNode::gumboChildNodeByName(HtmlTag childTag, int startPos, in
     return QtGumboNode();
 }
 
-QtGumboNode QtGumboNode::childNodeByTag(std::initializer_list< std::pair< HtmlTag, int> > tagDescsInitList)
+QtGumboNode QtGumboNode::childNodeByTag(std::initializer_list< std::pair< HtmlTag, int> > tagDescsInitList, int *foundPos)
 {
     typedef std::pair<HtmlTag, int> TagDesc;
     typedef std::initializer_list<TagDesc> InitList;
@@ -136,7 +136,7 @@ QtGumboNode QtGumboNode::childNodeByTag(std::initializer_list< std::pair< HtmlTa
         auto tagDesc = tagDescs.first();
         tagDescs.removeFirst();
 
-        result = result.gumboChildNodeByName(tagDesc.first, tagDesc.second);
+        result = result.childNodeByTag({tagDesc.first, tagDesc.second}, foundPos);
         if (!result.isValid())
         {
             result = QtGumboNode();

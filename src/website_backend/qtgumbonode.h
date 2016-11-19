@@ -44,8 +44,8 @@ public:
     QString gumboChildTextNodeValue();
 
     // Non-recursive(!) search for the first child node with specified tag, from specified position (index of child)
-    QtGumboNode gumboChildNodeByName(HtmlTag childTag, int startPos = 0, int* foundPos = nullptr);
-    QtGumboNode childNodeByTag(std::initializer_list< std::pair< HtmlTag, int > > tagDescs);
+    QtGumboNode childNodeByTag(std::pair< HtmlTag, int > tagDesc, int* foundPos = nullptr);
+    QtGumboNode childNodeByTag(std::initializer_list< std::pair< HtmlTag, int > > tagDescs, int *foundPos = nullptr);
 
     // Non-recursive(!) search for the first child node with specified class name and tag (div by default)
     QtGumboNode gumboChildNodeByClass(QString className, HtmlTag childTag = HtmlTag::DIV) const;

@@ -95,7 +95,7 @@ ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(QtGumboNode userI
     Q_ASSERT(userNameNode.isValid()); if (!userNameNode.isValid()) return result;
     Q_ASSERT(userNameNode.gumboChildElementCount() == 1); if (userNameNode.gumboChildElementCount() != 1) return result;
 
-    QSharedPointer<PostHyperlink> userProfileRef = parseHyperlink(userNameNode.gumboChildNodeByName(HtmlTag::A));
+    QSharedPointer<PostHyperlink> userProfileRef = parseHyperlink(userNameNode.childNodeByTag({HtmlTag::A, 0}));
     Q_ASSERT(!userProfileRef.isNull() && userProfileRef->isValid());
     result.m_id = parseUserId(userProfileRef->m_urlStr);
     result.m_name = userProfileRef->m_tip;
@@ -138,12 +138,12 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
 
     // NOTE: city is optional field, instead the rest of others
     QString cityStr;
-    QtGumboNode userCityNode = userAdditionalNode.childNodeByTag({{HtmlTag::SPAN, 3}});
+    QtGumboNode userCityNode = userAdditionalNode.childNodeByTag({HtmlTag::SPAN, 3});
     if (userCityNode.isValid())
     {
         Q_ASSERT(userCityNode.gumboChildElementCount() == 1);
 
-        QtGumboNode spanNode1 = userCityNode.gumboChildNodeByName(HtmlTag::SPAN);
+        QtGumboNode spanNode1 = userCityNode.childNodeByTag({HtmlTag::SPAN, 0});
 
         Q_ASSERT(spanNode1.gumboChildElementCount() == 0);
         Q_ASSERT(spanNode1.gumboChildTextNodeCount() == 1);
@@ -446,7 +446,7 @@ QString ForumPageParser::getPostLastEdit(QtGumboNode postEntryNode)
         Q_ASSERT(lastEditReasonStr == "()");
         lastEditReasonStr.clear();
 
-        QtGumboNode reasonSpanNode = postLastEditReasonNode.gumboChildNodeByName(HtmlTag::SPAN);
+        QtGumboNode reasonSpanNode = postLastEditReasonNode.childNodeByTag({HtmlTag::SPAN, 0});
         Q_ASSERT(reasonSpanNode.isValid());
         lastEditReasonStr = "(" + reasonSpanNode.gumboChildTextNodeValue() + ")";
     }
@@ -466,7 +466,7 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
     Q_ASSERT(postSignatureNode.gumboChildElementCount() == 2);
     Q_ASSERT(postSignatureNode.getClassAttribute() == "forum-user-signature");
 
-    QtGumboNode spanNode = postSignatureNode.gumboChildNodeByName(HtmlTag::SPAN);
+    QtGumboNode spanNode = postSignatureNode.childNodeByTag({HtmlTag::SPAN, 0});
     Q_ASSERT(spanNode.isValid());
     Q_ASSERT(spanNode.gumboChildElementCount() <= 2);
     Q_ASSERT(spanNode.gumboChildTextNodeCount() <= 2);
@@ -572,7 +572,7 @@ void ForumPageParser::findPageCount(QtGumboNode node, int &pageCount)
     QtGumboNode lastPageNode = paginationNodes[7];
     Q_ASSERT(lastPageNode.isValid()); if (!lastPageNode.isValid()) return;
 
-    QSharedPointer<PostHyperlink> lastPageHref = parseHyperlink(lastPageNode.gumboChildNodeByName(HtmlTag::A));
+    QSharedPointer<PostHyperlink> lastPageHref = parseHyperlink(lastPageNode.childNodeByTag({HtmlTag::A, 0}));
     QString pageCountStr = lastPageHref->m_title;
 
     bool pageCountOk = false;
@@ -600,9 +600,9 @@ void ForumPageParser::fillPostList(QtGumboNode node, UserPosts& posts)
 
         // two tr tags
         int idxTr1 = 0;
-        QtGumboNode trNode1 = tbodyNode.gumboChildNodeByName(HtmlTag::TR, idxTr1, &idxTr1);
+        QtGumboNode trNode1 = tbodyNode.childNodeByTag({HtmlTag::TR, idxTr1}, &idxTr1);
         int idxTr2 = idxTr1 + 1;
-        QtGumboNode trNode2 = tbodyNode.gumboChildNodeByName(HtmlTag::TR, idxTr2, &idxTr2);
+        QtGumboNode trNode2 = tbodyNode.childNodeByTag({HtmlTag::TR, idxTr2}, &idxTr2);
         Q_ASSERT(trNode1.isValid());
         Q_ASSERT(trNode2.isValid());
         Q_ASSERT(trNode1.gumboChildElementCount() == 2);
@@ -715,14 +715,14 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
     // <b>QWASQ</b> <a href="/forum/?PAGE_NAME=message&FID=22&TID=74420&MID=4453640#message4453640" target="_blank" rel="nofollow">пишет</a>:<br />
     // <b>
     // NOTE: optional
-    QtGumboNode tbodyTrTdBNode = tbodyTrTdNode.gumboChildNodeByName(HtmlTag::B);
+    QtGumboNode tbodyTrTdBNode = tbodyTrTdNode.childNodeByTag({HtmlTag::B, 0});
     if (tbodyTrTdBNode.isValid())
     {
         tbodyTrTdNodeChildIndex++;
         result->m_userName = tbodyTrTdBNode.gumboChildTextNodeValue();
 
         // <a>
-        QtGumboNode tbodyTrTdANode = tbodyTrTdNode.gumboChildNodeByName(HtmlTag::A);
+        QtGumboNode tbodyTrTdANode = tbodyTrTdNode.childNodeByTag({HtmlTag::A, 0});
         tbodyTrTdNodeChildIndex++;
         Q_ASSERT(tbodyTrTdANode.isValid());
         QString quoteSourceUrl = tbodyTrTdANode.getAttribute("href");
@@ -734,7 +734,7 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
         tbodyTrTdNodeChildIndex++;
 
         // <br>
-        QtGumboNode tbodyTrTdBrNode = tbodyTrTdNode.gumboChildNodeByName(HtmlTag::BR);
+        QtGumboNode tbodyTrTdBrNode = tbodyTrTdNode.childNodeByTag({HtmlTag::BR, 0});
         tbodyTrTdNodeChildIndex++;
         Q_ASSERT(tbodyTrTdBrNode.isValid());
     }
