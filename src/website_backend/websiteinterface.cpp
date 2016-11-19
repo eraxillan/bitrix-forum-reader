@@ -26,7 +26,7 @@ QString PostQuote::getQmlString() const
             "   id: rctQuote%1;\n"
             "   color: \"white\";\n"
             "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "   height: rctQuoteTitle%1.height + txtQuoteBody%1.height;\n"
+            "   height: rctQuoteTitle%1.height + txtQuoteBody%1.height + txtQuoteSourceRef%1.height;\n"
             "\n"
             "   Rectangle {\n"
             "       id: rctQuoteTitle%1;\n"
@@ -49,10 +49,17 @@ QString PostQuote::getQmlString() const
             "               height: parent.height;\n"
             "\n"
             "               font.pixelSize: sp(2);\n"
-            "               text: \"%2\";\n"
+            "               text: '%2';\n"
             "           }\n"
             "\n"
-            "           Column { id: txtQuoteBody%1; %3 }"
+            "           Row {\n"
+            "               id: txtQuoteSourceRef%1;\n"
+            "\n"
+            "               Text { font.pixelSize: sp(2); font.bold: true; text: '%3  '; }\n"
+            "               %4\n"
+            "               Text { font.pixelSize: sp(2); text: ':'; }\n"
+            "           }\n"
+            "           Column { id: txtQuoteBody%1; %5 }"
             "       }\n"
             "   }\n"
             "}\n";
@@ -64,7 +71,13 @@ QString PostQuote::getQmlString() const
         quoteQml += (*iObj)->getQmlString();
     }
 
-    return qmlStr.arg(qrand()).arg(m_title).arg(quoteQml);
+    QString urlText = m_url.isValid() ? PostHyperlink(m_url.toString(), QUOTE_WRITE_VERB).getQmlString() : QString();
+    return qmlStr
+            .arg(qrand())
+            .arg(m_title)
+            .arg(m_userName)
+            .arg(urlText)
+            .arg(quoteQml);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
