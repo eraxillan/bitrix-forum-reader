@@ -2,7 +2,20 @@
 
 #include "src/website_backend/gumboparserimpl.h"
 
-ForumReader::ForumReader()
+namespace {
+static bool WriteTextFile(QString fileName, QString fileContents)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QTextStream out(&file);
+    out << fileContents;
+    return true;
+}
+}
+
+ForumReader::ForumReader() : m_userPosts(), m_pageCount(0), m_pageNo(0)
 {
     // NOTE: for testing purposes
     //BankiRuForum::ForumPageParser fpp;
@@ -13,8 +26,15 @@ ForumReader::~ForumReader()
 {
 }
 
-ForumReader::ForumReader(BankiRuForum::UserPosts userPosts, QObject *parent) : QObject(parent), m_userPosts(userPosts), m_pageCount(0)
+ForumReader::ForumReader(BankiRuForum::UserPosts userPosts, QObject *parent) : QObject(parent), m_userPosts(userPosts), m_pageCount(0), m_pageNo(0)
 {
+}
+
+QString ForumReader::applicationDirPath() const
+{
+    QString result = qApp->applicationDirPath();
+    if (!result.endsWith("/")) result += "/";
+    return result;
 }
 
 QUrl ForumReader::convertToUrl(QString urlStr) const
@@ -22,10 +42,11 @@ QUrl ForumReader::convertToUrl(QString urlStr) const
     return QUrl(urlStr);
 }
 
-bool ForumReader::parseForumPage(QString forumPageRawHtml)
+bool ForumReader::parseForumPage(QString forumPageRawHtml, int pageNo)
 {
     m_userPosts.clear();
     m_pageCount = 0;
+    m_pageNo = pageNo;
 
     BankiRuForum::ForumPageParser fpp;
     int result = fpp.getPagePosts(forumPageRawHtml, m_userPosts, m_pageCount);
@@ -95,36 +116,56 @@ QDateTime ForumReader::postDateTime(int index) const
 QString ForumReader::postText(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_userPosts.size());
-    if (m_userPosts[index].second.m_data.empty()) return "";
+    if (m_userPosts[index].second.m_data.empty()) return QString();
 
-    QString qmlStr;
-    qmlStr =
+    QString qmlStr =
             "import QtMultimedia 5.6;\n"
             "import QtQuick 2.6;\n"
             "import QtQuick.Window 2.2;\n"
             "import QtQuick.Controls 1.5;\n"
             "import QtQuick.Dialogs 1.2;\n\n";
 
-    BankiRuForum::IPostObjectList::const_iterator iObj = m_userPosts[index].second.m_data.begin();
+    int randomSeed = 0;
     int validItemsCount = 0;
+    BankiRuForum::IPostObjectList::const_iterator iObj = m_userPosts[index].second.m_data.begin();
     for (; iObj != m_userPosts[index].second.m_data.end(); ++iObj)
     {
-        if (!(*iObj)->isValid() || (*iObj)->getQmlString().isEmpty()) continue;
+        randomSeed = qrand();
+        if (!(*iObj)->isValid() || (*iObj)->getQmlString(randomSeed).isEmpty()) continue;
 
         validItemsCount++;
     }
 
     if (validItemsCount == 0) return QString();
-    if (validItemsCount == 1) return qmlStr + m_userPosts[index].second.m_data[0]->getQmlString();
-
-    iObj = m_userPosts[index].second.m_data.begin();
-    qmlStr += "Column {\n";
-    for (; iObj != m_userPosts[index].second.m_data.end(); ++iObj)
+    if (validItemsCount == 1)
     {
-        qmlStr += (*iObj)->getQmlString();
-        qmlStr = qmlStr.trimmed();
+        randomSeed = qrand();
+        qmlStr += m_userPosts[index].second.m_data[0]->getQmlString(randomSeed);
     }
-    qmlStr += "}\n";
+    else
+    {
+        iObj = m_userPosts[index].second.m_data.begin();
+        qmlStr += "Column {\n";
+        for (; iObj != m_userPosts[index].second.m_data.end(); ++iObj)
+        {
+            randomSeed = qrand();
+            qmlStr += (*iObj)->getQmlString(randomSeed);
+            qmlStr = qmlStr.trimmed();
+        }
+        qmlStr += "}\n";
+    }
+
+#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
+    QDir appRootDir(qApp->applicationDirPath());
+    Q_ASSERT(appRootDir.isReadable());
+    Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
+
+    QString fullDirPath = appRootDir.path();
+    if (!fullDirPath.endsWith("/")) fullDirPath += "/";
+
+    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(m_pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
+#endif
+
     return qmlStr;
 }
 

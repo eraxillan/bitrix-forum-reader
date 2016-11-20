@@ -5,16 +5,21 @@
 #include <QtNetwork/QtNetwork>
 #include <QtWidgets/QApplication>
 
-#define RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+//#define RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+//#define RBR_PRINT_DEBUG_OUTPUT
+//#define RBR_DUMP_GENERATED_QML_IN_FILES
+//#define RBR_QML_OUTPUT_DIR QString("__temp_qml")
 
 namespace BankiRuForum
 {
+    const QString QUOTE_WRITE_VERB = "пишет";
+
     struct IPostObject
     {
         virtual ~IPostObject();
 
         virtual bool isValid() const = 0;
-        virtual QString getQmlString() const = 0;
+        virtual QString getQmlString(int randomSeed) const = 0;
     };
     typedef QList< QSharedPointer<IPostObject> > IPostObjectList;
 
@@ -29,7 +34,7 @@ namespace BankiRuForum
         PostQuote();
 
         bool isValid() const override;
-        QString getQmlString() const override;
+        QString getQmlString(int randomSeed) const override;
     };
 
     struct PostImage : IPostObject
@@ -46,7 +51,7 @@ namespace BankiRuForum
         PostImage(QString url, int width, int height, int border = 0, QString altName = QString(), QString id = QString(), QString className = QString());
 
         bool isValid() const override;
-        QString getQmlString() const override;
+        QString getQmlString(int randomSeed) const override;
     };
 
     struct PostPlainText : IPostObject
@@ -57,7 +62,7 @@ namespace BankiRuForum
         PostPlainText(QString text);
 
         bool isValid() const override;
-        virtual QString getQmlString() const override;
+        virtual QString getQmlString(int randomSeed) const override;
     };
 
     struct PostRichText : IPostObject
@@ -71,7 +76,7 @@ namespace BankiRuForum
         PostRichText(QString text, bool isBold, bool isItalic, bool isUnderlined);
 
         bool isValid() const override;
-        virtual QString getQmlString() const override;
+        virtual QString getQmlString(int randomSeed) const override;
     };
 
     struct PostVideo : IPostObject
@@ -84,9 +89,10 @@ namespace BankiRuForum
         PostVideo(QString urlStr);
 
         bool isValid() const override;
-        virtual QString getQmlString() const override;
+        virtual QString getQmlString(int randomSeed) const override;
     };
 
+    // FIXME: implement hyperlink using Qt/QML power only, without Qt primitive HTML-mode of Text item
     struct PostHyperlink : IPostObject
     {
         // URL
@@ -102,10 +108,10 @@ namespace BankiRuForum
         QString m_rel;
 
         PostHyperlink();
-        PostHyperlink(QString urlStr, QString title, QString tip, QString rel = QString());
+        PostHyperlink(QString urlStr, QString title, QString tip = QString(), QString rel = QString());
 
         bool isValid() const override;
-        QString getQmlString() const override;
+        QString getQmlString(int randomSeed) const override;
     };
 
     // -------------------------------------------------

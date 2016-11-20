@@ -9,8 +9,6 @@
 //		</div>
 // </div>
 
-//#define RUBANOK_DEBUG
-
 using namespace BankiRuForum;
 
 namespace {
@@ -22,7 +20,7 @@ void ForumPageParser::printTagsRecursively(QtGumboNode node, int &level)
     Q_UNUSED(level);
     if (!node.isElement()) return;
 
-#ifdef RUBANOK_DEBUG
+#ifdef RBR_PRINT_DEBUG_OUTPUT
     QString levelStr;
     levelStr.fill('-', level);
 
@@ -150,10 +148,10 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
         cityStr = spanNode1.getChildrenInnerText();
     }
 
-#ifdef  RUBANOK_DEBUG
+#ifdef  RBR_PRINT_DEBUG_OUTPUT
     qDebug() << "post count: " + QString::number(postCount) + ", reputation: " + QString::number(reputation) + ", city: " + cityStr
                 + ", url: " + userAllPosts + ", date: " + registrationDate.toString(Qt::SystemLocaleShortDate);
-#endif // RUBANOK_DEBUG
+#endif // RBR_PRINT_DEBUG_OUTPUT
 
     result.m_allPostsUrl = QUrl(userAllPosts);
     result.m_postCount = postCount;
@@ -205,11 +203,11 @@ User ForumPageParser::getPostUser(QtGumboNode trNode1)
     // Get user avatar image
     QSharedPointer<PostImage> userAvatar = getUserAvatar(userInfoNode);
 
-#ifdef  RUBANOK_DEBUG
+#ifdef  RBR_PRINT_DEBUG_OUTPUT
     qDebug() << "User info:" << QString::number(ubi.m_id) + ", " + ubi.m_name + ", " + ubi.m_profileUrl.toDisplayString();
     if (userAvatar)
     qDebug() << "User avatar info:" << userAvatar->m_url + ": " + QString::number(userAvatar->m_width) + " x " + QString::number(userAvatar->m_height);
-#endif // RUBANOK_DEBUG
+#endif // RBR_PRINT_DEBUG_OUTPUT
 
     // Base info
     userInfo.m_userId = ubi.m_id;
@@ -286,13 +284,13 @@ Post ForumPageParser::getPostValue(QtGumboNode trNode1)
     lastEditStr = lastEditStr.replace("\n", "<br>");
     lastEditStr = lastEditStr.replace("/profile/", g_bankiRuHost + "/profile/");
 
-#ifdef RUBANOK_DEBUG
+#ifdef RBR_PRINT_DEBUG_OUTPUT
     qDebug() << "Post:";
     qDebug() << "	ID: " << id;
     if (!userSignatureStr.isEmpty())
         qDebug() << "   User signature: " << userSignatureStr;
     qDebug() << "	Date: " << postDate;
-#endif //  RUBANOK_DEBUG
+#endif //  RBR_PRINT_DEBUG_OUTPUT
 
     postInfo.m_id = id;
 //  postInfo.m_postNumber = -1;
@@ -361,11 +359,6 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 postObjects << parseHyperlink(*iChild);
                 break;
             }
-            // FIXME: WTF? video?
-            case HtmlTag::STYLE:
-            {
-                break;
-            }
             case HtmlTag::DIV:
             {
                 // <div id="bx_flv_player_46357291_div" style="width: 400px; height: 300px;">Загрузка плеера</div>
@@ -392,6 +385,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 postObjects << QSharedPointer<PostVideo>(new PostVideo(videoUrl));
                 break;
             }
+            case HtmlTag::STYLE:
             case HtmlTag::NOSCRIPT:
             {
                 break;
@@ -468,8 +462,6 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
 
     QtGumboNode spanNode = postSignatureNode.getElementByTag({HtmlTag::SPAN, 0});
     Q_ASSERT(spanNode.isValid());
-    Q_ASSERT(spanNode.getChildElementCount() <= 2);
-    Q_ASSERT(spanNode.getTextChildrenCount() <= 2);
     userSignatureStr = spanNode.getChildrenInnerText();
 
     // Parse HTML user signatures
@@ -488,7 +480,8 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
             userSignatureStr +=
                     "<a href=\"" + hrefAttrValue + "\" "
                     + "target=\"" + targetAttrValue + "\" "
-                    + "rel=\"" + relAttrValue + "\"" + ">"  + iChild->getChildrenInnerText() + "</a>";
+                    + "rel=\"" + relAttrValue + "\"" + ">"  + iChild->getChildrenInnerText() + "</a> ";
+            userSignatureStr += "<br/>";
             break;
         }
         case HtmlTag::BR:
@@ -566,10 +559,10 @@ void ForumPageParser::findPageCount(QtGumboNode node, int &pageCount)
     pageCount = 0;
 
     QtGumboNodes paginationNodes = node.getElementsByClassRecursive("ui-pagination__item", HtmlTag::LI);
-    Q_ASSERT(paginationNodes.size() == 16);
-    if (paginationNodes.size() != 16) return;
+    Q_ASSERT(paginationNodes.size() == 16 || paginationNodes.size() == 12); // 12 for last page, 16 for others
+    if (paginationNodes.size() != 16 && paginationNodes.size() != 12) return;
 
-    QtGumboNode lastPageNode = paginationNodes[7];
+    QtGumboNode lastPageNode = paginationNodes[paginationNodes.size() == 16 ? 7 : 6];
     Q_ASSERT(lastPageNode.isValid()); if (!lastPageNode.isValid()) return;
 
     QSharedPointer<PostHyperlink> lastPageHref = parseHyperlink(lastPageNode.getElementByTag({HtmlTag::A, 0}));
@@ -578,6 +571,7 @@ void ForumPageParser::findPageCount(QtGumboNode node, int &pageCount)
     bool pageCountOk = false;
     pageCount = pageCountStr.toInt(&pageCountOk);
     Q_ASSERT(pageCount);
+    if (paginationNodes.size() != 16) pageCount++;
     if(!pageCountOk) { pageCount = 0; return; }
 }
 
@@ -655,7 +649,8 @@ QSharedPointer<PostImage> ForumPageParser::parseImage(QtGumboNode imgNode) const
     // Get image URL
     QString imageSrcStr = imgNode.getAttribute("src");
     Q_ASSERT(!imageSrcStr.isEmpty());
-    if (!imageSrcStr.startsWith(g_bankiRuHost)) imageSrcStr.prepend(g_bankiRuHost);
+    if (imageSrcStr.startsWith("//")) imageSrcStr.prepend("http:");
+    else if (!imageSrcStr.startsWith(g_bankiRuHost)) imageSrcStr.prepend(g_bankiRuHost);
     Q_ASSERT(QUrl(imageSrcStr).isValid());
     result->m_url = imageSrcStr;
 
@@ -715,14 +710,20 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
     // <b>QWASQ</b> <a href="/forum/?PAGE_NAME=message&FID=22&TID=74420&MID=4453640#message4453640" target="_blank" rel="nofollow">пишет</a>:<br />
     // <b>
     // NOTE: optional
-    QtGumboNode tbodyTrTdBNode = tbodyTrTdNode.getElementByTag({HtmlTag::B, 0});
-    if (tbodyTrTdBNode.isValid())
+    QtGumboNode tbodyTrTdANode = tbodyTrTdNode.getElementByTag({HtmlTag::A, 0});
+    QString tbodyTrTdANodeText = tbodyTrTdANode.isValid() ? tbodyTrTdANode.getChildrenInnerText().trimmed() : QString();
+    if (tbodyTrTdANode.isValid() && (tbodyTrTdANodeText.compare(QUOTE_WRITE_VERB, Qt::CaseInsensitive) == 0))
     {
         tbodyTrTdNodeChildIndex++;
-        result->m_userName = tbodyTrTdBNode.getChildrenInnerText();
+
+        QtGumboNode tbodyTrTdBNode = tbodyTrTdNode.getElementByTag({HtmlTag::B, 0});
+        Q_ASSERT(tbodyTrTdBNode.isValid());
+        if (tbodyTrTdBNode.isValid())
+        {
+            result->m_userName = tbodyTrTdBNode.getChildrenInnerText();
+        }
 
         // <a>
-        QtGumboNode tbodyTrTdANode = tbodyTrTdNode.getElementByTag({HtmlTag::A, 0});
         tbodyTrTdNodeChildIndex++;
         Q_ASSERT(tbodyTrTdANode.isValid());
         QString quoteSourceUrl = tbodyTrTdANode.getAttribute("href");
@@ -751,7 +752,7 @@ int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts, int &pa
 {
     // First determine HTML page encoding
     QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
-#ifdef RUBANOK_DEBUG
+#ifdef RBR_PRINT_DEBUG_OUTPUT
     qDebug() << "ru.banki.reader: HTML encoding/charset is" << htmlCodec->name();
 #endif
 

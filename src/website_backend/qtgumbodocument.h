@@ -12,7 +12,7 @@ public:
     QtGumboDocument(QString rawData)
     {
         QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
-    #ifdef RUBANOK_DEBUG
+    #ifdef RBR_PRINT_DEBUG_OUTPUT
         qDebug() << "ru.banki.reader: HTML encoding/charset is" << htmlCodec->name();
     #endif
 

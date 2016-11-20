@@ -11,6 +11,7 @@ class ForumReader : public QObject
 
     BankiRuForum::UserPosts m_userPosts;
     int m_pageCount;
+    int m_pageNo;
 
 public:
     ForumReader();
@@ -19,8 +20,9 @@ public:
     explicit ForumReader( BankiRuForum::UserPosts userPosts, QObject *parent = 0 );
 
     // Helper functions
+    Q_INVOKABLE QString applicationDirPath() const;
     Q_INVOKABLE QUrl convertToUrl(QString urlStr) const;
-    Q_INVOKABLE bool parseForumPage(QString forumPageRawHtml);
+    Q_INVOKABLE bool parseForumPage(QString forumPageRawHtml, int pageNo);
 
     // Topic functions
     Q_INVOKABLE int pageCount() const;

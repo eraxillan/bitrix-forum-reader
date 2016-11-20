@@ -19,7 +19,7 @@ bool PostQuote::isValid() const
     return !m_data.isEmpty();
 }
 
-QString PostQuote::getQmlString() const
+QString PostQuote::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
             "Rectangle {\n"
@@ -59,7 +59,7 @@ QString PostQuote::getQmlString() const
             "               %4\n"
             "               Text { font.pixelSize: sp(2); text: ':'; }\n"
             "           }\n"
-            "           Column { id: txtQuoteBody%1; %5 }"
+            "           Column { id: txtQuoteBody%1; %5 }\n"
             "       }\n"
             "   }\n"
             "}\n";
@@ -68,14 +68,17 @@ QString PostQuote::getQmlString() const
     IPostObjectList::const_iterator iObj = m_data.begin();
     for (; iObj != m_data.end(); ++iObj)
     {
-        quoteQml += (*iObj)->getQmlString();
+        quoteQml += (*iObj)->getQmlString(qrand());
     }
 
-    QString urlText = m_url.isValid() ? PostHyperlink(m_url.toString(), QUOTE_WRITE_VERB).getQmlString() : QString();
+    QString titleEsc = QString(m_title).replace("'", "\\'");
+    QString userNameEsc = QString(m_userName).replace("'", "\\'");
+
+    QString urlText = m_url.isValid() ? PostHyperlink(m_url.toString(), QUOTE_WRITE_VERB).getQmlString(randomSeed) : QString();
     return qmlStr
-            .arg(qrand())
-            .arg(m_title)
-            .arg(m_userName)
+            .arg(randomSeed)
+            .arg(titleEsc)
+            .arg(userNameEsc)
             .arg(urlText)
             .arg(quoteQml);
 }
@@ -96,12 +99,15 @@ bool PostImage::isValid() const
     return !m_url.isEmpty() && (m_width > 0 && m_height > 0);
 }
 
-QString PostImage::getQmlString() const
+QString PostImage::getQmlString(int randomSeed) const
 {
+    if (!m_url.endsWith(".gif"))
+    {
+        return QString("Image { id: img%1; source: '%2' }").arg(randomSeed).arg(m_url);
+    }
+
     // FIXME: use other fields e.g. width and height
-    const QString qmlStr =
-            "AnimatedImage { id: imgSmile%1; source: \"%2\"; }";
-    return qmlStr.arg(qrand()).arg(m_url);
+    return QString("AnimatedImage { id: imgSmile%1; source: '%2'; }").arg(randomSeed).arg(m_url);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -121,7 +127,7 @@ bool PostPlainText::isValid() const
     return !m_text.isEmpty();
 }
 
-QString PostPlainText::getQmlString() const
+QString PostPlainText::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
             "Text {\n"
@@ -145,8 +151,9 @@ QString PostPlainText::getQmlString() const
             "       height: parent.height;\n"
             "   }\n"
 #endif
-            "}";
-    return qmlStr.arg(qrand()).arg(m_text);
+            "}\n";
+    QString textEsc = QString(m_text).replace("'", "\\'");
+    return qmlStr.arg(randomSeed).arg(textEsc);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -166,7 +173,7 @@ bool PostRichText::isValid() const
     return !m_text.isEmpty();
 }
 
-QString PostRichText::getQmlString() const
+QString PostRichText::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
             "Text {\n"
@@ -193,10 +200,12 @@ QString PostRichText::getQmlString() const
             "       height: parent.height;\n"
             "   }\n"
 #endif
-            "}";
-    return  qmlStr.arg(qrand())
+            "}\n";
+
+    QString textEsc = QString(m_text).replace("'", "\\'");
+    return  qmlStr.arg(randomSeed)
             .arg(m_isBold ? "true" : "false").arg(m_isItalic ? "true" : "false").arg(m_isUnderlined ? "true" : "false")
-            .arg(m_text);
+            .arg(textEsc);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -242,7 +251,7 @@ bool PostVideo::isValid() const
     return !m_urlStr.isEmpty() && m_url.isValid();
 }
 
-QString PostVideo::getQmlString() const
+QString PostVideo::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
             "Video {\n"
@@ -272,7 +281,7 @@ QString PostVideo::getQmlString() const
             "   Keys.onLeftPressed: video%1.seek(video%1.position - 5000);\n"
             "   Keys.onRightPressed: video%1.seek(video%1.position + 5000);\n"
             "}\n";
-    return qmlStr.arg(qrand()).arg(m_urlStr);
+    return qmlStr.arg(randomSeed).arg(m_urlStr);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -294,11 +303,10 @@ bool PostHyperlink::isValid() const
     return !m_urlStr.isEmpty() && m_url.isValid();
 }
 
-QString PostHyperlink::getQmlString() const
+QString PostHyperlink::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
-            "Text\n"
-            "{\n"
+            "Text {\n"
             "   id: dynTxtPost%1;\n"
             "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
             "\n"
@@ -323,7 +331,7 @@ QString PostHyperlink::getQmlString() const
             "   }\n"
 #endif
             "}\n";
-    return qmlStr.arg(qrand()).arg("<a href=\"" + m_urlStr + "\">" + m_title + "</a>");
+    return qmlStr.arg(randomSeed).arg("<a href=\"" + m_urlStr + "\">" + m_title + "</a>");
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------

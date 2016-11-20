@@ -32,7 +32,7 @@ ApplicationWindow
             var resp = xhr.responseText;
 
             // Parse the page HTML data
-            reader.parseForumPage( resp )
+            reader.parseForumPage( resp, pageNo )
 
             // Fill the page counter
             totalPageCount = reader.pageCount();
@@ -223,11 +223,15 @@ ApplicationWindow
                         leftPadding: dp(10)
                         rightPadding: dp(10)
 
+                        property int postIndex: -1;
                         function createItem() {
                             if (!pageLoaded) return;
                             if (model.postText === "") return;
 
-                            var postObj = Qt.createQmlObject(model.postText, clmnPost, "dynamicPostObject");
+                            postIndex++;
+                            var postQmlFileName = reader.applicationDirPath() + "page_" + currentPageIndex + "_post_" + postIndex;
+                            var postObj = Qt.createQmlObject(model.postText, clmnPost, postQmlFileName);
+
                             var postFooterObj = Qt.createQmlObject(model.postFooterQml, clmnPost, "dynamicPostAdditionalInfo");
 
                             if (postObj === null)

@@ -13,9 +13,10 @@
 #include "src/website_backend/gumboparserimpl.h"
 #include "src/qml_backend/forumreader.h"
 
+// FIXME: add user whitelist
+// FIXME: add sorting by user/post reputation option
 // FIXME: add full error stack storage code like PCode do
 // FIXME: save full post history to the LOCAL database
-// FIXME: add sorting by user/post reputation option
 // FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
 int getDpi(float& textScaleFactor)
 {
@@ -56,6 +57,20 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
+
+#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
+    QDir appRootDir(qApp->applicationDirPath());
+    Q_ASSERT(appRootDir.isReadable());
+    // Clean the generated QML output directory
+    if (appRootDir.exists(RBR_QML_OUTPUT_DIR))
+    {
+        Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
+        Q_ASSERT(appRootDir.removeRecursively());
+        Q_ASSERT(appRootDir.cdUp());
+    }
+    Q_ASSERT(appRootDir.mkdir(RBR_QML_OUTPUT_DIR));
+    Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
+#endif
 
     QQmlApplicationEngine engine;
 
