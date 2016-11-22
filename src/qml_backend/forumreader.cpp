@@ -145,9 +145,10 @@ QString ForumReader::postText(int index) const
     else
     {
         iObj = m_userPosts[index].second.m_data.begin();
-        qmlStr += "Column {\n";
+        qmlStr += "Flow {\n";
+        qmlStr += "    width: rctItem.width;\n";
         for (; iObj != m_userPosts[index].second.m_data.end(); ++iObj)
-        {
+        {            
             randomSeed = qrand();
             qmlStr += (*iObj)->getQmlString(randomSeed);
             qmlStr = qmlStr.trimmed();

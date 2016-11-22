@@ -57,9 +57,13 @@ QString PostQuote::getQmlString(int randomSeed) const
             "\n"
             "               Text { font.pixelSize: sp(2); font.bold: true; text: '%3  '; }\n"
             "               %4\n"
-            "               Text { font.pixelSize: sp(2); text: ':'; }\n"
+            "               Text { visible: %6; font.pixelSize: sp(2); text: ':'; }\n"
             "           }\n"
-            "           Column { id: txtQuoteBody%1; %5 }\n"
+            "           Flow {\n"
+            "               id: txtQuoteBody%1;\n\n"
+            "               %5\n"
+            "               width: parent.width;\n"
+            "           }\n"
             "       }\n"
             "   }\n"
             "}\n";
@@ -80,7 +84,8 @@ QString PostQuote::getQmlString(int randomSeed) const
             .arg(titleEsc)
             .arg(userNameEsc)
             .arg(urlText)
-            .arg(quoteQml);
+            .arg(quoteQml)
+            .arg(!userNameEsc.isEmpty() ? "true" : "false");
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -111,6 +116,37 @@ QString PostImage::getQmlString(int randomSeed) const
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
+// PostLineBreak
+PostLineBreak::PostLineBreak()
+{
+}
+
+bool PostLineBreak::isValid() const
+{
+    return true;
+}
+
+QString PostLineBreak::getQmlString(int randomSeed) const
+{
+    const QString qmlStr =
+            "Text {\n"
+            "   id: lineBreak%1\n"
+            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n\n"
+            "   height: 1;\n"
+        #ifdef RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+            "   Rectangle {\n"
+            "       border.width: dp(1);\n"
+            "       border.color: \"yellow\";\n"
+            "       color: \"transparent\";\n"
+            "       width: parent.width;\n"
+            "       height: parent.height;\n"
+            "   }\n"
+        #endif
+            "}\n";
+    return qmlStr.arg(randomSeed);
+}
+
+// ----------------------------------------------------------------------------------------------------------------------------
 // PostPlainText
 
 PostPlainText::PostPlainText()
@@ -131,8 +167,10 @@ QString PostPlainText::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
             "Text {\n"
+            "   property int postWidth: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+            "\n"
             "   id: dynTxtPost%1;\n"
-            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+            "   Component.onCompleted: { width = contentWidth >= postWidth ? postWidth : contentWidth; }\n"
             "\n"
             "   font.pixelSize: sp(2);\n"
             "\n"
@@ -178,7 +216,7 @@ QString PostRichText::getQmlString(int randomSeed) const
     const QString qmlStr =
             "Text {\n"
             "   id: dynTxtPost%1;\n"
-            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+//            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
             "\n"
             "   font.bold: %2;\n"
             "   font.italic: %3;\n"
@@ -308,7 +346,7 @@ QString PostHyperlink::getQmlString(int randomSeed) const
     const QString qmlStr =
             "Text {\n"
             "   id: dynTxtPost%1;\n"
-            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+//            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
             "\n"
             "   font.pixelSize: sp(2);\n"
             "   renderType: Text.NativeRendering\n"

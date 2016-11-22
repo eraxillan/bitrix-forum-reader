@@ -343,8 +343,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             // Line break
             case HtmlTag::BR:
             {
-                // FIXME: filter extra line breaks
- //               postObjects << QSharedPointer<PostPlainText>(new PostPlainText("\n"));
+                postObjects << QSharedPointer<PostLineBreak>(new PostLineBreak());
                 break;
             }
             // Image (usually smile)

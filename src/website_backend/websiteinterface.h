@@ -54,6 +54,14 @@ namespace BankiRuForum
         QString getQmlString(int randomSeed) const override;
     };
 
+    struct PostLineBreak : IPostObject
+    {
+        PostLineBreak();
+
+        bool isValid() const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+    };
+
     struct PostPlainText : IPostObject
     {
         QString m_text;
