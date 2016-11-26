@@ -33,8 +33,8 @@ namespace BankiRuForum
 
         PostQuote();
 
-        bool isValid() const override;
-        QString getQmlString(int randomSeed) const override;
+        bool isValid() const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     struct PostImage : IPostObject
@@ -50,8 +50,8 @@ namespace BankiRuForum
         PostImage();
         PostImage(QString url, int width, int height, int border = 0, QString altName = QString(), QString id = QString(), QString className = QString());
 
-        bool isValid() const override;
-        QString getQmlString(int randomSeed) const override;
+        bool isValid() const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     struct PostLineBreak : IPostObject
@@ -69,8 +69,8 @@ namespace BankiRuForum
         PostPlainText();
         PostPlainText(QString text);
 
-        bool isValid() const override;
-        virtual QString getQmlString(int randomSeed) const override;
+        bool isValid() const Q_DECL_OVERRIDE;
+        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     struct PostRichText : IPostObject
@@ -83,8 +83,8 @@ namespace BankiRuForum
         PostRichText();
         PostRichText(QString text, bool isBold, bool isItalic, bool isUnderlined);
 
-        bool isValid() const override;
-        virtual QString getQmlString(int randomSeed) const override;
+        bool isValid() const Q_DECL_OVERRIDE;
+        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     struct PostVideo : IPostObject
@@ -96,8 +96,8 @@ namespace BankiRuForum
         PostVideo();
         PostVideo(QString urlStr);
 
-        bool isValid() const override;
-        virtual QString getQmlString(int randomSeed) const override;
+        bool isValid() const Q_DECL_OVERRIDE;
+        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     // FIXME: implement hyperlink using Qt/QML power only, without Qt primitive HTML-mode of Text item
@@ -118,8 +118,8 @@ namespace BankiRuForum
         PostHyperlink();
         PostHyperlink(QString urlStr, QString title, QString tip = QString(), QString rel = QString());
 
-        bool isValid() const override;
-        QString getQmlString(int randomSeed) const override;
+        bool isValid() const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     // -------------------------------------------------
