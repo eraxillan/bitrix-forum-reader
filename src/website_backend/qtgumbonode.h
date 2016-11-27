@@ -45,6 +45,7 @@ public:
 
     // Non-recursive(!) search for the first child node with specified class name and tag (div by default)
     QtGumboNode getElementByClass(QString className, HtmlTag childTag = HtmlTag::DIV) const;
+    QtGumboNodes getElementsByClass(QString className, HtmlTag childTag = HtmlTag::DIV) const;
 
     // Recursive search for the first child node with specified class name and tag (div by default)
     QtGumboNodes getElementsByClassRecursive(QString className, HtmlTag childTag = HtmlTag::DIV) const;

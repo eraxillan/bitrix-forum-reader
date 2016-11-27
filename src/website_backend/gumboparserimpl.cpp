@@ -278,6 +278,9 @@ Post ForumPageParser::getPostValue(QtGumboNode trNode1)
     userSignatureStr = userSignatureStr.replace("\r", "");
     userSignatureStr = userSignatureStr.replace("\n", "<br>");
 
+    // Read file attachments
+    postInfo.m_data << getPostAttachments(postEntryNode);
+
     // Read post last edit "credentials" (optional)
     QString lastEditStr = getPostLastEdit(postEntryNode);
     lastEditStr = lastEditStr.replace("\r", "");
@@ -487,11 +490,50 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
         {
             break;
         }
+        case HtmlTag::IMG:
+        {
+            QSharedPointer<PostImage> imageObj = parseImage(*iChild);
+            Q_ASSERT(imageObj && imageObj->isValid());
+
+            // FIXME: specify width and height if present
+            userSignatureStr += "<img src='" + imageObj->m_url + "'/><br/>";
+            break;
+        }
         // FIXME: implement other cases
         default: Q_ASSERT(0);
         }
     }
     return userSignatureStr;
+}
+
+IPostObjectList ForumPageParser::getPostAttachments(QtGumboNode postEntryNode)
+{
+    // Read post file attachments
+    IPostObjectList result;
+    QtGumboNode attachmentsNode = postEntryNode.getElementByClass("forum-post-attachments");
+    if (!attachmentsNode.isValid()) return result;
+
+    QtGumboNode labelNode = attachmentsNode.getElementByTag({HtmlTag::LABEL, 0});
+    Q_ASSERT(labelNode.isValid()); if (!labelNode.isValid()) return result;
+    QString attachmentsLabelStr = labelNode.getChildrenInnerText();
+
+    result << QSharedPointer<PostLineBreak>(new PostLineBreak());
+    result << QSharedPointer<PostRichText>(new PostRichText(attachmentsLabelStr, true, false, false));
+    result << QSharedPointer<PostLineBreak>(new PostLineBreak());
+
+    QtGumboNodes children = attachmentsNode.getElementsByClass("forum-post-attachment", HtmlTag::DIV);
+    for (QtGumboNodes::iterator iChild = children.begin(); iChild != children.end(); ++iChild)
+    {
+        QtGumboNode attachNode = iChild->getElementByClass("forum-attach",  HtmlTag::DIV);
+
+        // FIXME: support other attachment types (if exists)
+        QtGumboNode imgNode = attachNode.getElementByClass("popup_image", HtmlTag::IMG);
+        Q_ASSERT(imgNode.isValid()); if(!imgNode.isValid()) continue;
+
+        result << parseImage(imgNode);
+    }
+
+    return result;
 }
 
 int ForumPageParser::getLikeCounterValue(QtGumboNode trNode2)
@@ -649,7 +691,10 @@ QSharedPointer<PostImage> ForumPageParser::parseImage(QtGumboNode imgNode) const
     QString imageSrcStr = imgNode.getAttribute("src");
     Q_ASSERT(!imageSrcStr.isEmpty());
     if (imageSrcStr.startsWith("//")) imageSrcStr.prepend("http:");
-    else if (!imageSrcStr.startsWith(g_bankiRuHost)) imageSrcStr.prepend(g_bankiRuHost);
+    else if (!imageSrcStr.startsWith(g_bankiRuHost) && !imageSrcStr.startsWith("http:") && !imageSrcStr.startsWith("https:"))
+    {
+        imageSrcStr.prepend(g_bankiRuHost);
+    }
     Q_ASSERT(QUrl(imageSrcStr).isValid());
     result->m_url = imageSrcStr;
 

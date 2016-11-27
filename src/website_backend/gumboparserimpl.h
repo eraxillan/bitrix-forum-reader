@@ -35,6 +35,7 @@ private:
     Post getPostValue(QtGumboNode trNode1);
     QString getPostLastEdit(QtGumboNode postEntryNode);
     QString getPostUserSignature(QtGumboNode postEntryNode);
+    IPostObjectList getPostAttachments(QtGumboNode postEntryNode);
     int getLikeCounterValue(QtGumboNode trNode2);
     int getPostId(QtGumboNode msdivNode);
     void fillPostList(QtGumboNode node, UserPosts &posts);

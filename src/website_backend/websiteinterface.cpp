@@ -101,7 +101,8 @@ PostImage::PostImage(QString url, int width, int height, int border, QString alt
 
 bool PostImage::isValid() const
 {
-    return !m_url.isEmpty() && (m_width > 0 && m_height > 0);
+    // NOTE: image with only correct URL specified is still valid
+    return !m_url.isEmpty() /*&& (m_width > 0 && m_height > 0)*/;
 }
 
 QString PostImage::getQmlString(int randomSeed) const

@@ -219,6 +219,24 @@ QtGumboNode QtGumboNode::getElementByClass(QString className, HtmlTag childTag) 
     return QtGumboNode();
 }
 
+QtGumboNodes QtGumboNode::getElementsByClass(QString className, HtmlTag childTag) const
+{
+    Q_ASSERT(isValid()); if(!isValid()) return QtGumboNodes();
+    Q_ASSERT(!className.isEmpty()); if (className.isEmpty()) return QtGumboNodes();
+
+    QtGumboNodes result;
+
+    QtGumboNodes children = getChildren();
+    for (QtGumboNodes::iterator iChild = children.begin(); iChild != children.end(); ++iChild)
+    {
+        if ((iChild->getTag() == childTag) && (QString::compare(iChild->getClassAttribute(), className, Qt::CaseInsensitive) == 0))
+        {
+            result << (*iChild);
+        }
+    }
+    return result;
+}
+
 QtGumboNodes QtGumboNode::getElementsByClassRecursive(QString className, HtmlTag childTag) const
 {
     Q_ASSERT(isValid()); if (!isValid()) return QtGumboNodes();
