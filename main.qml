@@ -151,7 +151,7 @@ ApplicationWindow
                             font.pixelSize: sp(2)
                         }
 
-                        Image
+                        AnimatedImage
                         {
                             id: imgUserAvatar
                             source: reader.convertToUrl( model.postAvatar )
