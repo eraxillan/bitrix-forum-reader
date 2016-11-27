@@ -47,7 +47,7 @@ int getDpi(float& textScaleFactor)
 #else
     dpi = screen->physicalDotsPerInch() * qApp->devicePixelRatio();
 #endif
-    return dpi;
+    return static_cast<int>(dpi);
 }
 
 int main(int argc, char *argv[])
