@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "src/website_backend/websiteinterface.h"
+#include "website_backend/websiteinterface.h"
 
 class ForumReader : public QObject
 {

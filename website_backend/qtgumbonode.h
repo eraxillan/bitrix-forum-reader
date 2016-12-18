@@ -3,7 +3,7 @@
 
 #include <QtCore/QtCore>
 
-#include "gumbo.h"
+#include "gumbo-parser/src/gumbo.h"
 #include "html_tag.h"
 
 class QtGumboNode;

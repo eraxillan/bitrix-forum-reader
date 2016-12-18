@@ -1,7 +1,7 @@
 #ifndef GUMBOPARSERIMPL_H
 #define GUMBOPARSERIMPL_H
 
-#include "src/website_backend/websiteinterface.h"
+#include "websiteinterface.h"
 #include "qtgumbodocument.h"
 
 namespace BankiRuForum {

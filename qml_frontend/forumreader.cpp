@@ -1,6 +1,6 @@
 #include "forumreader.h"
 
-#include "src/website_backend/gumboparserimpl.h"
+#include "website_backend/gumboparserimpl.h"
 
 namespace {
 static bool WriteTextFile(QString fileName, QString fileContents)

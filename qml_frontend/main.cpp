@@ -10,14 +10,15 @@
 #include <QAndroidJniObject>
 #endif
 
-#include "src/website_backend/gumboparserimpl.h"
-#include "src/qml_backend/forumreader.h"
+#include "website_backend/gumboparserimpl.h"
+#include "qml_frontend/forumreader.h"
 
 // FIXME: add user whitelist
 // FIXME: add sorting by user/post reputation option
 // FIXME: add full error stack storage code like PCode do
 // FIXME: save full post history to the LOCAL database
 // FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
+// FIXME: add Catch unit tests
 int getDpi(float& textScaleFactor)
 {
     QScreen* screen = qApp->primaryScreen();
@@ -72,14 +73,22 @@ int main(int argc, char *argv[])
     Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
 #endif
 
-    QQmlApplicationEngine engine;
+	try
+	{
+		QQmlApplicationEngine engine;
 
-    float textScaleFactor = 0.0f;
-    int displayDpi = getDpi(textScaleFactor);
-    engine.rootContext()->setContextProperty("displayDpi", displayDpi);
-    engine.rootContext()->setContextProperty("textScaleFactor", textScaleFactor);
+		float textScaleFactor = 0.0f;
+		int displayDpi = getDpi(textScaleFactor);
+		engine.rootContext()->setContextProperty("displayDpi", displayDpi);
+		engine.rootContext()->setContextProperty("textScaleFactor", textScaleFactor);
 
-	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+		engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-    return app.exec();
+		return app.exec();
+	}
+	catch (...)
+	{
+		qDebug() << "ERROR: exception caught!";
+		return 1;
+	}
 }

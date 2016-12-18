@@ -292,7 +292,7 @@ bool PostVideo::isValid() const
 
 QString PostVideo::getQmlString(int randomSeed) const
 {
-    const QString qmlStr =
+	const QString qmlStr =
             "Video {\n"
             "   id: video%1;\n"
             "   width : dp(400);\n"
