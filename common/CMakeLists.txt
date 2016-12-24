@@ -2,6 +2,8 @@
 #
 # provides the common library
 
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib/")
+
 SET(rubankireader_common_SOURCES
     filedownloader.cpp
 )

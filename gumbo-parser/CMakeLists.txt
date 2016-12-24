@@ -10,6 +10,8 @@ endif()
 
 PROJECT(gumbo-parser VERSION 0.10.1)
 
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib/")
+
 SET(gumbo_HEADERS
     src/attribute.h
     src/char_ref.h
