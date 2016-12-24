@@ -771,7 +771,10 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
         tbodyTrTdNodeChildIndex++;
         Q_ASSERT(tbodyTrTdANode.isValid());
         QString quoteSourceUrl = tbodyTrTdANode.getAttribute("href");
-        quoteSourceUrl.replace("/forum/?", g_bankiRuHost + "/forum/?");
+        if (!quoteSourceUrl.startsWith(g_bankiRuHost))
+        {
+            quoteSourceUrl.replace("/forum/?", g_bankiRuHost + "/forum/?");
+        }
         result->m_url = QUrl(quoteSourceUrl);
         Q_ASSERT(result->m_url.isValid());
 
@@ -796,6 +799,7 @@ int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts, int &pa
 {
     // First determine HTML page encoding
     QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
+    Q_UNUSED(htmlCodec);
 #ifdef RBR_PRINT_DEBUG_OUTPUT
     qDebug() << "ru.banki.reader: HTML encoding/charset is" << htmlCodec->name();
 #endif
@@ -804,7 +808,7 @@ int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts, int &pa
 #if defined( Q_OS_WIN )
     QString htmlFileString = htmlCodec->toUnicode(rawData.toLocal8Bit());
     QByteArray htmlFileUtf8Contents = htmlFileString.toUtf8();
-#elif defined( Q_OS_ANDROID )
+#elif defined( Q_OS_UNIX ) || defined( Q_OS_ANDROID )
     QByteArray htmlFileUtf8Contents = rawData.toUtf8();
 #else
     #error "Unsupported platform, needs testing"

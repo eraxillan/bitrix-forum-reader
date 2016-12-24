@@ -2,6 +2,7 @@
 
 #include "website_backend/gumboparserimpl.h"
 
+#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
 namespace {
 static bool WriteTextFile(QString fileName, QString fileContents)
 {
@@ -14,6 +15,7 @@ static bool WriteTextFile(QString fileName, QString fileContents)
     return true;
 }
 }
+#endif
 
 ForumReader::ForumReader() : m_userPosts(), m_pageCount(0), m_pageNo(0)
 {

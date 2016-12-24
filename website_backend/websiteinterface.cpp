@@ -254,35 +254,92 @@ PostVideo::PostVideo()
 {
 }
 
+namespace {
+static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
+{
+    aVideoUrlStr = "";
+
+    int maxVideoWidth = -1;
+//    int maxVideoHeight = -1;
+
+    QJsonDocument jsonDoc(QJsonDocument::fromJson(aJsonData));
+    QJsonObject jsonRootObject = jsonDoc.object();
+    QJsonArray jsonFormatsArray = jsonRootObject["formats"].toArray();
+    for (int i = 0; i < jsonFormatsArray.size(); ++i)
+    {
+        QJsonObject jsonFormatObject = jsonFormatsArray[i].toObject();
+        Q_ASSERT(!jsonFormatObject.isEmpty());
+
+        Q_ASSERT(jsonFormatObject.value("vcodec").isString());
+        Q_ASSERT(jsonFormatObject.value("acodec").isString());
+        Q_ASSERT(jsonFormatObject.value("ext").isString());
+        Q_ASSERT(jsonFormatObject.value("format_note").isString());
+        // FIXME: determine type of these values
+        //Q_ASSERT(jsonFormatObject.value("width").isDouble());
+        //Q_ASSERT(jsonFormatObject.value("height").isDouble());
+        Q_ASSERT(jsonFormatObject.value("url").isString());
+
+        QString videoCodecStr = jsonFormatObject.value("vcodec").toString();
+//        QString audioCodecStr = jsonFormatObject.value("acodec").toString();
+//        QString videoFileExt = jsonFormatObject.value("ext").toString();
+        QString videoFormatNote = jsonFormatObject.value("format_note").toString();
+        int videoWidth = jsonFormatObject.value("width").toInt(-1);
+        int videoHeight = jsonFormatObject.value("height").toInt(-1);
+        QString videoUrlStr = jsonFormatObject.value("url").toString();
+
+        if (videoWidth < 0 || videoHeight < 0 || videoCodecStr.compare("none", Qt::CaseInsensitive) == 0) continue;
+        if (videoUrlStr.isEmpty()) continue;
+        if (videoFormatNote.startsWith("DASH")) continue;
+
+        if (videoWidth > maxVideoWidth)
+        {
+            maxVideoWidth = videoWidth;
+//            maxVideoHeight = videoHeight;
+
+            aVideoUrlStr = videoUrlStr;
+        }
+
+//        qDebug() << "--------------------------------------------------";
+//        qDebug() << "Video width:" << videoWidth;
+//        qDebug() << "Video height:" << videoHeight;
+//        qDebug() << "Video codec:" << videoCodecStr;
+//        qDebug() << "Audio codec:" << audioCodecStr;
+//        qDebug() << "File format:" << videoFormatNote;
+//        qDebug() << "File extension:" << videoFileExt;
+//        qDebug() << "--------------------------------------------------";
+    }
+
+    //qDebug() << "Maximum resolution: " << maxVideoWidth << " x " << maxVideoHeight;
+
+    return true;
+}
+}
+
 PostVideo::PostVideo(QString urlStr)
     : m_urlStr(urlStr), m_url(urlStr)
 {
     Q_ASSERT(m_url.isValid());
-
-    // FIXME: currently only YouTube videos are supported
-    // Use youtube-dl to download all kind of network videos here!
-    Q_ASSERT(urlStr.contains("youtube"));
 
     // Example of YouTube URL: https://www.youtube.com/watch?v=PI9o3v4nttU
     QUrlQuery urlQuery(m_url);
     QString videoId = urlQuery.queryItemValue("v");
 
     // FIXME: replace this ugly hardcoded path with e.g. environment varible
-    QProcess youtubeDlProcess;
-    youtubeDlProcess.start("C:\\Users\\2\\Downloads\\youtube-dl.exe", QStringList() << "--get-url" << videoId);
+QProcess youtubeDlProcess;
+#ifdef Q_OS_WINDOWS
+    youtubeDlProcess.start("C:\\Users\\2\\Downloads\\youtube-dl.exe", QStringList() << "-J" << "--skip-download" << videoId);
+#elif defined(Q_OS_UNIX) || defined(Q_OS_ANDROID)
+    youtubeDlProcess.start("youtube-dl", QStringList() << "-J" << "--skip-download" << videoId);
+#else
+#error "Unsupported OS"
+#endif
+
     if (!youtubeDlProcess.waitForStarted()) Q_ASSERT(0);
     youtubeDlProcess.closeWriteChannel();
     if (!youtubeDlProcess.waitForFinished()) Q_ASSERT(0);
 
     QByteArray result = youtubeDlProcess.readAll();
-    if (!result.isEmpty())
-    {
-        result = result.trimmed();
-        m_urlStr = QString::fromUtf8(result);
-        m_url = QUrl(m_urlStr);
-        Q_ASSERT(m_url.isValid());
-    }
-    else qDebug() << "ERROR: unable to get full URL of video " << videoId;
+    findBestVideoUrl(result, m_urlStr);
 }
 
 bool PostVideo::isValid() const

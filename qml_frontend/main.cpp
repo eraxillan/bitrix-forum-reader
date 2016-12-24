@@ -19,7 +19,7 @@
 // FIXME: save full post history to the LOCAL database
 // FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
 // FIXME: add Catch unit tests
-int getDpi(float& textScaleFactor)
+static int getDpi(float& textScaleFactor)
 {
     QScreen* screen = qApp->primaryScreen();
 
@@ -46,6 +46,7 @@ int getDpi(float& textScaleFactor)
     float scaledDensity = displayMetrics.getField<float>("scaledDensity");
     textScaleFactor = scaledDensity;
 #else
+    textScaleFactor = 15.0f;
     dpi = screen->physicalDotsPerInch() * qApp->devicePixelRatio();
 #endif
     return static_cast<int>(dpi);

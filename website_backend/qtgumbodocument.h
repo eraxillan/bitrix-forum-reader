@@ -12,6 +12,7 @@ public:
     QtGumboDocument(QString rawData)
     {
         QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
+        Q_UNUSED(htmlCodec);
     #ifdef RBR_PRINT_DEBUG_OUTPUT
         qDebug() << "ru.banki.reader: HTML encoding/charset is" << htmlCodec->name();
     #endif
@@ -20,7 +21,7 @@ public:
     #if defined( Q_OS_WIN )
         QString htmlFileString = htmlCodec->toUnicode(rawData.toLocal8Bit());
         QByteArray htmlFileUtf8Contents = htmlFileString.toUtf8();
-    #elif defined( Q_OS_ANDROID )
+    #elif defined( Q_OS_UNIX ) || defined( Q_OS_ANDROID )
         QByteArray htmlFileUtf8Contents = rawData.toUtf8();
     #else
         #error "Unsupported platform, needs testing"
