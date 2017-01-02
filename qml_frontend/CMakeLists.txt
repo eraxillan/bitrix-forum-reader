@@ -64,13 +64,23 @@ get_target_property(QT_LIBRARY_DIR Qt5::Core LOCATION)
 get_filename_component(QT_LIBRARY_DIR ${QT_LIBRARY_DIR} PATH)
 
 # Build binary and link it
-ADD_EXECUTABLE(rubankireader_qml_frontend WIN32 MACOSX_BUNDLE
-    ${qml_frontend_SOURCES}
-    ${qml_frontend_HEADERS}
-    ${qml_frontend_QM}
-    ${qml_frontend_RESOURCES_RCC}
-    ${qml_frontend_MOC_SRCS}
-)
+if (ANDROID)
+    ADD_LIBRARY(rubankireader_qml_frontend SHARED
+        ${qml_frontend_SOURCES}
+        ${qml_frontend_HEADERS}
+        ${qml_frontend_QM}
+        ${qml_frontend_RESOURCES_RCC}
+        ${qml_frontend_MOC_SRCS}
+    )
+else()
+    ADD_EXECUTABLE(rubankireader_qml_frontend WIN32 MACOSX_BUNDLE
+        ${qml_frontend_SOURCES}
+        ${qml_frontend_HEADERS}
+        ${qml_frontend_QM}
+        ${qml_frontend_RESOURCES_RCC}
+        ${qml_frontend_MOC_SRCS}
+    )
+endif()
 
 if(MSVC)
     TARGET_LINK_LIBRARIES(rubankireader_qml_frontend rubankireader_common gumbo-parser rubankireader_website_backend Qt5::WinMain)
@@ -78,3 +88,12 @@ else()
     TARGET_LINK_LIBRARIES(rubankireader_qml_frontend rubankireader_common gumbo-parser rubankireader_website_backend)
 endif()
 qt5_use_modules(rubankireader_qml_frontend ${RUBANKIREADER_LIBS})
+
+if(ANDROID)
+    include(../cmake/AddQtAndroidApk.cmake)
+    add_qt_android_apk(rubankireader_qml_frontend_apk rubankireader_qml_frontend
+        NAME "Banki.ru forum viewer app"
+        VERSION_CODE 1
+        PACKAGE_NAME "name.eraxillan.rubankireader"
+    )
+endif()

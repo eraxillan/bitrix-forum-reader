@@ -15,9 +15,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 # Create library directory if it does not exist.
 file(MAKE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-# Add the cmake modules directory to our module path.
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
-
 if(POLICY CMP0020)
     cmake_policy(SET CMP0020 OLD)
 endif()
@@ -61,7 +58,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 # Set conventional loops
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 
-# Search path for cmake modules
+# Add the cmake modules directory to our module path
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Define a proper install path
