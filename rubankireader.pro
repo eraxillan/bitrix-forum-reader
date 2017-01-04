@@ -25,23 +25,24 @@ android: QT += androidextras
 
 CONFIG += c++11
 
-SOURCES += main.cpp \
-    src/network/filedownloader.cpp \
-    src/website_backend/gumboparserimpl.cpp \
-    src/qml_backend/forumreader.cpp \
-    src/website_backend/websiteinterface.cpp \
-    src/website_backend/qtgumbonode.cpp
+SOURCES += \
+    common/filedownloader.cpp               \
+    website_backend/gumboparserimpl.cpp     \
+    website_backend/qtgumbonode.cpp         \
+    website_backend/websiteinterface.cpp    \
+    qml_frontend/forumreader.cpp            \
+    qml_frontend/main.cpp
 
 HEADERS += \
-    src/network/filedownloader.h \
-    src/website_backend/gumboparserimpl.h \
-    src/website_backend/websiteinterface.h \
-    src/qml_backend/forumreader.h \
-    src/website_backend/html_tag.h \
-    src/website_backend/qtgumbonode.h \
-    src/website_backend/qtgumbodocument.h
+    common/filedownloader.h                 \
+    website_backend/gumboparserimpl.h       \
+    website_backend/qtgumbonode.h           \
+    website_backend/websiteinterface.h      \
+    website_backend/html_tag.h              \
+    website_backend/qtgumbodocument.h       \
+    qml_frontend/forumreader.h
 
-RESOURCES += qml.qrc
+RESOURCES += qml_frontend/qml.qrc
 
 # Link with gumbo-parser library
 INCLUDEPATH += $$PWD/gumbo-parser/src
