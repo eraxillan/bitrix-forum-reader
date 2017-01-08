@@ -25,42 +25,46 @@ QString PostQuote::getQmlString(int randomSeed) const
             "Rectangle {\n"
             "   id: rctQuote%1;\n"
             "   color: \"white\";\n"
-            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "   height: rctQuoteTitle%1.height + txtQuoteBody%1.height + txtQuoteSourceRef%1.height;\n"
+            "   width: rctItem.width - parent.rightPadding - parent.leftPadding - dp(20);\n"
+            "   height: rctQuoteTitle%1.height + txtQuoteBody%1.height + txtQuoteSourceRef%1.height + 2*dp(5);\n"
             "\n"
             "   Rectangle {\n"
             "       id: rctQuoteTitle%1;\n"
             "       color: \"silver\";\n"
             "       width: parent.width;\n"
-            "       height: dp(50);\n"
+            "       height: txtQuoteTitle%1.height;\n"
             "\n"
             "       Column {\n"
             "           width: parent.width;\n"
             "           height: parent.height;\n"
-            "           spacing: dp(2);\n"
+            "           spacing: dp(5);\n"
             "\n"
             "           Text {\n"
             "               id: txtQuoteTitle%1;\n"
             "\n"
-            "               leftPadding: dp(20);\n"
+            "               leftPadding: dp(10);\n"
             "               verticalAlignment: Text.AlignVCenter;\n"
             "\n"
             "               width: parent.width;\n"
-            "               height: parent.height;\n"
             "\n"
-            "               font.pixelSize: sp(2);\n"
+            "               font.pointSize: 14;\n"
             "               text: '%2';\n"
             "           }\n"
             "\n"
             "           Row {\n"
             "               id: txtQuoteSourceRef%1;\n"
             "\n"
-            "               Text { font.pixelSize: sp(2); font.bold: true; text: '%3  '; }\n"
+            "               leftPadding: dp(10);\n"
+            "\n"
+            "               Text { font.pointSize: 14; font.bold: true; text: '%3  '; }\n"
             "               %4\n"
-            "               Text { visible: %6; font.pixelSize: sp(2); text: ':'; }\n"
+            "               Text { visible: %6; font.pointSize: 14; text: ':'; }\n"
             "           }\n"
             "           Flow {\n"
             "               id: txtQuoteBody%1;\n\n"
+            "\n"
+            "               leftPadding: dp(10);\n"
+            "\n"
             "               %5\n"
             "               width: parent.width;\n"
             "           }\n"
@@ -168,12 +172,12 @@ QString PostPlainText::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
             "Text {\n"
-            "   property int postWidth: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+            "   property int postWidth: rctItem.width - parent.rightPadding - parent.leftPadding - dp(20);\n"
             "\n"
             "   id: dynTxtPost%1;\n"
             "   Component.onCompleted: { width = contentWidth >= postWidth ? postWidth : contentWidth; }\n"
             "\n"
-            "   font.pixelSize: sp(2);\n"
+            "   font.pointSize: 14;\n"
             "\n"
             "   text: '%2';\n"
             "   textFormat: Text.PlainText;\n"
@@ -222,7 +226,7 @@ QString PostRichText::getQmlString(int randomSeed) const
             "   font.bold: %2;\n"
             "   font.italic: %3;\n"
             "   font.underline: %4;\n"
-            "   font.pixelSize: sp(2);\n"
+            "   font.pointSize: 14;\n"
             "\n"
             "   text: '%5';\n"
             "   textFormat: Text.PlainText;\n"
@@ -326,10 +330,15 @@ PostVideo::PostVideo(QString urlStr)
 
     // FIXME: replace this ugly hardcoded path with e.g. environment varible
 QProcess youtubeDlProcess;
-#ifdef Q_OS_WINDOWS
+#ifdef Q_OS_WIN
     youtubeDlProcess.start("C:\\Users\\2\\Downloads\\youtube-dl.exe", QStringList() << "-J" << "--skip-download" << videoId);
-#elif defined(Q_OS_UNIX) || defined(Q_OS_ANDROID)
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID)
     youtubeDlProcess.start("youtube-dl", QStringList() << "-J" << "--skip-download" << videoId);
+#elif defined(Q_OS_ANDROID)
+    // FIXME: embed youtube-dl executable to APK
+    m_url.clear();
+    m_urlStr.clear();
+    return;
 #else
 #error "Unsupported OS"
 #endif
@@ -406,7 +415,7 @@ QString PostHyperlink::getQmlString(int randomSeed) const
             "   id: dynTxtPost%1;\n"
 //            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
             "\n"
-            "   font.pixelSize: sp(2);\n"
+            "   font.pointSize: 14;\n"
             "   renderType: Text.NativeRendering\n"
             "\n"
             "   text: '%2';\n"

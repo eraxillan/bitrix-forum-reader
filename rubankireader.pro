@@ -20,7 +20,7 @@ UI_DIR      = $${APP_BUILD_DIR}
 OBJECTS_DIR = $${APP_BUILD_DIR}
 MOC_DIR     = $${APP_BUILD_DIR}
 
-QT += qml quick widgets network
+QT += qml quick widgets network multimedia
 android: QT += androidextras
 
 CONFIG += c++11

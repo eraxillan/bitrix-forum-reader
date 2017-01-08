@@ -19,14 +19,14 @@
 // FIXME: save full post history to the LOCAL database
 // FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
 // FIXME: add Catch unit tests
-static int getDpi(float& textScaleFactor)
+static float getDpi(float& textScaleFactor)
 {
     QScreen* screen = qApp->primaryScreen();
 
-    qreal dpi = 0;
+    float dpi = 0;
 #if defined(Q_OS_WIN)
     textScaleFactor = 15.0f;
-    dpi = /*3 **/ screen->logicalDotsPerInch() * qApp->devicePixelRatio();
+    dpi = static_cast<float>(screen->logicalDotsPerInch() * qApp->devicePixelRatio());
 #elif defined(Q_OS_ANDROID)
     Q_UNUSED(screen);
 
@@ -49,7 +49,7 @@ static int getDpi(float& textScaleFactor)
     textScaleFactor = 15.0f;
     dpi = screen->physicalDotsPerInch() * qApp->devicePixelRatio();
 #endif
-    return static_cast<int>(dpi);
+    return dpi;
 }
 
 int main(int argc, char *argv[])
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 		QQmlApplicationEngine engine;
 
 		float textScaleFactor = 0.0f;
-		int displayDpi = getDpi(textScaleFactor);
+        float displayDpi = getDpi(textScaleFactor);
 		engine.rootContext()->setContextProperty("displayDpi", displayDpi);
 		engine.rootContext()->setContextProperty("textScaleFactor", textScaleFactor);
 

@@ -14,7 +14,7 @@ ApplicationWindow
     color: "white"
 
     function dp(x) { return x * (displayDpi / 160); }
-    function sp(x) { return x * (displayDpi / 160) * textScaleFactor; }
+//    function sp(x) { return x * (displayDpi / 160) * textScaleFactor; }
 
     property bool pageLoaded: false
     property int totalPageCount: 31
@@ -148,7 +148,7 @@ ApplicationWindow
                             text: "<b>" + model.postAuthor + "</b>"
                             color: "blue"
 
-                            font.pixelSize: sp(2)
+                            font.pointSize: 14
                         }
 
                         AnimatedImage
@@ -166,7 +166,7 @@ ApplicationWindow
                             id: txtAuthorPostCount
                             text: "Post count: " + model.authorPostCount
 
-                            font.pixelSize: sp(2)
+                            font.pointSize: 14
                         }
 
                         Text
@@ -174,7 +174,7 @@ ApplicationWindow
                             id: txtAuthorRegistrationDate
                             text: "Registered: " + Qt.formatDate( model.authorRegistrationDate )
 
-                            font.pixelSize: sp(2)
+                            font.pointSize: 14
                         }
 
                         Text
@@ -182,7 +182,7 @@ ApplicationWindow
                             id: txtAuthorReputation
                             text: "Reputation: " + model.authorReputation
 
-                            font.pixelSize: sp(2)
+                            font.pointSize: 14
                         }
 
                         Text
@@ -191,7 +191,7 @@ ApplicationWindow
                             visible: model.authorCity !== ""
                             text: "City: " + model.authorCity
 
-                            font.pixelSize: sp(2)
+                            font.pointSize: 14
                         }
                     }
                 }
@@ -254,7 +254,7 @@ ApplicationWindow
                             verticalAlignment: Text.AlignVCenter
                             clip: false
 
-                            font.pixelSize: sp(2)
+                            font.pointSize: 14
                             text: Qt.formatDateTime(model.postDateTime)
                         }
 
