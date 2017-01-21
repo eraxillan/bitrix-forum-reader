@@ -9,11 +9,19 @@ VERSION = 0.10.1
 buildmode = release
 CONFIG(debug, debug|release):buildmode = debug
 
+# FIXME: add x64 build mode support
+#contains(QT_ARCH, i386) {
+
+APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
+APP_ARCH = $$first( $$list( $$QT_ARCH ) )
+APP_COMPILER = $$first( $$list( $$QMAKE_COMPILER ) )
+APP_BUILD_DIR = ../__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
+
 # Output directories setup
-DESTDIR     = $${buildmode}
-UI_DIR      = $${buildmode}
-OBJECTS_DIR = $${buildmode}
-MOC_DIR     = $${buildmode}
+DESTDIR     = $${APP_BUILD_DIR}
+UI_DIR      = $${APP_BUILD_DIR}
+OBJECTS_DIR = $${APP_BUILD_DIR}
+MOC_DIR     = $${APP_BUILD_DIR}
 
 HEADERS += \
         src/attribute.h \

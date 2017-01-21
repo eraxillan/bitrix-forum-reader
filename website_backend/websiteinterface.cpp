@@ -259,6 +259,7 @@ PostVideo::PostVideo()
 }
 
 namespace {
+#ifndef Q_OS_IOS
 static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
 {
     aVideoUrlStr = "";
@@ -317,6 +318,7 @@ static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
 
     return true;
 }
+#endif
 }
 
 PostVideo::PostVideo(QString urlStr)
@@ -329,7 +331,8 @@ PostVideo::PostVideo(QString urlStr)
     QString videoId = urlQuery.queryItemValue("v");
 
     // FIXME: replace this ugly hardcoded path with e.g. environment varible
-QProcess youtubeDlProcess;
+#ifndef Q_OS_IOS
+    QProcess youtubeDlProcess;
 #ifdef Q_OS_WIN
     youtubeDlProcess.start("C:\\Users\\2\\Downloads\\youtube-dl.exe", QStringList() << "-J" << "--skip-download" << videoId);
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID)
@@ -349,6 +352,11 @@ QProcess youtubeDlProcess;
 
     QByteArray result = youtubeDlProcess.readAll();
     findBestVideoUrl(result, m_urlStr);
+#else
+#pragma message("iOS do not support QProcess")
+    m_url.clear();
+    m_urlStr.clear();
+#endif
 }
 
 bool PostVideo::isValid() const

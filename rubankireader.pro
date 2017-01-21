@@ -12,7 +12,9 @@ CONFIG(debug, debug|release):buildmode = debug
 APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
 APP_ARCH = $$first( $$list( $$QT_ARCH ) )
 APP_COMPILER = $$first( $$list( $$QMAKE_COMPILER ) )
-APP_BUILD_DIR = __BUILD__/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
+APP_BUILD_DIR = __BUILD__/client/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
+
+GUMBO_BUILD_DIR = __BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
 
 # Output directories setup
 DESTDIR     = $${APP_BUILD_DIR}
@@ -46,7 +48,7 @@ RESOURCES += qml_frontend/qml.qrc
 
 # Link with gumbo-parser library
 INCLUDEPATH += $$PWD/gumbo-parser/src
-LIBS        += -L$$PWD/gumbo-parser/$${buildmode} -lgumbo-parser
+LIBS += -L$${GUMBO_BUILD_DIR} -lgumbo-parser
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
