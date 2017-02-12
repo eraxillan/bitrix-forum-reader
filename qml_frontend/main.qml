@@ -1,7 +1,11 @@
 import QtQuick 2.6
+import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.1
 import QtQuick.Window 2.2
-import QtQuick.Controls 1.5
-import QtQuick.Dialogs 1.2
+import QtQuick.Controls.Material 2.1
+import QtQuick.Controls.Universal 2.1
+import Qt.labs.settings 1.0
+
 import ru.banki.reader 1.0
 
 ApplicationWindow
@@ -306,15 +310,16 @@ ApplicationWindow
                 width: parent.width / childCount
                 height: childHeight
 
+                from: 1
+                to: totalPageCount
+                value: currentPageIndex
+                stepSize: 1
+                // TODO: port this from Qt Quick Controls 1
+                //decimals: 0
+
                 // FIXME: cause a crash in a Qt Quick internals :(
 //                onEditingFinished: { loadForumPage(value); }
 //                onEditingFinished: btnGotoPage.clicked();
-
-                minimumValue: 1
-                maximumValue: totalPageCount
-                value: currentPageIndex
-                stepSize: 1
-                decimals: 0
             }
 
             // FIXME: this button isn't really required, just a workaround for the crash above in SpinBox
@@ -323,7 +328,8 @@ ApplicationWindow
                 width: parent.width / childCount
                 height: childHeight
 
-                isDefault: true
+                // TODO: port this from Qt Quick Controls 1
+//                isDefault: true
                 text: "Go"
 
                 onClicked: { loadForumPage(cmbPage.value); }

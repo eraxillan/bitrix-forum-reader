@@ -331,12 +331,14 @@ PostVideo::PostVideo(QString urlStr)
     QString videoId = urlQuery.queryItemValue("v");
 
     // FIXME: replace this ugly hardcoded path with e.g. environment varible
-#ifndef Q_OS_IOS
+#if !defined(Q_OS_IOS)
     QProcess youtubeDlProcess;
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
     youtubeDlProcess.start("C:\\Users\\2\\Downloads\\youtube-dl.exe", QStringList() << "-J" << "--skip-download" << videoId);
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID)
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_OSX)
     youtubeDlProcess.start("youtube-dl", QStringList() << "-J" << "--skip-download" << videoId);
+#elif defined(Q_OS_OSX)
+    youtubeDlProcess.start("/usr/local/bin/youtube-dl", QStringList() << "-J" << "--skip-download" << videoId);
 #elif defined(Q_OS_ANDROID)
     // FIXME: embed youtube-dl executable to APK
     m_url.clear();

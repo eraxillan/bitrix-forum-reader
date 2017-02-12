@@ -22,6 +22,7 @@ UI_DIR      = $${APP_BUILD_DIR}
 OBJECTS_DIR = $${APP_BUILD_DIR}
 MOC_DIR     = $${APP_BUILD_DIR}
 
+QT += quickcontrols2
 QT += qml quick widgets network multimedia
 android: QT += androidextras
 

@@ -1,9 +1,8 @@
-﻿
-#include <QtCore>
-#include <QtQml>
-#include <QApplication>
+﻿#include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQuickImageProvider>
+#include <QQmlContext>
+#include <QSettings>
+#include <QQuickStyle>
 #include <QScreen>
 
 #ifdef Q_OS_ANDROID
@@ -56,7 +55,11 @@ int main(int argc, char *argv[])
 {
     qsrand(1);
 
-    QApplication app(argc, argv);
+    QGuiApplication::setApplicationName("Banki.ru Reader");
+    QGuiApplication::setOrganizationName("Alexander Kamyshnikov");
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
+    QGuiApplication app(argc, argv);
 
     qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
 
@@ -74,22 +77,24 @@ int main(int argc, char *argv[])
     Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
 #endif
 
-	try
-	{
-		QQmlApplicationEngine engine;
+    try
+    {
+        QQmlApplicationEngine engine;
 
-		float textScaleFactor = 0.0f;
+        float textScaleFactor = 0.0f;
         float displayDpi = getDpi(textScaleFactor);
-		engine.rootContext()->setContextProperty("displayDpi", displayDpi);
-		engine.rootContext()->setContextProperty("textScaleFactor", textScaleFactor);
+        engine.rootContext()->setContextProperty("displayDpi", displayDpi);
+        engine.rootContext()->setContextProperty("textScaleFactor", textScaleFactor);
 
-		engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+        engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+        if (engine.rootObjects().isEmpty())
+            return 1;
 
-		return app.exec();
-	}
-	catch (...)
-	{
-		qDebug() << "ERROR: exception caught!";
-		return 1;
-	}
+        return app.exec();
+    }
+    catch (...)
+    {
+        qDebug() << "ERROR: exception caught!";
+        return 2;
+    }
 }
