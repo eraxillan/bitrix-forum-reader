@@ -9,9 +9,6 @@ VERSION = 0.10.1
 buildmode = release
 CONFIG(debug, debug|release):buildmode = debug
 
-# FIXME: add x64 build mode support
-#contains(QT_ARCH, i386) {
-
 APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
 APP_ARCH = $$first( $$list( $$QT_ARCH ) )
 APP_COMPILER = $$first( $$list( $$QMAKE_COMPILER ) )
