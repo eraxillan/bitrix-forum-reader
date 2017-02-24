@@ -1,4 +1,4 @@
-import QtQuick 2.6
+import QtQuick 2.7
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
 import QtQuick.Window 2.2
@@ -274,87 +274,60 @@ ApplicationWindow
             }
         }
 
-        header: Row {
+        header: RowLayout {
             enabled: pageLoaded
 
             width: view.width
-            height: dp(40)
+            height: dp(50)
+            spacing: dp(5)
 
-            property int childCount: 6
+            property int childCount: 3
             property int childHeight: height
 
             Button {
                 id: btnFirstPage
                 enabled: parent.enabled && (cmbPage.value >= 2)
-                width: parent.width / childCount
-                height: childHeight
+
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.bottomMargin: dp(5)
 
                 text: "<<"
 
-                onClicked: { loadForumPage(cmbPage.value - 1); }
-            }
-
-            Button {
-                id: btPrevPage
-                enabled: parent.enabled && (cmbPage.value >= 2)
-                width: parent.width / childCount
-                height: childHeight
-
-                text: "<"
-
-                onClicked: { loadForumPage(cmbPage.value - 1); }
+                onClicked: cmbPage.value = 1;
             }
 
             SpinBox {
                 id: cmbPage
-                width: parent.width / childCount
-                height: childHeight
 
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.bottomMargin: dp(5)
+
+                editable: true
                 from: 1
                 to: totalPageCount
+
                 value: currentPageIndex
                 stepSize: 1
-                // TODO: port this from Qt Quick Controls 1
-                //decimals: 0
 
-                // FIXME: cause a crash in a Qt Quick internals :(
-//                onEditingFinished: { loadForumPage(value); }
-//                onEditingFinished: btnGotoPage.clicked();
-            }
-
-            // FIXME: this button isn't really required, just a workaround for the crash above in SpinBox
-            Button {
-                id: btnGotoPage
-                width: parent.width / childCount
-                height: childHeight
-
-                // TODO: port this from Qt Quick Controls 1
-//                isDefault: true
-                text: "Go"
-
-                onClicked: { loadForumPage(cmbPage.value); }
-            }
-
-            Button {
-                id: btnNextPage
-                enabled: parent.enabled && (cmbPage.value <= totalPageCount - 1)
-                width: parent.width / childCount
-                height: childHeight
-
-                text: ">"
-
-                onClicked: { loadForumPage(cmbPage.value + 1); }
+                onValueChanged: loadForumPage(cmbPage.value);
             }
 
             Button {
                 id: btnLastPage
                 enabled: parent.enabled && (cmbPage.value <= totalPageCount - 1)
-                width: parent.width / childCount
-                height: childHeight
+
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.bottomMargin: dp(5)
 
                 text: ">>"
 
-                onClicked: { loadForumPage(cmbPage.value + 1); }
+                onClicked: cmbPage.value = totalPageCount;
             }
         }
 
