@@ -79,9 +79,9 @@ ApplicationWindow
         xhr.send()
     }
 
-    Component.onCompleted: {
+    /*Component.onCompleted: {
         loadForumPage(currentPageIndex)
-    }
+    }*/
 
     BusyIndicator
     {
