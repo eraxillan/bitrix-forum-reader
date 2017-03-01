@@ -28,6 +28,9 @@ QString PostQuote::getQmlString(int randomSeed) const
             "   width: rctItem.width - parent.rightPadding - parent.leftPadding - dp(20);\n"
             "   height: rctQuoteTitle%1.height + txtQuoteBody%1.height + txtQuoteSourceRef%1.height + 2*dp(5);\n"
             "\n"
+            "   border.width: dp(2);\n"
+            "   border.color: \"silver\";\n"
+            "\n"
             "   Rectangle {\n"
             "       id: rctQuoteTitle%1;\n"
             "       color: \"silver\";\n"
@@ -206,8 +209,8 @@ PostRichText::PostRichText()
 {
 }
 
-PostRichText::PostRichText(QString text, bool isBold, bool isItalic, bool isUnderlined)
-    : m_text(text), m_isBold(isBold), m_isItalic(isItalic), m_isUnderlined(isUnderlined)
+PostRichText::PostRichText(QString text, bool isBold, bool isItalic, bool isUnderlined, bool isStrikedOut)
+    : m_text(text), m_isBold(isBold), m_isItalic(isItalic), m_isUnderlined(isUnderlined), m_isStrikedOut(isStrikedOut)
 {
 }
 
@@ -226,9 +229,10 @@ QString PostRichText::getQmlString(int randomSeed) const
             "   font.bold: %2;\n"
             "   font.italic: %3;\n"
             "   font.underline: %4;\n"
+            "   font.strikeout: %5;\n"
             "   font.pointSize: 14;\n"
             "\n"
-            "   text: '%5';\n"
+            "   text: '%6';\n"
             "   textFormat: Text.PlainText;\n"
             "\n"
             "   elide: Text.ElideRight;\n"
@@ -247,7 +251,10 @@ QString PostRichText::getQmlString(int randomSeed) const
 
     QString textEsc = QString(m_text).replace("'", "\\'");
     return  qmlStr.arg(randomSeed)
-            .arg(m_isBold ? "true" : "false").arg(m_isItalic ? "true" : "false").arg(m_isUnderlined ? "true" : "false")
+            .arg(m_isBold ? "true" : "false")
+            .arg(m_isItalic ? "true" : "false")
+            .arg(m_isUnderlined ? "true" : "false")
+            .arg(m_isStrikedOut ? "true" : "false")
             .arg(textEsc);
 }
 
