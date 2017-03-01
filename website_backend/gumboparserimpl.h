@@ -25,9 +25,12 @@ class ForumPageParser : public IForumPageReader
     };
 
 private:
+    mutable bool m_textQuoteFlag = false;
+
+private:
     void printTagsRecursively(QtGumboNode node, int &level);
     void findMsdivNodesRecursively(QtGumboNode node, QVector<QtGumboNode> &msdivNodes);
-    void findPageCount(QtGumboNode node, int &pageCount);
+    void findPageCount(QString rawData, int &pageCount);
     UserBaseInfo getUserBaseInfo(QtGumboNode userInfoNode);
     UserAdditionalInfo getUserAdditionalInfo(QtGumboNode userInfoNode);
     QSharedPointer<PostImage> getUserAvatar(QtGumboNode userInfoNode);

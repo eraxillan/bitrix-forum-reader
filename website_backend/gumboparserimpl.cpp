@@ -91,13 +91,21 @@ ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(QtGumboNode userI
 
     QtGumboNode userNameNode = userInfoNode.getElementByClass("forum-user-name", HtmlTag::DIV);
     Q_ASSERT(userNameNode.isValid()); if (!userNameNode.isValid()) return result;
-    Q_ASSERT(userNameNode.getChildElementCount() == 1); if (userNameNode.getChildElementCount() != 1) return result;
+    Q_ASSERT(userNameNode.getChildElementCount() == 1 || userNameNode.getChildElementCount() == 2);
+    if (userNameNode.getChildElementCount() != 1 && userNameNode.getChildElementCount() != 2) return result;
+    Q_ASSERT(userNameNode.getChildren()[0].getTag() == HtmlTag::A || userNameNode.getChildren()[0].getTag() == HtmlTag::SCRIPT);
+    if (userNameNode.getChildElementCount() == 2)
+    {
+        Q_ASSERT(userNameNode.getChildren()[1].getTag() == HtmlTag::A || userNameNode.getChildren()[1].getTag() == HtmlTag::SCRIPT);
+    }
 
     QSharedPointer<PostHyperlink> userProfileRef = parseHyperlink(userNameNode.getElementByTag({HtmlTag::A, 0}));
     Q_ASSERT(!userProfileRef.isNull() && userProfileRef->isValid());
     result.m_id = parseUserId(userProfileRef->m_urlStr);
     result.m_name = userProfileRef->m_tip;
     result.m_profileUrl = QUrl(userProfileRef->m_urlStr);
+    Q_ASSERT(result.m_id > 0);
+    Q_ASSERT(!result.m_name.isEmpty());
     Q_ASSERT(result.m_profileUrl.isValid());
 
     return result;
@@ -108,7 +116,7 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
     UserAdditionalInfo result;
 
     QtGumboNode userAdditionalNode = userInfoNode.getElementByClass("forum-user-additional", HtmlTag::DIV);
-    Q_ASSERT(userAdditionalNode.getChildElementCount() >= 3 && userAdditionalNode.getChildElementCount() <= 5);
+    Q_ASSERT(userAdditionalNode.getChildElementCount() >= 3 && userAdditionalNode.getChildElementCount() <= 6);
 
     // Read the all message URL and the post count
     QtGumboNode postLinkNode = userAdditionalNode.getElementByTag({{HtmlTag::SPAN, 0}, {HtmlTag::SPAN, 0}, {HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}});
@@ -318,17 +326,22 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             // Rich text
             case HtmlTag::B:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), true, false, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), true, false, false, false));
                 break;
             }
             case HtmlTag::I:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, true, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, true, false, false));
                 break;
             }
             case HtmlTag::U:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, false, true));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, false, true, false));
+                break;
+            }
+            case HtmlTag::S:
+            {
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, false, false, true));
                 break;
             }
 
@@ -340,7 +353,10 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 {
                     postObjects << parseQuote(*iChild);
                 }
-                else Q_ASSERT(0);
+                else
+                {
+                    Q_ASSERT_X(0, Q_FUNC_INFO, "invalid quote class");
+                }
                 break;
             }
             // Line break
@@ -392,15 +408,33 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             {
                 break;
             }
-            default: Q_ASSERT(0); break;
+            default:
+            {
+                Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML tag");
+                break;
+            }
             }
         }
         else if (iChild->isText())
         {
-            postObjects << QSharedPointer<PostPlainText>(new PostPlainText(iChild->getInnerText().trimmed()));
+            // FIXME: ugly hack to remove ':' from the quote body beginning
+            QString text = iChild->getInnerText().trimmed();
+            if (m_textQuoteFlag)
+            {
+                text = text.remove(0, 1);
+                text = text.trimmed();
+                m_textQuoteFlag = false;
+            }
+
+            postObjects << QSharedPointer<PostPlainText>(new PostPlainText(text));
         }
-        // FIXME: unknown item type
-        //else Q_ASSERT(0);
+        else
+        {
+            if (iChild->isWhitespace()) continue;
+            if (iChild->isComment()) continue;
+
+            Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML item");
+        }
     }
 }
 
@@ -518,7 +552,7 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNode postEntryNode)
     QString attachmentsLabelStr = labelNode.getChildrenInnerText();
 
     result << QSharedPointer<PostLineBreak>(new PostLineBreak());
-    result << QSharedPointer<PostRichText>(new PostRichText(attachmentsLabelStr, true, false, false));
+    result << QSharedPointer<PostRichText>(new PostRichText(attachmentsLabelStr, true, false, false, false));
     result << QSharedPointer<PostLineBreak>(new PostLineBreak());
 
     QtGumboNodes children = attachmentsNode.getElementsByClass("forum-post-attachment", HtmlTag::DIV);
@@ -595,25 +629,21 @@ int ForumPageParser::getPostId(QtGumboNode msdivNode)
     return messageId;
 }
 
-void ForumPageParser::findPageCount(QtGumboNode node, int &pageCount)
+void ForumPageParser::findPageCount(QString rawData, int &pageCount)
 {
     pageCount = 0;
 
-    QtGumboNodes paginationNodes = node.getElementsByClassRecursive("ui-pagination__item", HtmlTag::LI);
-    Q_ASSERT(paginationNodes.size() == 16 || paginationNodes.size() == 12); // 12 for last page, 16 for others
-    if (paginationNodes.size() != 16 && paginationNodes.size() != 12) return;
-
-    QtGumboNode lastPageNode = paginationNodes[paginationNodes.size() == 16 ? 7 : 6];
-    Q_ASSERT(lastPageNode.isValid()); if (!lastPageNode.isValid()) return;
-
-    QSharedPointer<PostHyperlink> lastPageHref = parseHyperlink(lastPageNode.getElementByTag({HtmlTag::A, 0}));
-    QString pageCountStr = lastPageHref->m_title;
-
+    const QString PAGES_STR = "pages: ";
+    int pagesIdxBegin = rawData.indexOf(PAGES_STR);
+    int pagesIdxEnd   = rawData.indexOf(",", pagesIdxBegin);
+    Q_ASSERT(pagesIdxBegin >= 0); if (pagesIdxBegin < 0) return;
+    Q_ASSERT(pagesIdxEnd > pagesIdxBegin); if (pagesIdxEnd <= pagesIdxBegin) return;
+    int pageCountStrSize = pagesIdxEnd - pagesIdxBegin - PAGES_STR.size();
+    Q_ASSERT(pageCountStrSize > 0); if (pageCountStrSize <= 0) return;
+    QString pageCountStr = rawData.mid(pagesIdxBegin + PAGES_STR.size(), pageCountStrSize);
     bool pageCountOk = false;
     pageCount = pageCountStr.toInt(&pageCountOk);
-    Q_ASSERT(pageCount);
-    if (paginationNodes.size() != 16) pageCount++;
-    if(!pageCountOk) { pageCount = 0; return; }
+    Q_ASSERT(pageCountOk); if (!pageCountOk) pageCount = 0;
 }
 
 void ForumPageParser::fillPostList(QtGumboNode node, UserPosts& posts)
@@ -778,19 +808,52 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
         result->m_url = QUrl(quoteSourceUrl);
         Q_ASSERT(result->m_url.isValid());
 
-        // ":"
-        tbodyTrTdNodeChildIndex++;
-
-        // <br>
-        QtGumboNode tbodyTrTdBrNode = tbodyTrTdNode.getElementByTag({HtmlTag::BR, 0});
-        tbodyTrTdNodeChildIndex++;
-        Q_ASSERT(tbodyTrTdBrNode.isValid());
+        // Find the quote body start
+        Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode.getChildElementCount(false));
+        QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode.getChildren(false);
+        for (; tbodyTrTdNodeChildIndex < tbodyTrTdChildren.size(); ++tbodyTrTdNodeChildIndex)
+        {
+            QtGumboNode temp = tbodyTrTdChildren[tbodyTrTdNodeChildIndex];
+            if (temp.isText())
+            {
+                QString tempText = temp.getInnerText().trimmed();
+                if (tempText == ":")
+                {
+                    tbodyTrTdNodeChildIndex++;
+                    break;
+                }
+                if (tempText.startsWith(":"))
+                {
+                    m_textQuoteFlag = true;
+                    break;
+                }
+            }
+        }
     }
 
     // Read the quote body
-    // NOTE: quote text is HTML
+    // NOTE: quote text is HTML too
     Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode.getChildElementCount(false));
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode.getChildren(false);
+
+ #ifdef RBR_PRINT_DEBUG_OUTPUT
+    qDebug() << "-------------------------------------";
+    qDebug() << "Start index:" << tbodyTrTdNodeChildIndex;
+    for (int i = 0; i < tbodyTrTdChildren.size(); ++i)
+    {
+        const QString idxString = i == tbodyTrTdNodeChildIndex ? QString("[ *") + QString::number(i) + QString("* ]")
+                                                               : QString("[ ")  + QString::number(i) + QString(" ]");
+
+        if (tbodyTrTdChildren[i].isElement())
+            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i].getTagName();
+        else if (tbodyTrTdChildren[i].isText())
+            qDebug() << idxString << "Text" << tbodyTrTdChildren[i].getInnerText();
+        else if (!tbodyTrTdChildren[i].isComment() && !tbodyTrTdChildren[i].isWhitespace())
+            qDebug() << idxString << "Unknown item:";
+    }
+    qDebug() << "-------------------------------------";
+#endif
+
     parseMessage(tbodyTrTdChildren.mid(tbodyTrTdNodeChildIndex), result->m_data);
     return result;
 }
@@ -816,7 +879,7 @@ int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts, int &pa
 
     // Parse web page contents
     GumboOutput* output = gumbo_parse(htmlFileUtf8Contents.constData());
-    findPageCount(output->root, pageCount);
+    findPageCount(rawData, pageCount);
     fillPostList(output->root, userPosts);
     gumbo_destroy_output(&kGumboDefaultOptions, output);
 
