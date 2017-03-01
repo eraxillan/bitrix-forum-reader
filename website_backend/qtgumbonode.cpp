@@ -1,16 +1,67 @@
 #include "qtgumbonode.h"
 
+#ifdef QT_GUMBO_METADATA
+#include <set>
+
+static std::map<GumboNode*, QtGumboNodeProps> g_nodes;
+#endif
+
 namespace {
 const char* const ID_ATTRIBUTE 		= u8"id";
 const char* const CLASS_ATTRIBUTE 	= u8"class";
 }
 
-QtGumboNode::QtGumboNode() : m_node(nullptr)
+QtGumboNode::QtGumboNode()
 {
 }
 
-QtGumboNode::QtGumboNode(GumboNode *node) : m_node(node)
+QtGumboNode::QtGumboNode(GumboNode *node)
 {
+    m_node = node;
+
+#ifdef QT_GUMBO_METADATA
+    if (g_nodes.find(node) != g_nodes.end())
+    {
+        m_props = g_nodes[node];
+        return;
+    }
+
+    QtGumboNodeProps props;
+
+    props.m_isValid = isValid();
+    props.m_isElement = isElement();
+    props.m_isText = isText();
+
+    if (isElement())
+    {
+        props.m_tag = getTag();
+        props.m_tagName = getTagName();
+        props.m_html = getHtml();
+
+        for (unsigned int i = 0; i < m_node->v.element.attributes.length; ++i)
+        {
+            GumboAttribute* attr = static_cast<GumboAttribute*>(m_node->v.element.attributes.data[i]);
+            Q_ASSERT(attr != nullptr); if (!attr) continue;
+
+            props.m_attributes.insert(attr->name, QString::fromUtf8(attr->value));
+        }
+
+        props.m_id = getIdAttribute();
+        props.m_class = getClassAttribute();
+
+        props.m_children = getChildren(false);
+        props.m_elementChildren = getChildren(true);
+        props.m_textChildren = getTextChildren();
+        props.m_childrenText = getChildrenInnerText();
+    }
+
+    if (isText())
+    {
+        props.m_text = getInnerText();
+    }
+
+    g_nodes[node] = props;
+#endif
 }
 
 bool QtGumboNode::isValid() const
@@ -30,6 +81,20 @@ bool QtGumboNode::isText() const
     Q_ASSERT(isValid()); if(!isValid()) return false;
 
     return (m_node->type == GUMBO_NODE_TEXT);
+}
+
+bool QtGumboNode::isWhitespace() const
+{
+    Q_ASSERT(isValid()); if (!isValid()) return false;
+
+    return (m_node->type == GUMBO_NODE_WHITESPACE);
+}
+
+bool QtGumboNode::isComment() const
+{
+    Q_ASSERT(isValid()); if (!isValid()) return false;
+
+    return (m_node->type == GUMBO_NODE_COMMENT);
 }
 
 HtmlTag QtGumboNode::getTag() const
@@ -87,14 +152,14 @@ QString QtGumboNode::getClassAttribute() const
 
 size_t QtGumboNode::getAttributeCount() const
 {
-    Q_ASSERT(isValid()); if(!isValid()) return 0;
+    Q_ASSERT(isValid()); if (!isValid()) return 0;
 
     return m_node->v.element.attributes.length;
 }
 
 QtGumboNodes QtGumboNode::getChildren(bool elementsOnly) const
 {
-    Q_ASSERT(isValid()); if(!isValid()) return QtGumboNodes();
+    Q_ASSERT(isValid()); if (!isValid()) return QtGumboNodes();
 
     QtGumboNodes result;
     GumboVector* children = &m_node->v.element.children;
@@ -105,6 +170,7 @@ QtGumboNodes QtGumboNode::getChildren(bool elementsOnly) const
 
         result << QtGumboNode(childNode);
     }
+
     return result;
 }
 
@@ -113,18 +179,25 @@ int QtGumboNode::getChildElementCount(bool elementsOnly) const
     return getChildren(elementsOnly).size();
 }
 
+QtGumboNodes QtGumboNode::getTextChildren() const
+{
+    Q_ASSERT(isValid()); if (!isValid()) return QtGumboNodes();
+
+    QtGumboNodes result;
+    GumboVector* children = &m_node->v.element.children;
+    for (unsigned int i = 0; i < children->length; ++i)
+    {
+        GumboNode* childNode = static_cast<GumboNode*>(children->data[i]);
+        if (childNode->type != GUMBO_NODE_TEXT) continue;
+
+        result << QtGumboNode(childNode);
+    }
+    return result;
+}
+
 int QtGumboNode::getTextChildrenCount() const
 {
-    Q_ASSERT(isValid()); if(!isValid()) return 0;
-
-    int textNodeCount = 0;
-    GumboVector* nodeChildren = &m_node->v.element.children;
-    for (unsigned int i = 0; i < nodeChildren->length; ++i)
-    {
-        GumboNode* childNode = static_cast<GumboNode*>(nodeChildren->data[i]);
-        if (childNode->type == GUMBO_NODE_TEXT) textNodeCount++;
-    }
-    return textNodeCount;
+    return getTextChildren().size();
 }
 
 QString QtGumboNode::getInnerText() const
