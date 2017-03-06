@@ -44,6 +44,10 @@ HEADERS += \
 
 RESOURCES += qml_frontend/qml.qrc
 
+# Link with curl library
+#INCLUDEPATH +=
+LIBS += -lcurl
+
 # Link with gumbo-parser library
 INCLUDEPATH += $$PWD/gumbo-parser/src
 LIBS += -L$${GUMBO_BUILD_DIR} -lgumbo-parser

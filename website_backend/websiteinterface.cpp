@@ -84,15 +84,15 @@ QString PostQuote::getQmlString(int randomSeed) const
 
     QString titleEsc = QString(m_title).replace("'", "\\'");
     QString userNameEsc = QString(m_userName).replace("'", "\\'");
-
     QString urlText = m_url.isValid() ? PostHyperlink(m_url.toString(), QUOTE_WRITE_VERB).getQmlString(randomSeed) : QString();
-    return qmlStr
-            .arg(randomSeed)
-            .arg(titleEsc)
-            .arg(userNameEsc)
-            .arg(urlText)
-            .arg(quoteQml)
-            .arg(!userNameEsc.isEmpty() ? "true" : "false");
+
+    return qmlStr.arg(
+                QString::number(randomSeed),
+                titleEsc,
+                userNameEsc,
+                urlText,
+                quoteQml,
+                !userNameEsc.isEmpty() ? "true" : "false");
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -116,11 +116,12 @@ QString PostImage::getQmlString(int randomSeed) const
 {
     if (!m_url.endsWith(".gif"))
     {
-        return QString("Image { id: img%1; source: '%2' }").arg(randomSeed).arg(m_url);
+        return QString("Image { id: img%1; source: '%2' }")
+                .arg(QString::number(randomSeed), m_url);
     }
 
     // FIXME: use other fields e.g. width and height
-    return QString("AnimatedImage { id: imgSmile%1; source: '%2'; }").arg(randomSeed).arg(m_url);
+    return QString("AnimatedImage { id: imgSmile%1; source: '%2'; }").arg(QString::number(randomSeed), m_url);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -199,7 +200,7 @@ QString PostPlainText::getQmlString(int randomSeed) const
 #endif
             "}\n";
     QString textEsc = QString(m_text).replace("'", "\\'");
-    return qmlStr.arg(randomSeed).arg(textEsc);
+    return qmlStr.arg(QString::number(randomSeed), textEsc);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -209,8 +210,8 @@ PostRichText::PostRichText()
 {
 }
 
-PostRichText::PostRichText(QString text, bool isBold, bool isItalic, bool isUnderlined, bool isStrikedOut)
-    : m_text(text), m_isBold(isBold), m_isItalic(isItalic), m_isUnderlined(isUnderlined), m_isStrikedOut(isStrikedOut)
+PostRichText::PostRichText(QString text, QString color, bool isBold, bool isItalic, bool isUnderlined, bool isStrikedOut)
+    : m_text(text), m_color(color), m_isBold(isBold), m_isItalic(isItalic), m_isUnderlined(isUnderlined), m_isStrikedOut(isStrikedOut)
 {
 }
 
@@ -226,13 +227,15 @@ QString PostRichText::getQmlString(int randomSeed) const
             "   id: dynTxtPost%1;\n"
 //            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
             "\n"
-            "   font.bold: %2;\n"
-            "   font.italic: %3;\n"
-            "   font.underline: %4;\n"
-            "   font.strikeout: %5;\n"
+            "   color: '%2';\n"
+            "\n"
+            "   font.bold: %3;\n"
+            "   font.italic: %4;\n"
+            "   font.underline: %5;\n"
+            "   font.strikeout: %6;\n"
             "   font.pointSize: 14;\n"
             "\n"
-            "   text: '%6';\n"
+            "   text: '%7';\n"
             "   textFormat: Text.PlainText;\n"
             "\n"
             "   elide: Text.ElideRight;\n"
@@ -250,12 +253,14 @@ QString PostRichText::getQmlString(int randomSeed) const
             "}\n";
 
     QString textEsc = QString(m_text).replace("'", "\\'");
-    return  qmlStr.arg(randomSeed)
-            .arg(m_isBold ? "true" : "false")
-            .arg(m_isItalic ? "true" : "false")
-            .arg(m_isUnderlined ? "true" : "false")
-            .arg(m_isStrikedOut ? "true" : "false")
-            .arg(textEsc);
+    return  qmlStr.arg(
+                QString::number(randomSeed),
+                m_color,
+                m_isBold ? "true" : "false",
+                m_isItalic ? "true" : "false",
+                m_isUnderlined ? "true" : "false",
+                m_isStrikedOut ? "true" : "false",
+                textEsc);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -403,7 +408,7 @@ QString PostVideo::getQmlString(int randomSeed) const
             "   Keys.onLeftPressed: video%1.seek(video%1.position - 5000);\n"
             "   Keys.onRightPressed: video%1.seek(video%1.position + 5000);\n"
             "}\n";
-    return qmlStr.arg(randomSeed).arg(m_urlStr);
+    return qmlStr.arg(QString::number(randomSeed), m_urlStr);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -453,7 +458,7 @@ QString PostHyperlink::getQmlString(int randomSeed) const
             "   }\n"
 #endif
             "}\n";
-    return qmlStr.arg(randomSeed).arg("<a href=\"" + m_urlStr + "\">" + m_title + "</a>");
+    return qmlStr.arg(QString::number(randomSeed), "<a href=\"" + m_urlStr + "\">" + m_title + "</a>");
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------

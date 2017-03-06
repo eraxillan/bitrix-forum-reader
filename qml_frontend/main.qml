@@ -20,51 +20,14 @@ ApplicationWindow
     function dp(x) { return x * (displayDpi / 160); }
 //    function sp(x) { return x * (displayDpi / 160) * textScaleFactor; }
 
+    property bool qmlInit: false
     property bool pageLoaded: false
-    property int totalPageCount: 31
-    property int currentPageIndex: 30
+    property int totalPageCount: 1
+    property int currentPageIndex: 1
 
     ForumReader
     {
         id: reader
-    }
-
-    function xhrCallback(xhr, pageNo)
-    {
-        if (xhr.readyState == XMLHttpRequest.DONE )
-        {
-            var resp = xhr.responseText;
-
-            // Parse the page HTML data
-            reader.parseForumPage( resp, pageNo )
-
-            // Fill the page counter
-            totalPageCount = reader.pageCount();
-            currentPageIndex = pageNo;
-
-            // Fill the post list
-            var i = 0;
-            for( ; i < reader.postCount(); i++ )
-            {
-                dataModel.append( {  "color"                  : "lightgrey",
-                                     "postAuthor"             : reader.postAuthor(i),
-                                     "postAvatar"             : reader.postAvatarUrl(i),
-                                     "postAvatarWidth"        : reader.postAvatarWidth(i),
-                                     "postAvatarHeight"       : reader.postAvatarHeight(i),
-                                     "postDateTime"           : reader.postDateTime(i),
-                                     "postText"               : reader.postText(i),
-                                     "postLastEdit"           : reader.postLastEdit(i),
-                                     "postLikeCount"          : reader.postLikeCount(i),
-                                     "postFooterQml"          : reader.postFooterQml(),
-                                     "authorPostCount"        : reader.postAuthorPostCount(i),
-                                     "authorRegistrationDate" : reader.postAuthorRegistrationDate(i),
-                                     "authorReputation"       : reader.postAuthorReputation(i),
-                                     "authorCity"             : reader.postAuthorCity(i),
-                                     "authorSignature"        : reader.postAuthorSignature(i)
-                                 } );
-            }
-            pageLoaded = true;
-        }
     }
 
     function loadForumPage(pageNo)
@@ -73,15 +36,42 @@ ApplicationWindow
         pageLoaded = false;
         dataModel.clear();
 
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() { xhrCallback(xhr, pageNo); }
-        xhr.open("GET", "http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=" + pageNo.toString() + "#forum-message-list")
-        xhr.send()
+        // Parse the page HTML data
+        reader.parseForumPage("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=" + pageNo.toString() + "#forum-message-list", pageNo)
+
+        // Fill the page counter
+        totalPageCount = reader.pageCount();
+        currentPageIndex = pageNo;
+
+        // Fill the post list
+        for (var i = 0; i < reader.postCount(); i++)
+        {
+            dataModel.append( {  "color"                  : "lightgrey",
+                                 "postAuthor"             : reader.postAuthor(i),
+                                 "postAvatar"             : reader.postAvatarUrl(i),
+                                 "postAvatarWidth"        : reader.postAvatarWidth(i),
+                                 "postAvatarHeight"       : reader.postAvatarHeight(i),
+                                 "postDateTime"           : reader.postDateTime(i),
+                                 "postText"               : reader.postText(i),
+                                 "postLastEdit"           : reader.postLastEdit(i),
+                                 "postLikeCount"          : reader.postLikeCount(i),
+                                 "postFooterQml"          : reader.postFooterQml(),
+                                 "authorPostCount"        : reader.postAuthorPostCount(i),
+                                 "authorRegistrationDate" : reader.postAuthorRegistrationDate(i),
+                                 "authorReputation"       : reader.postAuthorReputation(i),
+                                 "authorCity"             : reader.postAuthorCity(i),
+                                 "authorSignature"        : reader.postAuthorSignature(i)
+                             } );
+        }
+        pageLoaded = true;
     }
 
-    /*Component.onCompleted: {
-        loadForumPage(currentPageIndex)
-    }*/
+    Component.onCompleted: {
+        totalPageCount = reader.parsePageCount("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list")
+        loadForumPage(totalPageCount)
+
+        qmlInit = true;
+    }
 
     BusyIndicator
     {
@@ -313,7 +303,7 @@ ApplicationWindow
                 value: currentPageIndex
                 stepSize: 1
 
-                onValueChanged: loadForumPage(cmbPage.value);
+                onValueChanged: if (qmlInit) loadForumPage(cmbPage.value);
             }
 
             Button {

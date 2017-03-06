@@ -76,13 +76,14 @@ namespace BankiRuForum
     struct PostRichText : IPostObject
     {
         QString m_text;
+        QString m_color = "black";
         bool m_isBold = false;
         bool m_isItalic = false;
         bool m_isUnderlined = false;
         bool m_isStrikedOut = false;
 
         PostRichText();
-        PostRichText(QString text, bool isBold, bool isItalic, bool isUnderlined, bool isStrikedOut);
+        PostRichText(QString text, QString color, bool isBold, bool isItalic, bool isUnderlined, bool isStrikedOut);
 
         bool isValid() const Q_DECL_OVERRIDE;
         virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
@@ -169,7 +170,8 @@ namespace BankiRuForum
     public:
         virtual ~IForumPageReader();
 
-        virtual int getPagePosts(QString rawData, UserPosts& userPosts, int& pageCount) = 0;
+        virtual int getPageCount(QByteArray rawData, int& pageCount) = 0;
+        virtual int getPagePosts(QByteArray rawData, UserPosts& userPosts) = 0;
     };
 
 }

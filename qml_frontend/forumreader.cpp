@@ -1,6 +1,7 @@
 #include "forumreader.h"
 
 #include "website_backend/gumboparserimpl.h"
+#include "common/filedownloader.h"
 
 #ifdef RBR_DUMP_GENERATED_QML_IN_FILES
 namespace {
@@ -19,16 +20,9 @@ static bool WriteTextFile(QString fileName, QString fileContents)
 
 ForumReader::ForumReader() : m_userPosts(), m_pageCount(0), m_pageNo(0)
 {
-    // NOTE: for testing purposes
-    //BankiRuForum::ForumPageParser fpp;
-    //fpp.getPagePosts( QUrl::fromLocalFile("C:/Projects/__DATA/test_page_30.html"), m_userPosts );
 }
 
 ForumReader::~ForumReader()
-{
-}
-
-ForumReader::ForumReader(BankiRuForum::UserPosts userPosts, QObject *parent) : QObject(parent), m_userPosts(userPosts), m_pageCount(0), m_pageNo(0)
 {
 }
 
@@ -44,15 +38,43 @@ QUrl ForumReader::convertToUrl(QString urlStr) const
     return QUrl(urlStr);
 }
 
-bool ForumReader::parseForumPage(QString forumPageRawHtml, int pageNo)
+int ForumReader::parsePageCount(QString urlStr)
 {
+    // Cleanup
+    m_userPosts.clear();
+    m_pageCount = 0;
+
+    // 1) Download the first forum web page
+    QByteArray htmlRawData;
+    if (!FileDownloader::downloadUrl(urlStr, htmlRawData)) { Q_ASSERT(0); return false; }
+
+    // 2) Parse the page HTML to get the page number
+    BankiRuForum::ForumPageParser fpp;
+    int resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
+    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pageCount = 0; return 0; }
+    return m_pageCount;
+}
+
+bool ForumReader::parseForumPage(QString urlStr, int pageNo)
+{
+    // Cleanup
     m_userPosts.clear();
     m_pageCount = 0;
     m_pageNo = pageNo;
 
+    // 1) Download the first forum web page
+    QByteArray htmlRawData;
+    if (!FileDownloader::downloadUrl(urlStr, htmlRawData)) { Q_ASSERT(0); return false; }
+
+    // 2) Parse the page HTML to get the page number
     BankiRuForum::ForumPageParser fpp;
-    int result = fpp.getPagePosts(forumPageRawHtml, m_userPosts, m_pageCount);
-    return (result == 0);
+    int resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
+    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pageCount = 0; return false; }
+
+    // 3) Parse the page HTML to get the page user posts
+    resultFpp = fpp.getPagePosts(htmlRawData, m_userPosts);
+    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_userPosts.clear(); return false; }
+    return true;
 }
 
 int ForumReader::pageCount() const

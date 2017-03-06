@@ -50,7 +50,8 @@ private:
 
 public:
     // IForumPageReader implementation
-    virtual int getPagePosts(QString rawData, UserPosts& userPosts, int &pageCount) Q_DECL_OVERRIDE;
+    int getPageCount(QByteArray rawData, int& pageCount) Q_DECL_OVERRIDE;
+    int getPagePosts(QByteArray rawData, UserPosts& userPosts) Q_DECL_OVERRIDE;
 };
 
 }

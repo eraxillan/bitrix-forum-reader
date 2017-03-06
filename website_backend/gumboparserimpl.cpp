@@ -261,7 +261,7 @@ Post ForumPageParser::getPostValue(QtGumboNode trNode1)
     // 2) <div class="forum-post-entry" style="font-size: 14px;">
     QtGumboNode postEntryNode = postNode.getElementByClass("forum-post-entry", HtmlTag::DIV);
     Q_ASSERT(postEntryNode.isValid());
-    Q_ASSERT(postEntryNode.getChildElementCount() <= 3);
+    Q_ASSERT(postEntryNode.getChildElementCount() <= 4);
     Q_ASSERT(postEntryNode.getClassAttribute() == "forum-post-entry");
 
     QtGumboNode postTextNode = postEntryNode.getElementByClass("forum-post-text", HtmlTag::DIV);
@@ -326,22 +326,62 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             // Rich text
             case HtmlTag::B:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), true, false, false, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), "black", true, false, false, false));
                 break;
             }
             case HtmlTag::I:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, true, false, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), "black", false, true, false, false));
                 break;
             }
             case HtmlTag::U:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, false, true, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), "black", false, false, true, false));
                 break;
             }
             case HtmlTag::S:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), false, false, false, true));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChild->getChildrenInnerText(), "black", false, false, false, true));
+                break;
+            }
+            case HtmlTag::FONT:
+            {
+                Q_ASSERT(iChild->getAttributeCount() == 1);
+
+                QString textColor = "black";
+                if (iChild->hasAttribute("color")) textColor = iChild->getAttribute("color");
+                QtGumboNodes fontTagChildren = iChild->getChildren(false);
+                for (QtGumboNode node: fontTagChildren)
+                {
+                    if (node.isElement())
+                    {
+                        switch (node.getTag())
+                        {
+                        case HtmlTag::B:
+                        {
+                            postObjects << QSharedPointer<PostRichText>(new PostRichText(" " + node.getChildrenInnerText() + " ", textColor, true, false, false, false));
+                            break;
+                        }
+                        // Line break
+                        case HtmlTag::BR:
+                        {
+                            postObjects << QSharedPointer<PostLineBreak>(new PostLineBreak());
+                            break;
+                        }
+                        // FIXME: implement other text formatting tags as above
+                        default:
+                        {
+                            Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML tag");
+                            break;
+                        }
+                        }
+                    }
+                    else if (node.isText())
+                    {
+                        //postObjects << QSharedPointer<PostPlainText>(new PostPlainText(node.getInnerText().trimmed()));
+                        postObjects << QSharedPointer<PostRichText>(new PostRichText(" " + node.getInnerText().trimmed() + " ", textColor, false, false, false, false));
+                    }
+                }
                 break;
             }
 
@@ -352,6 +392,11 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 if (iChild->getClassAttribute() == "forum-quote" || iChild->getClassAttribute() == "forum-code")
                 {
                     postObjects << parseQuote(*iChild);
+                }
+                // FIXME: implement
+                else if (iChild->getClassAttribute() == "forum-spoiler")
+                {
+                    qWarning() << "WARNING: forum-spoiler quote table class is not yet implemented";
                 }
                 else
                 {
@@ -392,6 +437,8 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 // 'file':'https://www.youtube.com/watch?v=PI9o3v4nttU',
                 const QString VIDEO_URL_START_STR = "'file':'";
                 const QString VIDEO_URL_END_STR = "',";
+                const QString VIDEO_URL_TAG_START_STR = "[url]";
+                const QString VIDEO_URL_TAG_END_STR = "[/url]";
                 int videoUrlStartIndex = text.indexOf(VIDEO_URL_START_STR);
                 Q_ASSERT(videoUrlStartIndex >= 0);
 
@@ -400,6 +447,18 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
 
                 QString videoUrl = text.mid(videoUrlStartIndex + VIDEO_URL_START_STR.size(),
                                             videoUrlEndIndex - videoUrlStartIndex - VIDEO_URL_START_STR.size());
+                videoUrl = videoUrl.trimmed();
+
+                int videoUrlTagStartIndex = videoUrl.indexOf(VIDEO_URL_TAG_START_STR);
+                if (videoUrlTagStartIndex >= 0)
+                {
+                    int videoUrlTagEndIndex = videoUrl.indexOf(VIDEO_URL_TAG_END_STR);
+                    Q_ASSERT(videoUrlTagEndIndex > videoUrlTagStartIndex);
+
+                    videoUrl = videoUrl.mid(videoUrlTagStartIndex + VIDEO_URL_TAG_START_STR.size(),
+                                            videoUrlTagEndIndex - videoUrlTagStartIndex - VIDEO_URL_TAG_START_STR.size());
+                    videoUrl = videoUrl.trimmed();
+                }
                 postObjects << QSharedPointer<PostVideo>(new PostVideo(videoUrl));
                 break;
             }
@@ -506,6 +565,12 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
     {
         switch (iChild->getTag())
         {
+        case HtmlTag::B:
+        {
+            // FIXME: check
+            userSignatureStr += "<b>" + iChild->getChildrenInnerText() + "</b>";
+            break;
+        }
         case HtmlTag::A:
         {
             Q_ASSERT(iChild->getAttributeCount() == 3);
@@ -552,7 +617,7 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNode postEntryNode)
     QString attachmentsLabelStr = labelNode.getChildrenInnerText();
 
     result << QSharedPointer<PostLineBreak>(new PostLineBreak());
-    result << QSharedPointer<PostRichText>(new PostRichText(attachmentsLabelStr, true, false, false, false));
+    result << QSharedPointer<PostRichText>(new PostRichText(attachmentsLabelStr, "black", true, false, false, false));
     result << QSharedPointer<PostLineBreak>(new PostLineBreak());
 
     QtGumboNodes children = attachmentsNode.getElementsByClass("forum-post-attachment", HtmlTag::DIV);
@@ -858,31 +923,47 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
     return result;
 }
 
-int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts, int &pageCount)
-{
-    // First determine HTML page encoding
-    QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
-    Q_UNUSED(htmlCodec);
-#ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "ru.banki.reader: HTML encoding/charset is" << htmlCodec->name();
-#endif
+// IForumPageReader implementation ////////////////////////////////////////////
 
-    // Convert to UTF-8: Gumbo library understands only this encoding
-#if defined( Q_OS_WIN )
-    QString htmlFileString = htmlCodec->toUnicode(rawData.toLocal8Bit());
-    QByteArray htmlFileUtf8Contents = htmlFileString.toUtf8();
-#elif defined( Q_OS_UNIX ) || defined( Q_OS_ANDROID )
-    QByteArray htmlFileUtf8Contents = rawData.toUtf8();
-#else
-    #error "Unsupported platform, needs testing"
+namespace
+{
+QByteArray convertHtmlToUft8(QByteArray rawHtmlData)
+{
+    QByteArray result;
+
+    QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawHtmlData);
+    Q_ASSERT(htmlCodec); if (!htmlCodec) return QByteArray();
+#ifdef RBR_PRINT_DEBUG_OUTPUT
+    qDebug() << "HTML encoding/charset is:" << htmlCodec->name();
 #endif
+    QString resultStr = htmlCodec->toUnicode(rawHtmlData);
+    result = resultStr.toUtf8();
+    return result;
+}
+}
+
+int ForumPageParser::getPageCount(QByteArray rawData, int &pageCount)
+{
+    QByteArray utfData = convertHtmlToUft8(rawData);
+    if (utfData.isEmpty()) { Q_ASSERT(0); return 0; }
+
+    // Parse page count
+    findPageCount(utfData, pageCount);
+
+    // TODO: implement error handling with different return code
+    return 0;
+}
+
+int ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
+{
+    QByteArray utfData = convertHtmlToUft8(rawData);
 
     // Parse web page contents
-    GumboOutput* output = gumbo_parse(htmlFileUtf8Contents.constData());
-    findPageCount(rawData, pageCount);
+    GumboOutput* output = gumbo_parse(utfData.constData());
     fillPostList(output->root, userPosts);
     gumbo_destroy_output(&kGumboDefaultOptions, output);
 
     // TODO: implement error handling with different return code
     return 0;
 }
+///////////////////////////////////////////////////////////////////////////////
