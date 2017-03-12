@@ -388,15 +388,16 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             // Quote
             case HtmlTag::TABLE:
             {
-                // <table class="forum-quote"> or <table class="forum-code">
+                // <table class="forum-quote">
+                // <table class="forum-code">
+                // <table class="forum-spoiler">
                 if (iChild->getClassAttribute() == "forum-quote" || iChild->getClassAttribute() == "forum-code")
                 {
                     postObjects << parseQuote(*iChild);
                 }
-                // FIXME: implement
                 else if (iChild->getClassAttribute() == "forum-spoiler")
                 {
-                    qWarning() << "WARNING: forum-spoiler quote table class is not yet implemented";
+                    postObjects << parseSpoiler(*iChild);
                 }
                 else
                 {
@@ -920,6 +921,48 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
 #endif
 
     parseMessage(tbodyTrTdChildren.mid(tbodyTrTdNodeChildIndex), result->m_data);
+    return result;
+}
+
+QSharedPointer<PostSpoiler> ForumPageParser::parseSpoiler(QtGumboNode tableNode) const
+{
+    QSharedPointer<PostSpoiler> result(new PostSpoiler);
+
+    // Read the quote title
+    QtGumboNode theadTrThNode = tableNode.getElementByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}, {HtmlTag::DIV, 0}});
+    Q_ASSERT(theadTrThNode.isValid()); if (!theadTrThNode.isValid()) return nullptr;
+    result->m_title = theadTrThNode.getChildrenInnerText();
+    Q_ASSERT(result->m_title[result->m_title.size()-1] == QChar(9650).unicode()
+          || result->m_title[result->m_title.size()-1] == QChar(9660).unicode());
+    if ((result->m_title[result->m_title.size()-1] != QChar(9650).unicode())
+     && (result->m_title[result->m_title.size()-1] != QChar(9660).unicode())) return nullptr;
+    result->m_title = result->m_title.remove(result->m_title.size()-1, 1);
+    result->m_title = result->m_title.trimmed();
+
+    QtGumboNode tbodyTrTdNode = tableNode.getElementByTag({{HtmlTag::TBODY, 0}, {HtmlTag::TR, 0}, {HtmlTag::TD, 0}});
+    Q_ASSERT(tbodyTrTdNode.isValid());
+
+    // Read the spoiler body
+    // NOTE: spoiler text is HTML too
+    QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode.getChildren(false);
+
+ #ifdef RBR_PRINT_DEBUG_OUTPUT
+    qDebug() << "-------------------------------------";
+    for (int i = 0; i < tbodyTrTdChildren.size(); ++i)
+    {
+        const QString idxString = QString("[ ")  + QString::number(i) + QString(" ]");
+
+        if (tbodyTrTdChildren[i].isElement())
+            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i].getTagName();
+        else if (tbodyTrTdChildren[i].isText())
+            qDebug() << idxString << "Text" << tbodyTrTdChildren[i].getInnerText();
+        else if (!tbodyTrTdChildren[i].isComment() && !tbodyTrTdChildren[i].isWhitespace())
+            qDebug() << idxString << "Unknown item:";
+    }
+    qDebug() << "-------------------------------------";
+#endif
+
+    parseMessage(tbodyTrTdChildren, result->m_data);
     return result;
 }
 

@@ -8,6 +8,103 @@ IPostObject::~IPostObject()
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
+// PostSpoiler
+PostSpoiler::PostSpoiler()
+{
+}
+
+bool PostSpoiler::isValid() const
+{
+    return !m_data.isEmpty();
+}
+
+QString PostSpoiler::getQmlString(int randomSeed) const
+{
+    const QString qmlStr =
+            "Rectangle {\n"
+            "   id: rctSpoiler%1;\n"
+            "   color: \"white\";\n"
+            "   width: rctItem.width - parent.rightPadding - parent.leftPadding - dp(20);\n"
+            "   height: rctQuoteTitle%1.height + txtSpoilerBody%1.height + 2*dp(5);\n"
+            "\n"
+            "   border.width: dp(2);\n"
+            "   border.color: \"silver\";\n"
+            "\n"
+            "   Rectangle {\n"
+            "       id: rctQuoteTitle%1;\n"
+            "       color: \"silver\";\n"
+            "       width: parent.width;\n"
+            "       height: txtQuoteTitle%1.height;\n"
+            "\n"
+            "       property int txtSpoilerBodyHeight: 0;\n"
+            "\n"
+            "       Component.onCompleted: {\n"
+            "           rctQuoteTitle%1MA.onClicked(null);\n"
+            "           rctQuoteTitle%1MA.onClicked(null);\n"
+            "           rctQuoteTitle%1MA.onClicked(null);\n"
+            "       }\n"
+            "\n"
+            "       MouseArea {\n"
+            "           id: rctQuoteTitle%1MA;\n"
+            "\n"
+            "           anchors.fill: parent;\n"
+            "           onClicked: {\n"
+            "               txtSpoilerBody%1.visible = !txtSpoilerBody%1.visible;\n"
+            "\n"
+            "               if (txtSpoilerBody%1.height > 0) {\n"
+            "                   rctQuoteTitle%1.txtSpoilerBodyHeight = txtSpoilerBody%1.height;\n"
+            "                   txtSpoilerBody%1.height = 0;\n"
+            "                   txtQuoteTitle%1.text = '%2 \u25BC';\n"
+            "                   rctSpoiler%1.height = Qt.binding(function() { return rctQuoteTitle%1.height + txtSpoilerBody%1.height - 2*dp(5); });\n"
+            "               } else {\n"
+            "                   txtSpoilerBody%1.height = rctQuoteTitle%1.txtSpoilerBodyHeight;\n"
+            "                   txtQuoteTitle%1.text = '%2 \u25B2';\n"
+            "                   rctSpoiler%1.height = Qt.binding(function() { return rctQuoteTitle%1.height + txtSpoilerBody%1.height + 2*dp(5); });\n"
+            "               }\n"
+            "           }\n"
+            "       }\n"
+            "\n"
+            "       Column {\n"
+            "           width: parent.width;\n"
+            "           height: parent.height;\n"
+            "           spacing: dp(5);\n"
+            "\n"
+            "           Text {\n"
+            "               id: txtQuoteTitle%1;\n"
+            "\n"
+            "               leftPadding: dp(10);\n"
+            "               horizontalAlignment: Text.AlignHCenter;\n"
+            "               verticalAlignment: Text.AlignVCenter;\n"
+            "\n"
+            "               width: parent.width;\n"
+            "\n"
+            "               font.pointSize: 14;\n"
+            "               font.bold: true;\n"
+            "               text: '%2';\n"
+            "           }\n"
+            "\n"
+            "           Flow {\n"
+            "               id: txtSpoilerBody%1;\n"
+            "\n"
+            "               leftPadding: dp(10);\n"
+            "\n"
+            "               width: parent.width;\n"
+            "\n"
+            "               %3\n"
+            "           }\n"
+            "       }\n"
+            "   }\n"
+            "}\n";
+
+    QString quoteQml;
+    IPostObjectList::const_iterator iObj = m_data.begin();
+    for (; iObj != m_data.end(); ++iObj)
+    {
+        quoteQml += (*iObj)->getQmlString(qrand());
+    }
+    return qmlStr.arg(QString::number(randomSeed), m_title /*+ " \u25B2"*/, quoteQml);
+}
+
 // PostQuote
 
 PostQuote::PostQuote()

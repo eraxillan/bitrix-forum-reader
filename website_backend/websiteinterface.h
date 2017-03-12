@@ -23,6 +23,18 @@ namespace BankiRuForum
     };
     typedef QList< QSharedPointer<IPostObject> > IPostObjectList;
 
+    // NOTE: spoiler text is HTML
+    struct PostSpoiler : IPostObject
+    {
+        QString m_title;
+        IPostObjectList m_data;
+
+        PostSpoiler();
+
+        bool isValid() const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+    };
+
     // NOTE: quote text is HTML
     struct PostQuote : IPostObject
     {

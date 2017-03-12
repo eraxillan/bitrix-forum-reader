@@ -46,6 +46,7 @@ private:
     QSharedPointer<PostHyperlink> parseHyperlink(QtGumboNode aNode) const;
     QSharedPointer<PostImage> parseImage(QtGumboNode imgNode) const;
     QSharedPointer<PostQuote> parseQuote(QtGumboNode tableNode) const;
+    QSharedPointer<PostSpoiler> parseSpoiler(QtGumboNode tableNode) const;
     void parseMessage(QtGumboNodes nodes, IPostObjectList& postObjects) const;
 
 public:
