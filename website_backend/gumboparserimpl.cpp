@@ -406,6 +406,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 break;
             }
             // Line break
+            case HtmlTag::WBR:  // FIXME: implement this correctly as browsers do
             case HtmlTag::BR:
             {
                 postObjects << QSharedPointer<PostLineBreak>(new PostLineBreak());
@@ -568,8 +569,7 @@ QString ForumPageParser::getPostUserSignature(QtGumboNode postEntryNode)
         {
         case HtmlTag::B:
         {
-            // FIXME: check
-            userSignatureStr += "<b>" + iChild->getChildrenInnerText() + "</b>";
+            userSignatureStr += "<b>" + iChild->getChildrenInnerText() + "</b><br/>";
             break;
         }
         case HtmlTag::A:
@@ -854,13 +854,11 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
     QString tbodyTrTdANodeText = tbodyTrTdANode.isValid() ? tbodyTrTdANode.getChildrenInnerText().trimmed() : QString();
     if (tbodyTrTdANode.isValid() && (tbodyTrTdANodeText.compare(QUOTE_WRITE_VERB, Qt::CaseInsensitive) == 0))
     {
-        tbodyTrTdNodeChildIndex++;
-
         QtGumboNode tbodyTrTdBNode = tbodyTrTdNode.getElementByTag({HtmlTag::B, 0});
-        Q_ASSERT(tbodyTrTdBNode.isValid());
         if (tbodyTrTdBNode.isValid())
         {
             result->m_userName = tbodyTrTdBNode.getChildrenInnerText();
+            tbodyTrTdNodeChildIndex++;
         }
 
         // <a>
@@ -877,15 +875,15 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNode tableNode) con
         // Find the quote body start
         Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode.getChildElementCount(false));
         QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode.getChildren(false);
-        for (; tbodyTrTdNodeChildIndex < tbodyTrTdChildren.size(); ++tbodyTrTdNodeChildIndex)
+        for (int i = tbodyTrTdNodeChildIndex; i < tbodyTrTdChildren.size(); ++i)
         {
-            QtGumboNode temp = tbodyTrTdChildren[tbodyTrTdNodeChildIndex];
+            QtGumboNode temp = tbodyTrTdChildren[i];
             if (temp.isText())
             {
                 QString tempText = temp.getInnerText().trimmed();
                 if (tempText == ":")
                 {
-                    tbodyTrTdNodeChildIndex++;
+                    tbodyTrTdNodeChildIndex += 2;
                     break;
                 }
                 if (tempText.startsWith(":"))
