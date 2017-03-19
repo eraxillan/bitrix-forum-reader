@@ -31,7 +31,8 @@ SOURCES += \
     website_backend/qtgumbonode.cpp         \
     website_backend/websiteinterface.cpp    \
     qml_frontend/forumreader.cpp            \
-    qml_frontend/main.cpp
+    qml_frontend/main.cpp                   \
+    tests/gumboparserimpl_tests.cpp
 
 HEADERS += \
     common/filedownloader.h                 \

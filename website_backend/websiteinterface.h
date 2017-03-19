@@ -140,9 +140,9 @@ namespace BankiRuForum
 
     struct Post
     {
-        int m_id;
+        int m_id = -1;
 //      int m_postNumber;
-        int m_likeCounter;
+        int m_likeCounter = -1;
 
         //QString m_text;
         IPostObjectList m_data;
@@ -152,6 +152,8 @@ namespace BankiRuForum
         QString m_userSignature;
         QDateTime m_date;
 //		QUrl m_permalink;
+
+        bool isValid() const { return (m_id > 0) && (m_likeCounter >= 0) && !m_data.isEmpty() && m_date.isValid(); }
     };
 
     struct User
@@ -170,6 +172,9 @@ namespace BankiRuForum
         QDate m_registrationDate;
         int m_reputation = -1;
         QString m_city;
+
+        bool isValid() const { return (m_userId > 0) && !m_userName.isEmpty() && m_userProfileUrl.isValid()
+                    && m_allPostsUrl.isValid() && (m_postCount > 0) && m_registrationDate.isValid() && (m_reputation >= 0); }
     };
 
     typedef QVector< QPair<User, Post> > UserPosts;

@@ -217,7 +217,9 @@ QString PostImage::getQmlString(int randomSeed) const
                 .arg(QString::number(randomSeed), m_url);
     }
 
-    // FIXME: use other fields e.g. width and height
+    // NOTE: implement other fields usage if they will be implemented on the forum side
+    Q_ASSERT(m_width == -1);
+    Q_ASSERT(m_height == -1);
     return QString("AnimatedImage { id: imgSmile%1; source: '%2'; }").arg(QString::number(randomSeed), m_url);
 }
 
