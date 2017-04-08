@@ -18,7 +18,7 @@ namespace BankiRuForum
     {
         virtual ~IPostObject();
 
-        virtual bool isValid() const = 0;
+        virtual bool    isValid() const = 0;
         virtual QString getQmlString(int randomSeed) const = 0;
     };
     typedef QList< QSharedPointer<IPostObject> > IPostObjectList;
@@ -177,7 +177,9 @@ namespace BankiRuForum
                     && m_allPostsUrl.isValid() && (m_postCount > 0) && m_registrationDate.isValid() && (m_reputation >= 0); }
     };
 
-    typedef QVector< QPair<User, Post> > UserPosts;
+    typedef QPair<User, Post>  UserPost;
+    typedef QVector<UserPost>  UserPosts;
+    typedef QVector<UserPosts> PageUserPosts;
 
     //---------------------------------------------------------------------------------------------
     // Interfaces

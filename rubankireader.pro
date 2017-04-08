@@ -19,8 +19,8 @@ UI_DIR      = $${APP_BUILD_DIR}
 OBJECTS_DIR = $${APP_BUILD_DIR}
 MOC_DIR     = $${APP_BUILD_DIR}
 
-QT += quickcontrols2
-QT += qml quick widgets network multimedia
+QT += qml quick quickcontrols2
+QT += network multimedia concurrent
 android: QT += androidextras
 
 CONFIG += c++11
@@ -36,6 +36,7 @@ SOURCES += \
 
 HEADERS += \
     common/filedownloader.h                 \
+    common/resultcode.h                     \
     website_backend/gumboparserimpl.h       \
     website_backend/qtgumbonode.h           \
     website_backend/websiteinterface.h      \
