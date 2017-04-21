@@ -2,6 +2,7 @@
 #define FORUMREADER_H
 
 #include "common/resultcode.h"
+#include "common/filedownloader.h"
 #include "website_backend/websiteinterface.h"
 
 class ForumReader : public QObject
@@ -12,12 +13,15 @@ class ForumReader : public QObject
     typedef QFutureWatcher<int>                     IntFutureWatcher;
     typedef QFutureWatcher<BankiRuForum::UserPosts> ParserFutureWatcher;
 
+    FileDownloader m_downloader;
+
     IntFutureWatcher    m_forumPageCountWatcher;
     ParserFutureWatcher m_forumPageParserWatcher;
 
-    UserPosts m_pagePosts;
-    int       m_pageCount;
-    int       m_pageNo;
+    QByteArray m_pageData;
+    UserPosts  m_pagePosts;
+    int        m_pageCount;
+    int        m_pageNo;
 
     ResultCode m_lastError;
 
@@ -66,10 +70,18 @@ signals:
     void pageCountParsed(int pageCount);
     void pageContentParsed(int pageNo);
 
+    void pageContentParseProgressRange(int minimum, int maximum);
+    void pageContentParseProgress(int value);
+
 private slots:
     // Forum page count parser slots
     void onForumPageCountParsed();
     void onForumPageCountParsingCanceled();
+
+    // Forum page downloader slots
+    void onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void onForumPageDownloaded();
+    void onForumPageDownloadFailed(ResultCode code);
 
     // Forum page user posts parser slots
     void onForumPageParsed();

@@ -20,7 +20,7 @@ OBJECTS_DIR = $${APP_BUILD_DIR}
 MOC_DIR     = $${APP_BUILD_DIR}
 
 QT += qml quick quickcontrols2
-QT += network multimedia concurrent
+QT += multimedia concurrent
 android: QT += androidextras
 
 CONFIG += c++11
@@ -47,8 +47,12 @@ HEADERS += \
 RESOURCES += qml_frontend/qml.qrc
 
 # Link with curl library
-#INCLUDEPATH +=
-LIBS += -lcurl
+windows {
+    QT += network
+} else {
+    #INCLUDEPATH +=
+    LIBS += -lcurl
+}
 
 # Link with gumbo-parser library
 INCLUDEPATH += $$PWD/gumbo-parser/src

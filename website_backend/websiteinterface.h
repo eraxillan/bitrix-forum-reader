@@ -2,7 +2,6 @@
 #define WEBSITEINTERFACE_H
 
 #include <QtCore/QtCore>
-#include <QtNetwork/QtNetwork>
 #include <QtWidgets/QApplication>
 
 //#define RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG

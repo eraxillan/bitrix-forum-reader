@@ -47,6 +47,10 @@ ForumReader::ForumReader() :
     m_pageNo(0),
     m_lastError(ResultCode::S_OK)
 {
+    connect(&m_downloader, &FileDownloader::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
+    connect(&m_downloader, &FileDownloader::downloadFinished, this, &ForumReader::onForumPageDownloaded);
+    connect(&m_downloader, &FileDownloader::downloadFailed,   this, &ForumReader::onForumPageDownloadFailed);
+
     connect(&m_forumPageCountWatcher, &IntFutureWatcher::finished, this, &ForumReader::onForumPageCountParsed);
     connect(&m_forumPageCountWatcher, &IntFutureWatcher::canceled, this, &ForumReader::onForumPageCountParsingCanceled);
 
@@ -151,34 +155,24 @@ bool ForumReader::parseForumPage(QString urlStr, int pageNo)
 
 namespace {
 // NOTE: QtConcurrent require to return collection; return result code will be much more straightforward to reader
-BankiRuForum::UserPosts parsePageAsync(QString urlStr, ResultCode& errorCode)
+BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, ResultCode& errorCode)
 {
     BankiRuForum::UserPosts result;
     errorCode = ResultCode::S_OK;
 
-    // 1) Download the first forum web page
-    QByteArray htmlRawData;
-    if (!FileDownloader::downloadUrl(urlStr, htmlRawData))
+    // 2) Parse the page HTML to get the page number
+    // FIXME: rewrite with 'enum class'
+    BankiRuForum::ForumPageParser fpp;
+    errorCode = (ResultCode)fpp.getPageCount(rawHtmlData, pageCount);
+    if (errorCode != ResultCode::S_OK)
     {
         Q_ASSERT(0);
-        errorCode = ResultCode::E_NETWORK;
         return result;
     }
 
-    // 2) Parse the page HTML to get the page number
-    // FIXME: implement updatePageCount() method
-    BankiRuForum::ForumPageParser fpp;
-    /*int resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
-    if (resultFpp != 0)
-    {
-        Q_ASSERT(0);
-        ok = false;
-        return result;
-    }*/
-
     // 3) Parse the page HTML to get the page user posts
     // FIXME: rewrite with 'enum class'
-    errorCode = (ResultCode)fpp.getPagePosts(htmlRawData, result);
+    errorCode = (ResultCode)fpp.getPagePosts(rawHtmlData, result);
     if (errorCode != ResultCode::S_OK)
     {
         Q_ASSERT(0);
@@ -199,8 +193,12 @@ void ForumReader::startPageParseAsync(QString urlStr, int pageNo)
 //    m_pageCount = 0;
     m_pageNo = pageNo;
 
-    auto forumPageParseFuture = QtConcurrent::run(std::bind(parsePageAsync, urlStr, std::ref(m_lastError)));
-    m_forumPageParserWatcher.setFuture(forumPageParseFuture);
+    m_downloader.startDownloadAsync(urlStr);
+
+    // FIXME: a better way? server don't return Content-Length header;
+    //        a HTML page size is unknown, and the only way to get it - download the entire page;
+    //        however we know forum HTML page average size - it is around 400 Kb
+    emit pageContentParseProgressRange(0, 400000);
 }
 
 void ForumReader::onForumPageCountParsed()
@@ -216,6 +214,37 @@ void ForumReader::onForumPageCountParsed()
 void ForumReader::onForumPageCountParsingCanceled()
 {
     Q_ASSERT_X(0, Q_FUNC_INFO, "QtConcurrent::run result cannot be canceled");
+}
+
+void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+//    qDebug() << Q_FUNC_INFO << bytesReceived << "/" << bytesTotal;
+
+    // NOTE: currently banki.ru server don't return Content-Length header
+    Q_ASSERT(bytesTotal <= 0);
+
+    // NOTE: HTML page size should not exceed 2^32 bytes, i hope :)
+    emit pageContentParseProgress((int)bytesReceived);
+}
+
+void ForumReader::onForumPageDownloaded()
+{
+    m_pageData = m_downloader.downloadedData();
+    Q_ASSERT(!m_pageData.isEmpty());
+
+    // Wait for previous operation finish (if any)
+    // NOTE: QtConcurrent::run() return future that cannot be canceled
+    //m_forumPageParserWatcher.cancel();
+    m_forumPageParserWatcher.waitForFinished();
+
+    auto forumPageParseFuture = QtConcurrent::run(
+                std::bind(parsePageAsync, m_pageData, std::ref(m_pageCount), std::ref(m_lastError)));
+    m_forumPageParserWatcher.setFuture(forumPageParseFuture);
+}
+
+void ForumReader::onForumPageDownloadFailed(ResultCode code)
+{
+    // FIXME: implement
 }
 
 void ForumReader::onForumPageParsed()

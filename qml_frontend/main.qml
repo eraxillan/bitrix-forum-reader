@@ -29,6 +29,16 @@ ApplicationWindow
     {
         id: reader
 
+        onPageContentParseProgressRange: {
+            pbPage.value = minimum
+            pbPage.from  = minimum
+            pbPage.to    = maximum
+        }
+
+        onPageContentParseProgress: {
+            pbPage.value = value
+        }
+
         onPageCountParsed: {
             console.log("Page count: ", pageCount)
             totalPageCount = pageCount
@@ -42,9 +52,6 @@ ApplicationWindow
         }
 
         onPageContentParsed: {
-            pageLoaded = false;
-            dataModel.clear();
-
             // Fill the page counter
             totalPageCount = reader.pageCount();
             currentPageIndex = pageNo;
@@ -79,10 +86,20 @@ ApplicationWindow
         reader.startPageCountAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list" )
     }
 
-    BusyIndicator
+    ProgressBar
     {
-        anchors.centerIn: parent
-        running: !pageLoaded
+        id: pbPage
+
+        anchors.margins: dp(10)
+        anchors.fill: parent
+        spacing: dp(5)
+
+        visible: !pageLoaded
+
+        indeterminate: false
+        value: 0
+        from: 0
+        to: 0
     }
 
     ListModel
