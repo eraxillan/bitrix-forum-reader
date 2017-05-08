@@ -1,6 +1,6 @@
 #include "filedownloader.h"
 
-#ifndef Q_OS_WIN
+#ifndef USE_QT_NAM
 #include <curl/curl.h>
 #endif
 
@@ -14,7 +14,7 @@ FileDownloader::~FileDownloader()
 
 // Async API
 
-#ifndef Q_OS_WIN
+#ifndef USE_QT_NAM
 namespace {
 int downloadFileProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
 {
@@ -39,7 +39,7 @@ size_t downloadFileWriteCallback(void *ptr, size_t size, size_t nmemb, QByteArra
 {
     QCoreApplication::processEvents();
 
-    data->append((char*) ptr, size * nmemb);
+    data->append((char*)ptr, (int)(size * nmemb));
     return size * nmemb;
 }
 
@@ -58,8 +58,8 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
         qDebug() << "curl_global_init() failed";
         qDebug() << "Error code: " << result;
         qDebug() << "Error string: " << curl_easy_strerror(result);
-        resultCode = ResultCode::E_CURL;
-        emit thisObj->downloadFailed(ResultCode::E_NETWORK);
+        resultCode = ResultCode::CurlError;
+        emit thisObj->downloadFailed(ResultCode::NetworkError);
         return QByteArray();
     }
 
@@ -67,8 +67,8 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
     if (!curl)
     {
         qDebug() << "curl_easy_init() failed";
-        resultCode = ResultCode::E_CURL;
-        emit thisObj->downloadFailed(ResultCode::E_NETWORK);
+        resultCode = ResultCode::CurlError;
+        emit thisObj->downloadFailed(ResultCode::NetworkError);
         return QByteArray();
     }
 
@@ -95,8 +95,8 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
         qDebug() << "curl_easy_perform() failed";
         qDebug() << "Error code:" << result;
         qDebug() << "Error string: " << curl_easy_strerror(result);
-        resultCode = ResultCode::E_NETWORK;
-        emit thisObj->downloadFailed(ResultCode::E_NETWORK);
+        resultCode = ResultCode::NetworkError;
+        emit thisObj->downloadFailed(ResultCode::NetworkError);
         return QByteArray();
     }
 
@@ -119,7 +119,7 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
     curl = NULL;
 
     resultData = response_string;
-    resultCode = ResultCode::S_OK;
+    resultCode = ResultCode::NetworkError;
     emit thisObj->downloadFinished();
     return response_string;
 }
@@ -128,10 +128,10 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
 
 void FileDownloader::startDownloadAsync(QUrl url)
 {
-    m_lastError = ResultCode::S_OK;
+    m_lastError = ResultCode::Ok;
     m_downloadedData.clear();
 
-#ifdef Q_OS_WIN
+#ifdef USE_QT_NAM
     m_reply = m_webCtrl.get(QNetworkRequest(url));
     Q_CHECK_PTR(m_reply); if (!m_reply) return;
     connect(m_reply, &QNetworkReply::downloadProgress, this, &FileDownloader::onDownloadProgress);
@@ -152,7 +152,7 @@ QByteArray FileDownloader::downloadedData() const
     return m_downloadedData;
 }
 
-#ifdef Q_OS_WIN
+#ifdef USE_QT_NAM
 void FileDownloader::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     emit downloadProgress(bytesReceived, bytesTotal);
@@ -178,7 +178,7 @@ void FileDownloader::onDownloadFailed(QNetworkReply::NetworkError code)
 //-----------------------------------------------------------------------------
 // Sync API
 
-#ifdef Q_OS_WIN
+#ifdef USE_QT_NAM
 bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
 {
     throw std::runtime_error("not implemented");

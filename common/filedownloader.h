@@ -15,7 +15,9 @@
 
 #include <QtConcurrent/QtConcurrent>
 
-#ifdef Q_OS_WIN
+//#define USE_QT_NAM
+
+#ifdef USE_QT_NAM
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
@@ -43,15 +45,15 @@ signals:
     void downloadFinished();
     void downloadFailed(ResultCode code);
 
+#ifdef USE_QT_NAM
 private slots:
-#ifdef Q_OS_WIN
     void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void onDownloadFinished();
     void onDownloadFailed(QNetworkReply::NetworkError code);
 #endif
 
 private:
-#ifdef Q_OS_WIN
+#ifdef USE_QT_NAM
     QNetworkAccessManager m_webCtrl;
     QPointer<QNetworkReply> m_reply;
 #endif

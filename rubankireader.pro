@@ -46,20 +46,81 @@ HEADERS += \
 
 RESOURCES += qml_frontend/qml.qrc
 
-# Link with curl library
+# Static libraries for different architectures live in different directories
 windows {
-    QT += network
+    contains(QT_ARCH, i386) {
+        ARCH = x32
+    } else {
+        ARCH = x64
+    }
+} else:macx {
+    # FIXME: implement
+} else:linux:!android {
+    # FIXME: implement
+} else:android {
+    # TODO: only armeabi-v7a and x86 are currently supported
+    contains(QT_ARCH, arm) {
+        ARCH = armeabi-v7a
+    } else:contains(QT_ARCH, i386) {
+        ARCH = x86
+    } else {
+        error("Unsupported OS")
+    }
+} else:ios {
+    # FIXME: implement
 } else {
-    #INCLUDEPATH +=
-    LIBS += -lcurl
+    error("Unsupported OS")
 }
 
-# Link with gumbo-parser library
+# ... and have different suffixes for debug and release modes
+CONFIG(debug, debug|release) {
+    SUFFIX = d
+}
+
+# FIXME: check whether Windows version can be build without external OpenSSL
+
+# Link with:
+#   1) OpenSSL library
+#   2) cURL library (compiled with OpenSSL support)
+#   3) Gumbo HTML5 parser library
+DEFINES += CURL_STATICLIB
+INCLUDEPATH += $$PWD/curl/include
 INCLUDEPATH += $$PWD/gumbo-parser/src
-LIBS += -L$${GUMBO_BUILD_DIR} -lgumbo-parser
+
+windows {
+    QMAKE_LFLAGS_DEBUG += /ignore:4099
+    LIBS += -ladvapi32 -luser32 -lgdi32 -lws2_32 -lwsock32 -lWldap32
+
+    # OpenSSL
+    LIBS += -L$$PWD/libs/openssl/$$APP_PLATFORM/VC14/$$ARCH/$$buildmode
+    # cURL
+    LIBS += -L$$PWD/libs/curl/$$APP_PLATFORM/VC14/$$ARCH/$$buildmode
+    # Gumbo
+    LIBS += -L$$PWD/libs/gumbo-parser/$$APP_PLATFORM/VC14/$$ARCH/$$buildmode
+
+    LIBS += -llibeay32 -lssleay32
+    LIBS += -llibcurl$$SUFFIX
+    LIBS += -lgumbo-parser
+} else:macx {
+    # FIXME: implement
+} else:linux:!android {
+    # FIXME: implement
+} else:android {
+    # cURL
+    LIBS += -L$$PWD/libs/curl/$$APP_PLATFORM/$$ARCH
+    # Gumbo
+    LIBS += -L$$PWD/libs/gumbo-parser/$$APP_PLATFORM/$$ARCH/$$buildmode
+
+    LIBS += -lcurl
+    LIBS += -lgumbo-parser
+} else:ios {
+    # FIXME: implement
+} else {
+    error("Unsupported OS")
+}
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 
-# Default rules for deployment.
+# Default rules for deployment
 include(deployment.pri)

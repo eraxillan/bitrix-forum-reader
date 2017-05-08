@@ -928,12 +928,12 @@ QSharedPointer<PostSpoiler> ForumPageParser::parseSpoiler(QtGumboNode tableNode)
 
     // Read the quote title
     QtGumboNode theadTrThNode = tableNode.getElementByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}, {HtmlTag::DIV, 0}});
-    Q_ASSERT(theadTrThNode.isValid()); if (!theadTrThNode.isValid()) return nullptr;
+    Q_ASSERT(theadTrThNode.isValid()); if (!theadTrThNode.isValid()) return QSharedPointer<PostSpoiler>();
     result->m_title = theadTrThNode.getChildrenInnerText();
     Q_ASSERT(result->m_title[result->m_title.size()-1] == QChar(9650).unicode()
           || result->m_title[result->m_title.size()-1] == QChar(9660).unicode());
     if ((result->m_title[result->m_title.size()-1] != QChar(9650).unicode())
-     && (result->m_title[result->m_title.size()-1] != QChar(9660).unicode())) return nullptr;
+     && (result->m_title[result->m_title.size()-1] != QChar(9660).unicode())) return QSharedPointer<PostSpoiler>();
     result->m_title = result->m_title.remove(result->m_title.size()-1, 1);
     result->m_title = result->m_title.trimmed();
 

@@ -45,7 +45,7 @@ ForumReader::ForumReader() :
     m_pagePosts(),
     m_pageCount(0),
     m_pageNo(0),
-    m_lastError(ResultCode::S_OK)
+    m_lastError(ResultCode::Ok)
 {
     connect(&m_downloader, &FileDownloader::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
     connect(&m_downloader, &FileDownloader::downloadFinished, this, &ForumReader::onForumPageDownloaded);
@@ -158,13 +158,13 @@ namespace {
 BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, ResultCode& errorCode)
 {
     BankiRuForum::UserPosts result;
-    errorCode = ResultCode::S_OK;
+    errorCode = ResultCode::Ok;
 
     // 2) Parse the page HTML to get the page number
     // FIXME: rewrite with 'enum class'
     BankiRuForum::ForumPageParser fpp;
     errorCode = (ResultCode)fpp.getPageCount(rawHtmlData, pageCount);
-    if (errorCode != ResultCode::S_OK)
+    if (errorCode != ResultCode::Ok)
     {
         Q_ASSERT(0);
         return result;
@@ -173,7 +173,7 @@ BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, R
     // 3) Parse the page HTML to get the page user posts
     // FIXME: rewrite with 'enum class'
     errorCode = (ResultCode)fpp.getPagePosts(rawHtmlData, result);
-    if (errorCode != ResultCode::S_OK)
+    if (errorCode != ResultCode::Ok)
     {
         Q_ASSERT(0);
         return result;

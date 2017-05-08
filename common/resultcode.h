@@ -1,19 +1,19 @@
-#ifndef RESULTCODE_H
-#define RESULTCODE_H
+#ifndef BRR_RESULTCODE_H
+#define BRR_RESULTCODE_H
 
 enum class ResultCode
 {
     // General
-    S_OK = 0,
-    E_FAIL,
+    Ok = 0,
+    Fail = 1,
     // CURL
-    E_CURL,
+    CurlError,
     // System
-    E_NETWORK,
+    NetworkError,
     // Forum parser
-    E_FORUM_PAGE_PARSER,
-    E_FORUM_PARSER
+    ForumPageParserError,
+    ForumParserError
     // TODO: others
 };
 
-#endif // RESULTCODE_H
+#endif // BRR_RESULTCODE_H
