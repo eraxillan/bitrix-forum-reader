@@ -18,6 +18,7 @@ namespace BankiRuForum
         virtual ~IPostObject();
 
         virtual bool    isValid() const = 0;
+        virtual uint    getHash(uint seed) const = 0;
         virtual QString getQmlString(int randomSeed) const = 0;
     };
     typedef QList< QSharedPointer<IPostObject> > IPostObjectList;
@@ -31,6 +32,7 @@ namespace BankiRuForum
         PostSpoiler();
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
@@ -45,6 +47,7 @@ namespace BankiRuForum
         PostQuote();
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
@@ -62,6 +65,7 @@ namespace BankiRuForum
         PostImage(QString url, int width, int height, int border = 0, QString altName = QString(), QString id = QString(), QString className = QString());
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
@@ -70,6 +74,7 @@ namespace BankiRuForum
         PostLineBreak();
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
@@ -81,7 +86,8 @@ namespace BankiRuForum
         PostPlainText(QString text);
 
         bool isValid() const Q_DECL_OVERRIDE;
-        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     struct PostRichText : IPostObject
@@ -97,7 +103,8 @@ namespace BankiRuForum
         PostRichText(QString text, QString color, bool isBold, bool isItalic, bool isUnderlined, bool isStrikedOut);
 
         bool isValid() const Q_DECL_OVERRIDE;
-        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     struct PostVideo : IPostObject
@@ -110,7 +117,8 @@ namespace BankiRuForum
         PostVideo(QString urlStr);
 
         bool isValid() const Q_DECL_OVERRIDE;
-        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     // FIXME: implement hyperlink using Qt/QML power only, without Qt primitive HTML-mode of Text item
@@ -132,10 +140,11 @@ namespace BankiRuForum
         PostHyperlink(QString urlStr, QString title, QString tip = QString(), QString rel = QString());
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
-    // -------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
 
     struct Post
     {
@@ -152,7 +161,19 @@ namespace BankiRuForum
         QDateTime m_date;
 //		QUrl m_permalink;
 
-        bool isValid() const { return (m_id > 0) && (m_likeCounter >= 0) && !m_data.isEmpty() && m_date.isValid(); }
+        bool isValid() const
+        {
+            return (m_id > 0) && (m_likeCounter >= 0) && !m_data.isEmpty() && m_date.isValid();
+        }
+
+        uint getHash(uint seed) const
+        {
+            uint dataHash = 0;
+            for (auto obj : m_data) dataHash ^= obj->getHash(seed);
+
+            return qHash(m_id, seed) ^ qHash(m_likeCounter, seed) ^ dataHash
+                    ^ qHash(m_lastEdit, seed) ^ qHash(m_userSignature, seed) ^ qHash(m_date, seed);
+        }
     };
 
     struct User
@@ -172,8 +193,18 @@ namespace BankiRuForum
         int m_reputation = -1;
         QString m_city;
 
-        bool isValid() const { return (m_userId > 0) && !m_userName.isEmpty() && m_userProfileUrl.isValid()
-                    && m_allPostsUrl.isValid() && (m_postCount > 0) && m_registrationDate.isValid() && (m_reputation >= 0); }
+        bool isValid() const
+        {
+            return (m_userId > 0) && !m_userName.isEmpty() && m_userProfileUrl.isValid()
+                    && m_allPostsUrl.isValid() && (m_postCount > 0) && m_registrationDate.isValid() && (m_reputation >= 0);
+        }
+
+        uint getHash(uint seed) const
+        {
+            return qHash(m_userId, seed) ^ qHash(m_userName, seed) ^ qHash(m_userProfileUrl, seed)
+                    ^ (m_userAvatar ? m_userAvatar->getHash(seed) : 0) ^ qHash(m_allPostsUrl, seed) ^ qHash(m_postCount, seed)
+                    ^ qHash(m_registrationDate, seed) ^ qHash(m_reputation, seed) ^ qHash(m_city, seed);
+        }
     };
 
     typedef QPair<User, Post>  UserPost;
@@ -192,6 +223,26 @@ namespace BankiRuForum
         virtual int getPagePosts(QByteArray rawData, UserPosts& userPosts) = 0;
     };
 
+}   // namespace BankiRuForum
+
+//---------------------------------------------------------------------------------------------
+
+inline uint qHash(const BankiRuForum::IPostObjectList& key, uint seed)
+{
+    uint dataHash = 0;
+    for (auto obj : key)
+        dataHash ^= obj->getHash(seed);
+    return dataHash;
+}
+
+inline uint qHash(const BankiRuForum::Post& key, uint seed)
+{
+    return key.getHash(seed);
+}
+
+inline uint qHash(const BankiRuForum::User& key, uint seed)
+{
+    return key.getHash(seed);
 }
 
 #endif // WEBSITEINTERFACE_H

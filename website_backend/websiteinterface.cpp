@@ -18,6 +18,11 @@ bool PostSpoiler::isValid() const
     return !m_data.isEmpty();
 }
 
+uint PostSpoiler::getHash(uint seed) const
+{
+    return qHash(m_title, seed) ^ qHash(m_data, seed);
+}
+
 QString PostSpoiler::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
@@ -116,6 +121,11 @@ bool PostQuote::isValid() const
     return !m_data.isEmpty();
 }
 
+uint PostQuote::getHash(uint seed) const
+{
+    return qHash(m_title, seed) ^ qHash(m_userName, seed) ^ qHash(m_url, seed) ^ qHash(m_data, seed);
+}
+
 QString PostQuote::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
@@ -196,7 +206,8 @@ QString PostQuote::getQmlString(int randomSeed) const
 // PostImage
 
 PostImage::PostImage()
-{}
+{
+}
 
 PostImage::PostImage(QString url, int width, int height, int border, QString altName, QString id, QString className)
     : m_url(url), m_width(width), m_height(height), m_border(border), m_altName(altName), m_id(id), m_className(className)
@@ -207,6 +218,13 @@ bool PostImage::isValid() const
 {
     // NOTE: image with only correct URL specified is still valid
     return !m_url.isEmpty() /*&& (m_width > 0 && m_height > 0)*/;
+}
+
+uint PostImage::getHash(uint seed) const
+{
+    // NOTE: m_id is auto-generated each time page reloaded, so it is useless for hashing purposes
+    return qHash(m_url, seed) ^ qHash(m_width, seed) ^ qHash(m_height, seed) ^ qHash(m_border, seed)
+            ^ qHash(m_altName, seed) /* ^ qHash(m_id, seed) */ ^ qHash(m_className, seed);
 }
 
 QString PostImage::getQmlString(int randomSeed) const
@@ -232,6 +250,11 @@ PostLineBreak::PostLineBreak()
 bool PostLineBreak::isValid() const
 {
     return true;
+}
+
+uint PostLineBreak::getHash(uint seed) const
+{
+    return qHash(0, seed);
 }
 
 QString PostLineBreak::getQmlString(int randomSeed) const
@@ -269,6 +292,11 @@ PostPlainText::PostPlainText(QString text)
 bool PostPlainText::isValid() const
 {
     return !m_text.isEmpty();
+}
+
+uint PostPlainText::getHash(uint seed) const
+{
+    return qHash(m_text, seed);
 }
 
 QString PostPlainText::getQmlString(int randomSeed) const
@@ -317,6 +345,12 @@ PostRichText::PostRichText(QString text, QString color, bool isBold, bool isItal
 bool PostRichText::isValid() const
 {
     return !m_text.isEmpty();
+}
+
+uint PostRichText::getHash(uint seed) const
+{
+    return qHash(m_text, seed) ^ qHash(m_color, seed) ^ qHash(m_isBold, seed)
+            ^ qHash(m_isItalic, seed) ^ qHash(m_isUnderlined, seed) ^ qHash(m_isStrikedOut, seed);
 }
 
 QString PostRichText::getQmlString(int randomSeed) const
@@ -415,17 +449,21 @@ static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
             aVideoUrlStr = videoUrlStr;
         }
 
-//        qDebug() << "--------------------------------------------------";
-//        qDebug() << "Video width:" << videoWidth;
-//        qDebug() << "Video height:" << videoHeight;
-//        qDebug() << "Video codec:" << videoCodecStr;
-//        qDebug() << "Audio codec:" << audioCodecStr;
-//        qDebug() << "File format:" << videoFormatNote;
-//        qDebug() << "File extension:" << videoFileExt;
-//        qDebug() << "--------------------------------------------------";
+#ifdef RBR_PRINT_DEBUG_OUTPUT
+        qDebug() << "--------------------------------------------------";
+        qDebug() << "Video width:" << videoWidth;
+        qDebug() << "Video height:" << videoHeight;
+        qDebug() << "Video codec:" << videoCodecStr;
+        qDebug() << "Audio codec:" << audioCodecStr;
+        qDebug() << "File format:" << videoFormatNote;
+        qDebug() << "File extension:" << videoFileExt;
+        qDebug() << "--------------------------------------------------";
+#endif
     }
 
-    //qDebug() << "Maximum resolution: " << maxVideoWidth << " x " << maxVideoHeight;
+#ifdef RBR_PRINT_DEBUG_OUTPUT
+    qDebug() << "Maximum resolution: " << maxVideoWidth << " x " << maxVideoHeight;
+#endif
 
     return true;
 }
@@ -475,6 +513,11 @@ PostVideo::PostVideo(QString urlStr)
 bool PostVideo::isValid() const
 {
     return !m_urlStr.isEmpty() && m_url.isValid();
+}
+
+uint PostVideo::getHash(uint seed) const
+{
+    return qHash(m_urlStr, seed) ^ qHash(m_url, seed);
 }
 
 QString PostVideo::getQmlString(int randomSeed) const
@@ -527,6 +570,12 @@ PostHyperlink::PostHyperlink(QString urlStr, QString title, QString tip, QString
 bool PostHyperlink::isValid() const
 {
     return !m_urlStr.isEmpty() && m_url.isValid();
+}
+
+uint PostHyperlink::getHash(uint seed) const
+{
+    return qHash(m_urlStr, seed) ^ qHash(m_url, seed) ^ qHash(m_title, seed)
+            ^ qHash(m_tip, seed) ^ qHash(m_rel, seed);
 }
 
 QString PostHyperlink::getQmlString(int randomSeed) const
