@@ -5,6 +5,8 @@
 #include "common/filedownloader.h"
 #include "website_backend/websiteinterface.h"
 
+//#define FORUM_READER_SYNC_API
+
 class ForumReader : public QObject
 {
     Q_OBJECT
@@ -34,8 +36,10 @@ public:
     Q_INVOKABLE QUrl      convertToUrl(QString urlStr) const;
 
     // Forum HTML page parser sync API (e.g. for testing purposes)
+#ifdef FORUM_READER_SYNC_API
     Q_INVOKABLE int       parsePageCount(QString urlStr);
     Q_INVOKABLE bool      parseForumPage(QString urlStr, int pageNo);
+#endif
 
     // Forum HTML page parser async API (use Qt signal-slots system)
     Q_INVOKABLE void      startPageCountAsync(QString urlStr);

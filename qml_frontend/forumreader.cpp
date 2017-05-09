@@ -74,6 +74,7 @@ QUrl ForumReader::convertToUrl(QString urlStr) const
     return QUrl(urlStr);
 }
 
+#ifdef FORUM_READER_SYNC_API
 int ForumReader::parsePageCount(QString urlStr)
 {
     // Cleanup
@@ -90,6 +91,29 @@ int ForumReader::parsePageCount(QString urlStr)
     Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pageCount = 0; return 0; }
     return m_pageCount;
 }
+
+bool ForumReader::parseForumPage(QString urlStr, int pageNo)
+{
+    // Cleanup
+    m_pagePosts.clear();
+    m_pageCount = 0;
+    m_pageNo = pageNo;
+
+    // 1) Download the first forum web page
+    QByteArray htmlRawData;
+    if (!FileDownloader::downloadUrl(urlStr, htmlRawData)) { Q_ASSERT(0); return false; }
+
+    // 2) Parse the page HTML to get the page number
+    BankiRuForum::ForumPageParser fpp;
+    int resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
+    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pageCount = 0; return false; }
+
+    // 3) Parse the page HTML to get the page user posts
+    resultFpp = fpp.getPagePosts(htmlRawData, m_pagePosts);
+    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pagePosts.clear(); return false; }
+    return true;
+}
+#endif
 
 namespace {
 int parsePageCountAsync(QString urlStr)
@@ -129,28 +153,6 @@ void ForumReader::startPageCountAsync(QString urlStr)
 
     auto forumPageCountFuture = QtConcurrent::run(std::bind(parsePageCountAsync, urlStr));
     m_forumPageCountWatcher.setFuture(forumPageCountFuture);
-}
-
-bool ForumReader::parseForumPage(QString urlStr, int pageNo)
-{
-    // Cleanup
-    m_pagePosts.clear();
-    m_pageCount = 0;
-    m_pageNo = pageNo;
-
-    // 1) Download the first forum web page
-    QByteArray htmlRawData;
-    if (!FileDownloader::downloadUrl(urlStr, htmlRawData)) { Q_ASSERT(0); return false; }
-
-    // 2) Parse the page HTML to get the page number
-    BankiRuForum::ForumPageParser fpp;
-    int resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
-    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pageCount = 0; return false; }
-
-    // 3) Parse the page HTML to get the page user posts
-    resultFpp = fpp.getPagePosts(htmlRawData, m_pagePosts);
-    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pagePosts.clear(); return false; }
-    return true;
 }
 
 namespace {
