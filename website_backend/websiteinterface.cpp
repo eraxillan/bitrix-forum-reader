@@ -582,7 +582,7 @@ QString PostHyperlink::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
             "Text {\n"
-            "   id: dynTxtPost%1;\n"
+            "   id: dynTxtHyperlink%1;\n"
 //            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
             "\n"
             "   font.pointSize: 14;\n"
@@ -614,4 +614,166 @@ QString PostHyperlink::getQmlString(int randomSeed) const
 
 IForumPageReader::~IForumPageReader() {}
 
+//void Post::addObject(QSharedPointer<IPostObject> obj)
+//{
+//    m_data.append(obj);
+//}
+
+bool Post::isValid() const
+{
+    return (m_id > 0) && (m_likeCounter >= 0) && !m_data.isEmpty() && m_date.isValid();
 }
+
+uint Post::getHash(uint seed) const
+{
+    uint dataHash = 0;
+    for (auto obj : m_data) dataHash ^= obj->getHash(seed);
+
+    return qHash(m_id, seed) ^ qHash(m_likeCounter, seed) ^ dataHash
+        ^ qHash(m_lastEdit, seed) ^ qHash(m_userSignature, seed) ^ qHash(m_date, seed);
+}
+
+QString Post::getQmlString(int randomSeed) const
+{
+    QString qmlStr =
+            "import QtMultimedia 5.6;\n"
+            "import QtQuick 2.7;\n"
+            "import QtQuick.Layouts 1.3;\n"
+            "import QtQuick.Window 2.2;\n"
+            "import QtQuick.Controls 2.1;\n"
+            "import QtQuick.Controls.Material 2.1;\n"
+            "import QtQuick.Controls.Material 2.1;\n\n";
+
+    int validItemsCount = 0;
+    for (auto iObj = m_data.begin(); iObj != m_data.end(); ++iObj)
+    {
+        if (!(*iObj)->isValid() || (*iObj)->getQmlString(randomSeed).isEmpty())
+        {
+            continue;
+        }
+
+        validItemsCount++;
+    }
+
+    if (validItemsCount == 0)
+        return QString();
+    if (validItemsCount == 1)
+    {
+        randomSeed = qrand();
+        qmlStr += m_data[0]->getQmlString(randomSeed);
+    }
+    else
+    {
+        qmlStr += "Flow {\n";
+        qmlStr += "    width: rctItem.width;\n";
+        for (auto iObj = m_data.begin(); iObj != m_data.end(); ++iObj)
+        {
+            randomSeed = qrand();
+            qmlStr += (*iObj)->getQmlString(randomSeed);
+            qmlStr = qmlStr.trimmed();
+        }
+        qmlStr += "}\n";
+    }
+
+#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
+    QDir appRootDir(qApp->applicationDirPath());
+    Q_ASSERT(appRootDir.isReadable());
+    Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
+
+    QString fullDirPath = appRootDir.path();
+    if (!fullDirPath.endsWith("/")) fullDirPath += "/";
+
+    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(m_pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
+#endif
+
+    return qmlStr;
+}
+
+bool User::isValid() const
+{
+    return (m_userId > 0) && !m_userName.isEmpty() && m_userProfileUrl.isValid()
+        && m_allPostsUrl.isValid() && (m_postCount > 0) && m_registrationDate.isValid() && (m_reputation >= 0);
+}
+
+uint User::getHash(uint seed) const
+{
+    return qHash(m_userId, seed) ^ qHash(m_userName, seed) ^ qHash(m_userProfileUrl, seed)
+        ^ (m_userAvatar ? m_userAvatar->getHash(seed) : 0) ^ qHash(m_allPostsUrl, seed) ^ qHash(m_postCount, seed)
+            ^ qHash(m_registrationDate, seed) ^ qHash(m_reputation, seed) ^ qHash(m_city, seed);
+}
+
+QString User::getQmlString(int randomSeed) const
+{
+    const QString qmlStr =
+        "import QtQuick 2.7;\n"
+        "import QtQuick.Layouts 1.3;\n"
+        "import QtQuick.Controls 2.1;\n"
+        "import QtQuick.Window 2.2;\n"
+        "import QtQuick.Controls.Material 2.1;\n"
+        "import QtQuick.Controls.Universal 2.1;\n"
+        "\n"
+        "   Column {\n"
+        "       id: clmnUserInfo%1;\n"
+        "       spacing: dp(2);\n"
+        "       padding: dp(5);\n"
+        "       // NOTE: width will be calculated automatically\n"
+        "\n"
+        "       Text {\n"
+        "           id: txtUserName%1;\n"
+        "           text: \"<b>\" + '%2' + \"</b>\";\n"
+        "           color: \"blue\";\n"
+        "\n"
+        "           font.pointSize: 14;\n"
+        "       }\n"
+        "\n"
+        "       AnimatedImage {\n"
+        "           id: imgUserAvatar%1;\n"
+        "           source: reader.convertToUrl('%3');\n"
+        "           visible: '%3' !== \"\";\n"
+        "\n"
+        "           width:  %4 === -1 ? dp(100) : dp(%4);\n"
+        "           height: %5 === -1 ? dp(100) : dp(%5);\n"
+        "       }\n"
+        "\n"
+        "       Text {\n"
+        "           id: txtAuthorPostCount%1;\n"
+        "           text: \"Post count: \" + %6;\n"
+        "\n"
+        "           font.pointSize: 14;\n"
+        "       }\n"
+        "\n"
+        "       Text {\n"
+        "           id: txtAuthorRegistrationDate%1;\n"
+        "           text: \"Registered: \" + '%7';\n"
+        "\n"
+        "           font.pointSize: 14;\n"
+        "       }\n"
+        "\n"
+        "       Text {\n"
+        "           id: txtAuthorReputation%1;\n"
+        "           text: \"Reputation: \" + %8;\n"
+        "\n"
+        "           font.pointSize: 14;\n"
+        "       }\n"
+        "\n"
+        "       Text {\n"
+        "           id: txtAuthorCity%1;\n"
+        "           visible: '%9' !== \"\";\n"
+        "           text: \"City: \" + '%9';\n"
+        "\n"
+        "           font.pointSize: 14;\n"
+        "       }\n"
+        "   }\n";
+
+    return qmlStr.arg(randomSeed)
+            .arg(m_userName)
+            .arg(m_userAvatar ? m_userAvatar->m_url : "")
+            .arg(m_userAvatar ? m_userAvatar->m_width : 0)
+            .arg(m_userAvatar ? m_userAvatar->m_height : 0)
+            .arg(m_postCount)
+            .arg(m_registrationDate.toString( /*Qt::SystemLocaleShortDate*/ "yyyy"))
+            .arg(m_reputation)
+            .arg(m_city);
+}
+
+}   // namespace BankiRuForum

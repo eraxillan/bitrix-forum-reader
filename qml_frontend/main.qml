@@ -8,8 +8,7 @@ import Qt.labs.settings 1.0
 
 import ru.banki.reader 1.0
 
-ApplicationWindow
-{
+ApplicationWindow {
     id:      wndMain
     visible: true
     width:   Screen.width
@@ -24,9 +23,9 @@ ApplicationWindow
     property bool pageLoaded: false
     property int totalPageCount: 1
     property int currentPageIndex: 1
+    property int postIndex: 1;
 
-    ForumReader
-    {
+    ForumReader {
         id: reader
 
         onPageContentParseProgressRange: {
@@ -60,19 +59,12 @@ ApplicationWindow
             for (var i = 0; i < reader.postCount(); i++)
             {
                 dataModel.append( {  "color"                  : "lightgrey",
-                                     "postAuthor"             : reader.postAuthor(i),
-                                     "postAvatar"             : reader.postAvatarUrl(i),
-                                     "postAvatarWidth"        : reader.postAvatarWidth(i),
-                                     "postAvatarHeight"       : reader.postAvatarHeight(i),
+                                     "postAuthorQml"          : reader.postAuthorQml(i),
                                      "postDateTime"           : reader.postDateTime(i),
                                      "postText"               : reader.postText(i),
                                      "postLastEdit"           : reader.postLastEdit(i),
                                      "postLikeCount"          : reader.postLikeCount(i),
                                      "postFooterQml"          : reader.postFooterQml(),
-                                     "authorPostCount"        : reader.postAuthorPostCount(i),
-                                     "authorRegistrationDate" : reader.postAuthorRegistrationDate(i),
-                                     "authorReputation"       : reader.postAuthorReputation(i),
-                                     "authorCity"             : reader.postAuthorCity(i),
                                      "authorSignature"        : reader.postAuthorSignature(i)
                                   } );
             }
@@ -86,8 +78,7 @@ ApplicationWindow
         reader.startPageCountAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list" )
     }
 
-    ProgressBar
-    {
+    ProgressBar {
         id: pbPage
 
         anchors.margins: dp(10)
@@ -102,13 +93,11 @@ ApplicationWindow
         to: 0
     }
 
-    ListModel
-    {
+    ListModel {
         id: dataModel
     }
 
-    ListView
-    {
+    ListView {
         id: view
 
         anchors.margins: dp(10)
@@ -125,24 +114,40 @@ ApplicationWindow
         highlightFollowsCurrentItem: true
 
         delegate:
-        Item
-        {
+        Item {
             property var view: ListView.view
             property var isCurrent: ListView.isCurrentItem
 
+            id: listViewItem
             width: view.width
-            height: Math.max( clmnUserInfo.height, clmnPost.height ) + clmnUserInfo.padding
 
-            Row
-            {
+            Row {
+                id: rowPost
                 anchors.fill: parent
                 spacing: 0
                 padding: 0
 
-                Rectangle
-                {
+                function createAuthorItem() {
+                    if (!pageLoaded) return;
+                    if (model.postAuthorQml === "") return;
+
+                    var postQmlFileName = reader.applicationDirPath() + "page_" + currentPageIndex + "_post_" + postIndex;
+                    var postObj = Qt.createQmlObject(model.postAuthorQml, rectUserInfo, postQmlFileName);
+                    if (postObj == null) {
+                        console.log("User QML object creation FAILED:");
+                        console.log(">>>--------------------------------------------------------");
+                        console.log(model.postAuthorQml);
+                        console.log("<<<--------------------------------------------------------");
+                    }
+
+                    listViewItem.height = Qt.binding(function() { return Math.max(postObj.height, clmnPost.height) + postObj.padding });
+                    rectUserInfo.width = Qt.binding(function() { return postObj.width + 2*postObj.padding; });
+                    rctItem.width = Qt.binding(function() { return parent.width - postObj.width - 2*postObj.padding; });
+                }
+                Component.onCompleted: rowPost.createAuthorItem();
+
+                Rectangle {
                     id: rectUserInfo
-                    width: clmnUserInfo.width + 2*clmnUserInfo.padding
                     height: parent.height
 
                     radius: 0
@@ -150,73 +155,11 @@ ApplicationWindow
                     border {
                         color: "black"
                         width: 1
-                    }
-
-                    Column
-                    {
-                        id: clmnUserInfo
-                        spacing: dp(2)
-                        padding: dp(5)
-                        // NOTE: width will be calculated automatically
-
-                        Text
-                        {
-                            id: txtUserName
-                            text: "<b>" + model.postAuthor + "</b>"
-                            color: "blue"
-
-                            font.pointSize: 14
-                        }
-
-                        AnimatedImage
-                        {
-                            id: imgUserAvatar
-                            source: reader.convertToUrl( model.postAvatar )
-                            visible: model.postAvatar !== ""
-
-                            width:  model.postAvatarWidth === -1  ? dp(100) : dp(model.postAvatarWidth)
-                            height: model.postAvatarHeight === -1 ? dp(100) : dp(model.postAvatarHeight)
-                        }
-
-                        Text
-                        {
-                            id: txtAuthorPostCount
-                            text: "Post count: " + model.authorPostCount
-
-                            font.pointSize: 14
-                        }
-
-                        Text
-                        {
-                            id: txtAuthorRegistrationDate
-                            text: "Registered: " + Qt.formatDate( model.authorRegistrationDate )
-
-                            font.pointSize: 14
-                        }
-
-                        Text
-                        {
-                            id: txtAuthorReputation
-                            text: "Reputation: " + model.authorReputation
-
-                            font.pointSize: 14
-                        }
-
-                        Text
-                        {
-                            id: txtAuthorCity
-                            visible: model.authorCity !== ""
-                            text: "City: " + model.authorCity
-
-                            font.pointSize: 14
-                        }
                     }
                 }
 
-                Rectangle
-                {
+                Rectangle {
                     id: rctItem
-                    width: parent.width - clmnUserInfo.width - 2*clmnUserInfo.padding
                     height: parent.height
 
                     radius: 0
@@ -226,21 +169,18 @@ ApplicationWindow
                         width: 1
                     }
 
-                    MouseArea
-                    {
+                    MouseArea {
                         anchors.fill: parent
                         onClicked: view.currentIndex = model.index
                     }
 
-                    Column
-                    {
+                    Column {
                         id: clmnPost
 
                         spacing: dp(5)
                         leftPadding: dp(10)
                         rightPadding: dp(10)
 
-                        property int postIndex: -1;
                         function createItem() {
                             if (!pageLoaded) return;
                             if (model.postText === "") return;
@@ -250,9 +190,7 @@ ApplicationWindow
                             var postObj = Qt.createQmlObject(model.postText, clmnPost, postQmlFileName);
 
                             var postFooterObj = Qt.createQmlObject(model.postFooterQml, clmnPost, "dynamicPostAdditionalInfo");
-
-                            if (postObj === null)
-                            {
+                            if (postObj == null) {
                                 console.log("Post QML object creation FAILED:");
                                 console.log(">>>--------------------------------------------------------");
                                 console.log(model.postText);
@@ -261,8 +199,7 @@ ApplicationWindow
                         }
                         Component.onCompleted: clmnPost.createItem();
 
-                        Text
-                        {
+                        Text {
                             id: txtPostDateTime
                             width: rctItem.width - parent.rightPadding - parent.leftPadding
                             topPadding: dp(5)
@@ -275,8 +212,7 @@ ApplicationWindow
                             text: Qt.formatDateTime(model.postDateTime)
                         }
 
-                        Rectangle
-                        {
+                        Rectangle {
                             width: rctItem.width - parent.rightPadding - parent.leftPadding
                             height: dp(1)
                             border.width: dp(0)
@@ -328,8 +264,7 @@ ApplicationWindow
 
                 onValueChanged: {
                     // Parse the page HTML data
-                    if (qmlInit)
-                    {
+                    if (qmlInit) {
                         pageLoaded = false;
                         dataModel.clear();
 

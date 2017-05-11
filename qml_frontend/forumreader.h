@@ -50,16 +50,10 @@ public:
     Q_INVOKABLE int       postCount() const;
 
     // Page posts properties getters
-    Q_INVOKABLE QString   postAuthor(int index) const;
-    Q_INVOKABLE int       postAuthorPostCount(int index) const;
-    Q_INVOKABLE QDate     postAuthorRegistrationDate(int index) const;
-    Q_INVOKABLE int       postAuthorReputation(int index) const;
-    Q_INVOKABLE QString   postAuthorCity(int index) const;
+    Q_INVOKABLE QString   postAuthorQml(int index) const;
     Q_INVOKABLE QString   postAuthorSignature(int index) const;
 
-    Q_INVOKABLE QString   postAvatarUrl(int index) const;
-    Q_INVOKABLE int       postAvatarWidth(int index) const;
-    Q_INVOKABLE int       postAvatarHeight(int index) const;
+    // FIXME: currently unused! use it or remove
     Q_INVOKABLE int       postAvatarMaxWidth() const;
 
     Q_INVOKABLE QDateTime postDateTime(int index) const;

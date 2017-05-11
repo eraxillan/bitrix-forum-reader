@@ -21,7 +21,7 @@ namespace BankiRuForum
         virtual uint    getHash(uint seed) const = 0;
         virtual QString getQmlString(int randomSeed) const = 0;
     };
-    typedef QList< QSharedPointer<IPostObject> > IPostObjectList;
+    typedef QList<QSharedPointer<IPostObject>> IPostObjectList;
 
     // NOTE: spoiler text is HTML
     struct PostSpoiler : IPostObject
@@ -146,7 +146,7 @@ namespace BankiRuForum
 
     // ----------------------------------------------------------------------------------------------------------------
 
-    struct Post
+    struct Post : IPostObject
     {
         int m_id = -1;
 //      int m_postNumber;
@@ -161,22 +161,15 @@ namespace BankiRuForum
         QDateTime m_date;
 //		QUrl m_permalink;
 
-        bool isValid() const
-        {
-            return (m_id > 0) && (m_likeCounter >= 0) && !m_data.isEmpty() && m_date.isValid();
-        }
+        //void addObject(QSharedPointer<IPostObject> obj);
+        //void removeObject(QSharedPointer<IPostObject> obj);
 
-        uint getHash(uint seed) const
-        {
-            uint dataHash = 0;
-            for (auto obj : m_data) dataHash ^= obj->getHash(seed);
-
-            return qHash(m_id, seed) ^ qHash(m_likeCounter, seed) ^ dataHash
-                    ^ qHash(m_lastEdit, seed) ^ qHash(m_userSignature, seed) ^ qHash(m_date, seed);
-        }
+        bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
-    struct User
+    struct User : IPostObject
     {
         // Base info
         int m_userId = -1;
@@ -193,18 +186,9 @@ namespace BankiRuForum
         int m_reputation = -1;
         QString m_city;
 
-        bool isValid() const
-        {
-            return (m_userId > 0) && !m_userName.isEmpty() && m_userProfileUrl.isValid()
-                    && m_allPostsUrl.isValid() && (m_postCount > 0) && m_registrationDate.isValid() && (m_reputation >= 0);
-        }
-
-        uint getHash(uint seed) const
-        {
-            return qHash(m_userId, seed) ^ qHash(m_userName, seed) ^ qHash(m_userProfileUrl, seed)
-                    ^ (m_userAvatar ? m_userAvatar->getHash(seed) : 0) ^ qHash(m_allPostsUrl, seed) ^ qHash(m_postCount, seed)
-                    ^ qHash(m_registrationDate, seed) ^ qHash(m_reputation, seed) ^ qHash(m_city, seed);
-        }
+        bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     typedef QPair<User, Post>  UserPost;

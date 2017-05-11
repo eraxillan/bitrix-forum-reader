@@ -274,35 +274,11 @@ int ForumReader::postCount() const
     return m_pagePosts.size();
 }
 
-QString ForumReader::postAuthor(int index) const
+QString ForumReader::postAuthorQml(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
 
-    return m_pagePosts[index].first.m_userName;
-}
-
-QString ForumReader::postAvatarUrl(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    if (m_pagePosts[index].first.m_userAvatar.isNull()) return QString();
-    return m_pagePosts[index].first.m_userAvatar->m_url;
-}
-
-int ForumReader::postAvatarWidth(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    if (m_pagePosts[index].first.m_userAvatar.isNull()) return -1;
-    return m_pagePosts[index].first.m_userAvatar->m_width;
-}
-
-int ForumReader::postAvatarHeight(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    if (m_pagePosts[index].first.m_userAvatar.isNull()) return -1;
-    return m_pagePosts[index].first.m_userAvatar->m_height;
+    return m_pagePosts[index].first.getQmlString(qrand());
 }
 
 int ForumReader::postAvatarMaxWidth() const
@@ -329,56 +305,7 @@ QString ForumReader::postText(int index) const
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
     if (m_pagePosts[index].second.m_data.empty()) return QString();
 
-    QString qmlStr =
-            "import QtMultimedia 5.6;\n"
-            "import QtQuick 2.6;\n"
-            "import QtQuick.Window 2.2;\n"
-            "import QtQuick.Controls 1.5;\n"
-            "import QtQuick.Dialogs 1.2;\n\n";
-
-    int randomSeed = 0;
-    int validItemsCount = 0;
-    BankiRuForum::IPostObjectList::const_iterator iObj = m_pagePosts[index].second.m_data.begin();
-    for (; iObj != m_pagePosts[index].second.m_data.end(); ++iObj)
-    {
-        randomSeed = qrand();
-        if (!(*iObj)->isValid() || (*iObj)->getQmlString(randomSeed).isEmpty()) continue;
-
-        validItemsCount++;
-    }
-
-    if (validItemsCount == 0) return QString();
-    if (validItemsCount == 1)
-    {
-        randomSeed = qrand();
-        qmlStr += m_pagePosts[index].second.m_data[0]->getQmlString(randomSeed);
-    }
-    else
-    {
-        iObj = m_pagePosts[index].second.m_data.begin();
-        qmlStr += "Flow {\n";
-        qmlStr += "    width: rctItem.width;\n";
-        for (; iObj != m_pagePosts[index].second.m_data.end(); ++iObj)
-        {            
-            randomSeed = qrand();
-            qmlStr += (*iObj)->getQmlString(randomSeed);
-            qmlStr = qmlStr.trimmed();
-        }
-        qmlStr += "}\n";
-    }
-
-#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
-    QDir appRootDir(qApp->applicationDirPath());
-    Q_ASSERT(appRootDir.isReadable());
-    Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
-
-    QString fullDirPath = appRootDir.path();
-    if (!fullDirPath.endsWith("/")) fullDirPath += "/";
-
-    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(m_pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
-#endif
-
-    return qmlStr;
+    return m_pagePosts[index].second.getQmlString(qrand());
 }
 
 QString ForumReader::postLastEdit(int index) const
@@ -393,34 +320,6 @@ int ForumReader::postLikeCount(int index) const
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
 
     return m_pagePosts[index].second.m_likeCounter;
-}
-
-int ForumReader::postAuthorPostCount(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index].first.m_postCount;
-}
-
-QDate ForumReader::postAuthorRegistrationDate(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index].first.m_registrationDate;
-}
-
-int ForumReader::postAuthorReputation(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index].first.m_reputation;
-}
-
-QString ForumReader::postAuthorCity(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index].first.m_city;
 }
 
 QString ForumReader::postAuthorSignature(int index) const
