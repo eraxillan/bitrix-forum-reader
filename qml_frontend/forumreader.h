@@ -61,8 +61,6 @@ public:
     Q_INVOKABLE QString   postLastEdit(int index) const;
     Q_INVOKABLE int       postLikeCount(int index) const;
 
-    Q_INVOKABLE QString   postFooterQml() const;
-
 signals:
     // Forum parser signals
     void pageCountParsed(int pageCount);

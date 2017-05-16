@@ -9,6 +9,15 @@
 //#define RBR_DUMP_GENERATED_QML_IN_FILES
 //#define RBR_QML_OUTPUT_DIR QString("__temp_qml")
 
+#define RBR_SHOW_SPOILER
+#define RBR_SHOW_QUOTE
+#define RBR_SHOW_IMAGE
+#define RBR_SHOW_LINEBREAK
+#define RBR_SHOW_PLAINTEXT
+#define RBR_SHOW_RICHTEXT
+#define RBR_SHOW_VIDEO
+#define RBR_SHOW_HYPERLINK
+
 namespace BankiRuForum
 {
     const QString QUOTE_WRITE_VERB = "пишет";

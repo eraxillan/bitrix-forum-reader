@@ -64,7 +64,6 @@ ApplicationWindow {
                                      "postText"               : reader.postText(i),
                                      "postLastEdit"           : reader.postLastEdit(i),
                                      "postLikeCount"          : reader.postLikeCount(i),
-                                     "postFooterQml"          : reader.postFooterQml(),
                                      "authorSignature"        : reader.postAuthorSignature(i)
                                   } );
             }
@@ -121,6 +120,11 @@ ApplicationWindow {
             id: listViewItem
             width: view.width
 
+            MouseArea {
+                anchors.fill: parent
+                onClicked: view.currentIndex = model.index
+            }
+
             Row {
                 id: rowPost
                 anchors.fill: parent
@@ -132,17 +136,25 @@ ApplicationWindow {
                     if (model.postAuthorQml === "") return;
 
                     var postQmlFileName = reader.applicationDirPath() + "page_" + currentPageIndex + "_post_" + postIndex;
-                    var postObj = Qt.createQmlObject(model.postAuthorQml, rectUserInfo, postQmlFileName);
-                    if (postObj == null) {
+                    var postAuthorObj = Qt.createQmlObject(model.postAuthorQml, rectUserInfo, postQmlFileName);
+                    if (!postAuthorObj) {
                         console.log("User QML object creation FAILED:");
-                        console.log(">>>--------------------------------------------------------");
+                        console.log(">>>QML BEGIN--------------------------------------------------------");
                         console.log(model.postAuthorQml);
-                        console.log("<<<--------------------------------------------------------");
+                        console.log("<<<QML END--------------------------------------------------------");
                     }
 
-                    listViewItem.height = Qt.binding(function() { return Math.max(postObj.height, clmnPost.height) + postObj.padding });
-                    rectUserInfo.width = Qt.binding(function() { return postObj.width + 2*postObj.padding; });
-                    rctItem.width = Qt.binding(function() { return parent.width - postObj.width - 2*postObj.padding; });
+                    var postTextObj = Qt.createQmlObject(model.postText, rctItem, postQmlFileName);
+                    if (!postTextObj) {
+                        console.log("User QML object creation FAILED:");
+                        console.log(">>>QML BEGIN--------------------------------------------------------");
+                        console.log(model.postText);
+                        console.log("<<<QML END--------------------------------------------------------");
+                    }
+
+                    listViewItem.height = Qt.binding(function() { return Math.max(postAuthorObj.height, postTextObj.height) + postAuthorObj.padding; });
+                    rectUserInfo.width = Qt.binding(function() { return postAuthorObj.width + 2*postAuthorObj.padding; });
+                    rctItem.width = Qt.binding(function() { return parent.width - postAuthorObj.width - 2*postAuthorObj.padding; });
                 }
                 Component.onCompleted: rowPost.createAuthorItem();
 
@@ -161,63 +173,13 @@ ApplicationWindow {
                 Rectangle {
                     id: rctItem
                     height: parent.height
+                    //width: <dynamic binding>
 
                     radius: 0
                     color: isCurrent ? "skyblue" : model.color
                     border {
                         color: "black"
                         width: 1
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: view.currentIndex = model.index
-                    }
-
-                    Column {
-                        id: clmnPost
-
-                        spacing: dp(5)
-                        leftPadding: dp(10)
-                        rightPadding: dp(10)
-
-                        function createItem() {
-                            if (!pageLoaded) return;
-                            if (model.postText === "") return;
-
-                            postIndex++;
-                            var postQmlFileName = reader.applicationDirPath() + "page_" + currentPageIndex + "_post_" + postIndex;
-                            var postObj = Qt.createQmlObject(model.postText, clmnPost, postQmlFileName);
-
-                            var postFooterObj = Qt.createQmlObject(model.postFooterQml, clmnPost, "dynamicPostAdditionalInfo");
-                            if (postObj == null) {
-                                console.log("Post QML object creation FAILED:");
-                                console.log(">>>--------------------------------------------------------");
-                                console.log(model.postText);
-                                console.log("<<<--------------------------------------------------------");
-                            }
-                        }
-                        Component.onCompleted: clmnPost.createItem();
-
-                        Text {
-                            id: txtPostDateTime
-                            width: rctItem.width - parent.rightPadding - parent.leftPadding
-                            topPadding: dp(5)
-                            padding: dp(0)
-                            horizontalAlignment: Text.AlignLeft
-                            verticalAlignment: Text.AlignVCenter
-                            clip: false
-
-                            font.pointSize: 14
-                            text: Qt.formatDateTime(model.postDateTime)
-                        }
-
-                        Rectangle {
-                            width: rctItem.width - parent.rightPadding - parent.leftPadding
-                            height: dp(1)
-                            border.width: dp(0)
-                            color: "lightslategrey"
-                        }
                     }
                 }
             }

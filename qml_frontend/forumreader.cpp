@@ -24,21 +24,6 @@ void dumpFutureObj(QFuture<T> future, QString name)
 }
 }
 
-#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
-namespace {
-static bool WriteTextFile(QString fileName, QString fileContents)
-{
-    QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        return false;
-
-    QTextStream out(&file);
-    out << fileContents;
-    return true;
-}
-}
-#endif
-
 ForumReader::ForumReader() :
     m_forumPageCountWatcher(),
     m_forumPageParserWatcher(),
@@ -327,79 +312,4 @@ QString ForumReader::postAuthorSignature(int index) const
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
 
     return m_pagePosts[index].second.m_userSignature;
-}
-
-QString ForumReader::postFooterQml() const
-{
-    const QString qmlStr =
-            "import QtQuick 2.6;\n"
-            "Column {\n"
-            "   Text {\n"
-            "       id: txtLastEdit\n"
-            "       visible: model.lastEdit !== \"\"\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
-            "\n"
-            "       color: \"lightslategrey\"\n"
-            "       font.italic: true\n"
-            "       font.pointSize: 14\n"
-            "\n"
-            "       renderType: Text.NativeRendering\n"
-            "\n"
-            "       text: model.postLastEdit\n"
-            "       textFormat: Text.RichText\n"
-            "       onLinkActivated: Qt.openUrlExternally(link)\n"
-            "\n"
-            "       clip: false\n"
-            "       elide: Text.ElideRight\n"
-            "       wrapMode: Text.WordWrap\n"
-            "   }\n"
-            "\n"
-            "   Rectangle {\n"
-            "       visible: model.authorSignature !== \"\"\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
-            "       height: dp(1)\n"
-            "       border.width: dp(0)\n"
-            "       color: \"lightslategrey\"\n"
-            "   }\n"
-            "\n"
-            "   Text {\n"
-            "       id: txtPostAuthorSignature\n"
-            "       visible: model.authorSignature !== \"\"\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
-            "\n"
-            "       color: \"lightslategrey\"\n"
-            "       font.italic: true\n"
-            "       font.pointSize: 14\n"
-            "\n"
-            "       renderType: Text.NativeRendering\n"
-            "\n"
-            "       text: model.authorSignature\n"
-            "       textFormat: Text.RichText\n"
-            "       onLinkActivated: Qt.openUrlExternally(link)\n"
-            "\n"
-            "       clip: false\n"
-            "       elide: Text.ElideRight\n"
-            "       wrapMode: Text.WordWrap\n"
-            "   }\n"
-            "\n"
-            "   Rectangle {\n"
-            "       visible: model.postLikeCount > 0\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
-            "       height: dp(1)\n"
-            "       border.width: dp(0)\n"
-            "       color: \"lightslategrey\"\n"
-            "   }\n"
-            "\n"
-            "   Text {\n"
-            "       id: txtPostLikeCounter\n"
-            "       visible: model.postLikeCount > 0\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding\n"
-            "       color: \"lightslategrey\"\n"
-            "\n"
-            "       font.bold: true\n"
-            "       font.pointSize: 14\n"
-            "       text: model.postLikeCount + \" like(s)\"\n"
-            "   }\n"
-            "}\n";
-    return qmlStr;
 }

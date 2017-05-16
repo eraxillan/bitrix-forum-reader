@@ -1,5 +1,20 @@
 #include "websiteinterface.h"
 
+#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
+namespace {
+static bool WriteTextFile(QString fileName, QString fileContents)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QTextStream out(&file);
+    out << fileContents;
+    return true;
+}
+}
+#endif
+
 namespace BankiRuForum
 {
 
@@ -25,6 +40,10 @@ uint PostSpoiler::getHash(uint seed) const
 
 QString PostSpoiler::getQmlString(int randomSeed) const
 {
+#ifndef RBR_SHOW_SPOILER
+    Q_UNUSED(randomSeed);
+    return QString("        Text { font.pointSize: 14; text: 'PostSpoiler'; }\n");
+#else
     const QString qmlStr =
             "Rectangle {\n"
             "   id: rctSpoiler%1;\n"
@@ -108,6 +127,7 @@ QString PostSpoiler::getQmlString(int randomSeed) const
         quoteQml += (*iObj)->getQmlString(qrand());
     }
     return qmlStr.arg(QString::number(randomSeed), m_title /*+ " \u25B2"*/, quoteQml);
+#endif
 }
 
 // PostQuote
@@ -128,6 +148,10 @@ uint PostQuote::getHash(uint seed) const
 
 QString PostQuote::getQmlString(int randomSeed) const
 {
+#ifndef RBR_SHOW_QUOTE
+    Q_UNUSED(randomSeed);
+    return QString("        Text { font.pointSize: 14; text: 'PostQuote'; }\n");
+#else
     const QString qmlStr =
             "Rectangle {\n"
             "   id: rctQuote%1;\n"
@@ -200,6 +224,7 @@ QString PostQuote::getQmlString(int randomSeed) const
                 urlText,
                 quoteQml,
                 !userNameEsc.isEmpty() ? "true" : "false");
+#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -229,16 +254,41 @@ uint PostImage::getHash(uint seed) const
 
 QString PostImage::getQmlString(int randomSeed) const
 {
+#ifndef RBR_SHOW_IMAGE
+    Q_UNUSED(randomSeed);
+    return QString("        Text { font.pointSize: 14; text: 'PostImage'; }\n");
+#else
+    QString qmlStr;
+
     if (!m_url.endsWith(".gif"))
     {
-        return QString("Image { id: img%1; source: '%2' }")
-                .arg(QString::number(randomSeed), m_url);
+        qmlStr =
+                "        Image {\n"
+                "            id: img%1;\n"
+                "            source: '%2';\n"
+                // FIXME: test on mobile devices
+                // FIXME: investigate sourceSize behaviour
+                //"            sourceSize.width: dp(200);\n"
+                //"            sourceSize.height: dp(200);\n"
+                "            width: (sourceSize.width > dp(200)) ? dp(200) : sourceSize.width;\n"
+                "            height: (sourceSize.height > dp(200)) ? dp(200) : sourceSize.height;\n"
+                "        }\n";
     }
-
-    // NOTE: implement other fields usage if they will be implemented on the forum side
-    Q_ASSERT(m_width == -1);
-    Q_ASSERT(m_height == -1);
-    return QString("AnimatedImage { id: imgSmile%1; source: '%2'; }").arg(QString::number(randomSeed), m_url);
+    else
+    {
+        // NOTE: implement other fields usage if they will be implemented on the forum side
+        Q_ASSERT(m_width == -1);
+        Q_ASSERT(m_height == -1);
+        qmlStr =
+                "        AnimatedImage {\n"
+                "            id: imgSmile%1;\n"
+                "            source: '%2';\n"
+                "            width: (sourceSize.width > dp(200)) ? dp(200) : sourceSize.width;\n"
+                "            height: (sourceSize.height > dp(200)) ? dp(200) : sourceSize.height;\n"
+                "        }\n";
+    }
+    return qmlStr.arg(randomSeed).arg(m_url);
+#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -259,6 +309,10 @@ uint PostLineBreak::getHash(uint seed) const
 
 QString PostLineBreak::getQmlString(int randomSeed) const
 {
+#ifndef RBR_SHOW_LINEBREAK
+    Q_UNUSED(randomSeed);
+    return QString("        Text { font.pointSize: 14; text: 'PostLineBreak'; }\n");
+#else
     const QString qmlStr =
             "Text {\n"
             "   id: lineBreak%1\n"
@@ -275,6 +329,7 @@ QString PostLineBreak::getQmlString(int randomSeed) const
         #endif
             "}\n";
     return qmlStr.arg(randomSeed);
+#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -301,33 +356,52 @@ uint PostPlainText::getHash(uint seed) const
 
 QString PostPlainText::getQmlString(int randomSeed) const
 {
+#ifndef RBR_SHOW_PLAINTEXT
+    Q_UNUSED(randomSeed);
+    return QString("        Text { font.pointSize: 14; text: 'PostPlainText'; }\n");
+#else
     const QString qmlStr =
             "Text {\n"
-            "   property int postWidth: rctItem.width - parent.rightPadding - parent.leftPadding - dp(20);\n"
+            "    id: dynTxtPost%1;\n"
             "\n"
-            "   id: dynTxtPost%1;\n"
-            "   Component.onCompleted: { width = contentWidth >= postWidth ? postWidth : contentWidth; }\n"
+            // NOTE: of course Text has contentWidth property, but we cannot bind Text.width to Text.contentWidth:
+            //       this will cause binding loop; currently i've found just one workaround - measure text width using another way
+            "    TextMetrics {\n"
+            "        id: textMetrics%1;\n"
             "\n"
-            "   font.pointSize: 14;\n"
+            "        font: dynTxtPost%1.font;\n"
+            "        text: dynTxtPost%1.text;\n"
+            "    }\n"
             "\n"
-            "   text: '%2';\n"
-            "   textFormat: Text.PlainText;\n"
+            "    Component.onCompleted: {\n"
+            "        this.width = Qt.binding(function() {\n"
+            "            var postWidth = parent.width - 2*parent.rightPadding - 2*parent.leftPadding;\n"
+            "            return ((textMetrics%1.width < postWidth) ? textMetrics%1.width + dp(20) : postWidth);\n"   // tightBoundingRect.width
+            "            }\n"
+            "        );\n"
+            "    }\n"
             "\n"
-            "   elide: Text.ElideRight;\n"
-            "   wrapMode: Text.WordWrap;\n"
+            "    font.pointSize: 14;\n"
+            "\n"
+            "    text: '%2';\n"
+            "    textFormat: Text.PlainText;\n"
+            "\n"
+            "    elide: Text.ElideRight;\n"
+            "    wrapMode: Text.WordWrap;\n"
             "\n"
 #ifdef RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
-            "   Rectangle {\n"
-            "       border.width: dp(1);\n"
-            "       border.color: \"red\";\n"
-            "       color: \"transparent\";\n"
-            "       width: parent.width;\n"
-            "       height: parent.height;\n"
-            "   }\n"
+            "    Rectangle {\n"
+            "        border.width: dp(1);\n"
+            "        border.color: \"red\";\n"
+            "        color: \"transparent\";\n"
+            "        width: parent.width;\n"
+            "        height: parent.height;\n"
+            "    }\n"
 #endif
             "}\n";
     QString textEsc = QString(m_text).replace("'", "\\'");
-    return qmlStr.arg(QString::number(randomSeed), textEsc);
+    return qmlStr.arg(randomSeed).arg(textEsc);
+#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -355,6 +429,10 @@ uint PostRichText::getHash(uint seed) const
 
 QString PostRichText::getQmlString(int randomSeed) const
 {
+#ifndef RBR_SHOW_RICHTEXT
+    Q_UNUSED(randomSeed);
+    return QString("        Text { font.pointSize: 14; text: 'PostRichText'; }\n");
+#else
     const QString qmlStr =
             "Text {\n"
             "   id: dynTxtPost%1;\n"
@@ -394,6 +472,7 @@ QString PostRichText::getQmlString(int randomSeed) const
                 m_isUnderlined ? "true" : "false",
                 m_isStrikedOut ? "true" : "false",
                 textEsc);
+#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -522,6 +601,10 @@ uint PostVideo::getHash(uint seed) const
 
 QString PostVideo::getQmlString(int randomSeed) const
 {
+#ifndef RBR_SHOW_VIDEO
+    Q_UNUSED(randomSeed);
+    return QString("        Text { font.pointSize: 14; text: 'PostVideo';}\n");
+#else
 	const QString qmlStr =
             "Video {\n"
             "   id: video%1;\n"
@@ -551,6 +634,7 @@ QString PostVideo::getQmlString(int randomSeed) const
             "   Keys.onRightPressed: video%1.seek(video%1.position + 5000);\n"
             "}\n";
     return qmlStr.arg(QString::number(randomSeed), m_urlStr);
+#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -580,6 +664,10 @@ uint PostHyperlink::getHash(uint seed) const
 
 QString PostHyperlink::getQmlString(int randomSeed) const
 {
+#ifndef RBR_SHOW_HYPERLINK
+    Q_UNUSED(randomSeed);
+    return QString("        Text { font.pointSize: 14; text: 'PostHyperlink'; }\n");
+#else
     const QString qmlStr =
             "Text {\n"
             "   id: dynTxtHyperlink%1;\n"
@@ -607,6 +695,7 @@ QString PostHyperlink::getQmlString(int randomSeed) const
 #endif
             "}\n";
     return qmlStr.arg(QString::number(randomSeed), "<a href=\"" + m_urlStr + "\">" + m_title + "</a>");
+#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -642,7 +731,38 @@ QString Post::getQmlString(int randomSeed) const
             "import QtQuick.Window 2.2;\n"
             "import QtQuick.Controls 2.1;\n"
             "import QtQuick.Controls.Material 2.1;\n"
-            "import QtQuick.Controls.Material 2.1;\n\n";
+            "import QtQuick.Controls.Universal 2.1;\n\n";
+
+    qmlStr +=
+            "Column {\n"
+            "    id: clmnPost;\n"
+            "\n"
+            "    spacing: dp(10);\n"
+            "    leftPadding: dp(10);\n"
+            "    rightPadding: dp(10);\n\n";
+
+    qmlStr +=
+            "    Text {\n"
+//            "       id: txtPostDateTime;\n"
+            "        width: rctItem.width;\n"
+            "\n"
+            "        topPadding: dp(5);\n"
+            "        padding: dp(0);\n"
+            "        horizontalAlignment: Text.AlignLeft;\n"
+            "        verticalAlignment: Text.AlignVCenter;\n"
+            "        clip: false;\n"
+            "\n"
+            "        font.pointSize: 14;\n"
+            "        text: Qt.formatDateTime(model.postDateTime);\n"
+            "    }\n"
+            "\n"
+            "    Rectangle {\n"
+            "        width: rctItem.width;\n"
+            "        height: dp(2);\n"
+            "\n"
+            "        border.width: dp(0);\n"
+            "        color: \"lightslategrey\";\n"
+            "    }\n\n";
 
     int validItemsCount = 0;
     for (auto iObj = m_data.begin(); iObj != m_data.end(); ++iObj)
@@ -664,16 +784,92 @@ QString Post::getQmlString(int randomSeed) const
     }
     else
     {
-        qmlStr += "Flow {\n";
-        qmlStr += "    width: rctItem.width;\n";
+        qmlStr += "    Flow {\n";
+        qmlStr += "        width: rctItem.width;\n";
+        qmlStr += "\n";
+        qmlStr += "        padding: dp(10);\n";
+        qmlStr += "        spacing: dp(10);\n";
+        qmlStr += "\n";
         for (auto iObj = m_data.begin(); iObj != m_data.end(); ++iObj)
         {
             randomSeed = qrand();
             qmlStr += (*iObj)->getQmlString(randomSeed);
-            qmlStr = qmlStr.trimmed();
+//            qmlStr = qmlStr.trimmed();
         }
-        qmlStr += "}\n";
+        qmlStr += "    }\n";    // QML Flow end
     }
+
+    // Post footer
+    qmlStr +=
+            "   Text {\n"
+            "       id: txtLastEdit%1;\n"
+            "       visible: model.lastEdit !== \"\";\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+            "\n"
+            "       color: \"lightslategrey\";\n"
+            "       font.italic: true;\n"
+            "       font.pointSize: 14;\n"
+            "\n"
+            "       renderType: Text.NativeRendering;\n"
+            "\n"
+            "       text: model.postLastEdit;\n"
+            "       textFormat: Text.RichText;\n"
+            "       onLinkActivated: Qt.openUrlExternally(link);\n"
+            "\n"
+            "       clip: false;\n"
+            "       elide: Text.ElideRight;\n"
+            "       wrapMode: Text.WordWrap;\n"
+            "   }\n"
+            "\n"
+            "   Rectangle {\n"
+            "       visible: model.authorSignature !== \"\";\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+            "       height: dp(1);\n"
+            "       border.width: dp(0);\n"
+            "       color: \"lightslategrey\";\n"
+            "   }\n"
+            "\n"
+            "   Text {\n"
+            "       id: txtPostAuthorSignature%1;\n"
+            "       visible: model.authorSignature !== \"\";\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+            "\n"
+            "       color: \"lightslategrey\";\n"
+            "       font.italic: true;\n"
+            "       font.pointSize: 14;\n"
+            "\n"
+            "       renderType: Text.NativeRendering;\n"
+            "\n"
+            "       text: model.authorSignature;\n"
+            "       textFormat: Text.RichText;\n"
+            "       onLinkActivated: Qt.openUrlExternally(link);\n"
+            "\n"
+            "       clip: false;\n"
+            "       elide: Text.ElideRight;\n"
+            "       wrapMode: Text.WordWrap;\n"
+            "   }\n"
+            "\n"
+            "   Rectangle {\n"
+            "       visible: model.postLikeCount > 0;\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+            "       height: dp(1);\n"
+            "       border.width: dp(0);\n"
+            "       color: \"lightslategrey\";\n"
+            "   }\n"
+            "\n"
+            "   Text {\n"
+            "       id: txtPostLikeCounter%1;\n"
+            "\n"
+            "       visible: model.postLikeCount > 0;\n"
+            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
+            "       color: \"lightslategrey\";\n"
+            "\n"
+            "       font.bold: true;\n"
+            "       font.pointSize: 14;\n"
+            "       text: model.postLikeCount + \" like(s)\";\n"
+            "   }\n";
+
+    qmlStr += "}\n";    // QML Column end
 
 #ifdef RBR_DUMP_GENERATED_QML_IN_FILES
     QDir appRootDir(qApp->applicationDirPath());
@@ -683,10 +879,15 @@ QString Post::getQmlString(int randomSeed) const
     QString fullDirPath = appRootDir.path();
     if (!fullDirPath.endsWith("/")) fullDirPath += "/";
 
-    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(m_pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
+    // FIXME: find a way to get access to the page and post number fields to the Post object;
+    //        as an option - implement "Property" interface in "Post" object and set page number and post index as properties
+    static int pageNo = 130;
+    static int index = 1;
+    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
+    index++;
 #endif
 
-    return qmlStr;
+    return qmlStr.arg(randomSeed);
 }
 
 bool User::isValid() const
@@ -716,7 +917,7 @@ QString User::getQmlString(int randomSeed) const
         "       id: clmnUserInfo%1;\n"
         "       spacing: dp(2);\n"
         "       padding: dp(5);\n"
-        "       // NOTE: width will be calculated automatically\n"
+        "       // NOTE: width and height will be calculated automatically\n"
         "\n"
         "       Text {\n"
         "           id: txtUserName%1;\n"
