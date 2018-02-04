@@ -3,41 +3,40 @@
 
 #include "qtgumbonode.h"
 
+class QtGumboDocument;
+using QtGumboDocumentPtr = std::shared_ptr<QtGumboDocument>;
+
 class QtGumboDocument
 {
-    GumboOutput* m_output = nullptr;
-    QtGumboNode m_rootNode;
+    QByteArray m_rawHtmlData;
+
+    GumboOutput *m_output;
+
+    QtGumboNodePtr m_documentNode;
+    QtGumboNodePtr m_rootNode;
+
+    bool Parse();
 
 public:
-    QtGumboDocument(QString rawData)
+    QtGumboDocument();
+    QtGumboDocument(QString rawData);
+    ~QtGumboDocument();
+
+    QtGumboNodePtr documentNode() const;
+    QtGumboNodePtr rootNode() const;
+    // FIXME: implement errors list getter
+
+    void prettify();
+
+    // User-defined copy assignment, copy-and-swap form
+    QtGumboDocument& operator=(QtGumboDocument other)
     {
-        QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
-        Q_UNUSED(htmlCodec);
-    #ifdef RBR_PRINT_DEBUG_OUTPUT
-        qDebug() << "ru.banki.reader: HTML encoding/charset is" << htmlCodec->name();
-    #endif
-
-        // Convert to UTF-8: Gumbo library understands only this encoding
-    #if defined( Q_OS_WIN )
-        QString htmlFileString = htmlCodec->toUnicode(rawData.toLocal8Bit());
-        QByteArray htmlFileUtf8Contents = htmlFileString.toUtf8();
-    #elif defined( Q_OS_UNIX ) || defined( Q_OS_ANDROID )
-        QByteArray htmlFileUtf8Contents = rawData.toUtf8();
-    #else
-        #error "Unsupported platform, needs testing"
-    #endif
-
-        // Parse web page contents
-        m_output = gumbo_parse(htmlFileUtf8Contents.constData());
-        m_rootNode = QtGumboNode(m_output->root);
+        std::swap(m_rawHtmlData, other.m_rawHtmlData);
+        std::swap(m_output, other.m_output);
+        std::swap(m_documentNode, other.m_documentNode);
+        std::swap(m_rootNode, other.m_rootNode);
+        return *this;
     }
-
-    ~QtGumboDocument()
-    {
-        gumbo_destroy_output(&kGumboDefaultOptions, m_output);
-    }
-
-    QtGumboNode rootNode() const { return m_rootNode; }
 };
 
 #endif // QTGUMBODOCUMENT_H
