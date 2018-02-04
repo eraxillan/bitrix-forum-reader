@@ -32,7 +32,7 @@ private:
 
     void printTagsRecursively(QtGumboNodePtr node, int &level);
     void findMsdivNodesRecursively(QtGumboNodePtr node, QVector<QtGumboNodePtr> &msdivNodes);
-    void findPageCount(QtGumboNodePtr node, int &pageCount);
+    void findPageCount(QString rawData, int &pageCount);
     UserBaseInfo getUserBaseInfo(QtGumboNodePtr userInfoNode);
     UserAdditionalInfo getUserAdditionalInfo(QtGumboNodePtr userInfoNode);
     QSharedPointer<PostImage> getUserAvatar(QtGumboNodePtr userInfoNode);

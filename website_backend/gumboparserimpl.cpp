@@ -765,33 +765,11 @@ int ForumPageParser::getPostId(QtGumboNodePtr msdivNode)
     return messageId;
 }
 
-void ForumPageParser::findPageCount(QtGumboNodePtr node, int &pageCount)
+void ForumPageParser::findPageCount(QString rawData, int &pageCount)
 {
-    if (!node || !node->isValid()) { Q_ASSERT(0); return; }
-
     pageCount = 0;
 
-    QtGumboNodes paginationNodes = node->getElementsByClassRecursive("ui-pagination__item", HtmlTag::LI);
-    // 12 for last page, 16 for others
-    if ((paginationNodes.size() != 16) && (paginationNodes.size() != 12)) { Q_ASSERT(0); return; }
-
-    QtGumboNodePtr lastPageNode = paginationNodes[paginationNodes.size() == 16 ? 7 : 11];
-    if (!lastPageNode || !lastPageNode->isValid()) { Q_ASSERT(0); return; }
-
-    QSharedPointer<PostHyperlink> lastPageHref = parseHyperlink(lastPageNode->getElementByTag({HtmlTag::A, 0}));
-    if (!lastPageHref || !lastPageHref->isValid()) { Q_ASSERT(0); return; }
-
-    QString pageCountStr = lastPageHref->m_title;
-
-    bool pageCountOk = false;
-    pageCount = pageCountStr.toInt(&pageCountOk);
-    if (!pageCountOk) { pageCount = 0; Q_ASSERT(0); return; }
-
-    if (paginationNodes.size() != 16)
-        pageCount++;
-
     // NOTE: alternative method
-    /*
     const QString PAGES_STR = "pages: ";
     int pagesIdxBegin = rawData.indexOf(PAGES_STR);
     int pagesIdxEnd   = rawData.indexOf(",", pagesIdxBegin);
@@ -803,7 +781,6 @@ void ForumPageParser::findPageCount(QtGumboNodePtr node, int &pageCount)
     bool pageCountOk = false;
     pageCount = pageCountStr.toInt(&pageCountOk);
     Q_ASSERT(pageCountOk); if (!pageCountOk) pageCount = 0;
-    */
 }
 
 void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts& posts)
@@ -1086,8 +1063,10 @@ QByteArray convertHtmlToUft8(QByteArray rawHtmlData)
 
 int ForumPageParser::getPageCount(QByteArray rawData, int &pageCount)
 {
-    m_htmlDocument.reset(new QtGumboDocument(rawData));
-    findPageCount(m_htmlDocument->rootNode(), pageCount);
+    QByteArray utfData = convertHtmlToUft8(rawData);
+    if (utfData.isEmpty()) { Q_ASSERT(0); return 0; }
+
+    findPageCount(rawData, pageCount);
 
     // TODO: implement error handling with different return code
     return 0;
@@ -1095,7 +1074,10 @@ int ForumPageParser::getPageCount(QByteArray rawData, int &pageCount)
 
 int ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
 {
-    m_htmlDocument.reset(new QtGumboDocument(rawData));
+    QByteArray utfData = convertHtmlToUft8(rawData);
+    if (utfData.isEmpty()) { Q_ASSERT(0); return 0; }
+
+    m_htmlDocument.reset(new QtGumboDocument(utfData));
 
     // Parse web page contents
     fillPostList(m_htmlDocument->rootNode(), userPosts);
