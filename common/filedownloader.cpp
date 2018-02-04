@@ -171,7 +171,7 @@ void FileDownloader::onDownloadFinished()
 void FileDownloader::onDownloadFailed(QNetworkReply::NetworkError code)
 {
     // FIXME: map the NetworkError to the ResultCode
-    emit downloadFailed(ResultCode::E_NETWORK);
+    emit downloadFailed(ResultCode::NetworkError);
 }
 #endif
 
