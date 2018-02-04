@@ -2,12 +2,15 @@ TEMPLATE = app
 
 CONFIG -= debug_and_release debug_and_release_target
 
+#######################################################################################################################
+
 # Build mode (release by default)
 buildmode = release
 CONFIG(debug, debug|release):buildmode = debug
 
-# FIXME: add x64 build mode support
-#contains(QT_ARCH, i386) {
+contains(QT_ARCH, i386) {
+    message("FIXME: implement x64 build mode")
+}
 
 APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
 APP_ARCH = $$first( $$list( $$QT_ARCH ) )
@@ -20,10 +23,14 @@ UI_DIR      = $${APP_BUILD_DIR}
 OBJECTS_DIR = $${APP_BUILD_DIR}
 MOC_DIR     = $${APP_BUILD_DIR}
 
+#######################################################################################################################
+
 QT += qml quick widgets network multimedia
 android: QT += androidextras
 
 CONFIG += c++11
+
+#######################################################################################################################
 
 SOURCES += \
     common/filedownloader.cpp               \
@@ -44,12 +51,17 @@ HEADERS += \
 
 RESOURCES += qml_frontend/qml.qrc
 
+#######################################################################################################################
+
 # Link with gumbo-parser library
 INCLUDEPATH += $$PWD/gumbo-parser/src
 LIBS        += -L$$PWD/gumbo-parser/$${buildmode} -lgumbo-parser
+
+#######################################################################################################################
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 
 # Default rules for deployment.
 include(deployment.pri)
+
