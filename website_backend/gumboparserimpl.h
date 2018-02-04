@@ -26,8 +26,10 @@ class ForumPageParser : public IForumPageReader
 
     QtGumboDocumentPtr m_htmlDocument;
 
+    mutable bool m_textQuoteFlag = false;
+
 private:
-    QString extractVideoUrl(QString text) const;
+
     void printTagsRecursively(QtGumboNodePtr node, int &level);
     void findMsdivNodesRecursively(QtGumboNodePtr node, QVector<QtGumboNodePtr> &msdivNodes);
     void findPageCount(QtGumboNodePtr node, int &pageCount);
@@ -46,11 +48,14 @@ private:
     QSharedPointer<PostHyperlink> parseHyperlink(QtGumboNodePtr aNode) const;
     QSharedPointer<PostImage> parseImage(QtGumboNodePtr imgNode) const;
     QSharedPointer<PostQuote> parseQuote(QtGumboNodePtr tableNode) const;
+    QSharedPointer<PostSpoiler> parseSpoiler(QtGumboNodePtr tableNode) const;
+
     void parseMessage(QtGumboNodes nodes, IPostObjectList& postObjects) const;
 
 public:
     // IForumPageReader implementation
-    virtual int getPagePosts(QString rawData, UserPosts &userPosts, int &pageCount) Q_DECL_OVERRIDE;
+    int getPageCount(QByteArray rawData, int& pageCount) override;
+    int getPagePosts(QByteArray rawData, UserPosts& userPosts) override;
 };
 
 }

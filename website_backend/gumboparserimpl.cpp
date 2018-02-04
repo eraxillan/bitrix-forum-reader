@@ -17,38 +17,6 @@ static const QString g_bankiRuHost = "http://www.banki.ru";
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-QString ForumPageParser::extractVideoUrl(QString text) const
-{
-    static const QString VIDEO_URL_START_STR = "'file':'";
-    static const QString VIDEO_URL_END_STR = "',";
-    static const QString bbTagBegin("[url]");
-    static const QString bbTagEnd("[/url]");
-
-    int videoUrlStartIndex = text.indexOf(VIDEO_URL_START_STR);
-    if (videoUrlStartIndex == -1) { Q_ASSERT(0); return QString(); }
-
-    int videoUrlEndIndex = text.indexOf(VIDEO_URL_END_STR, videoUrlStartIndex);
-    if (videoUrlEndIndex <= videoUrlStartIndex) { Q_ASSERT(0); return QString(); }
-
-    QString videoUrl = text.mid(videoUrlStartIndex + VIDEO_URL_START_STR.size(),
-                                videoUrlEndIndex - videoUrlStartIndex - VIDEO_URL_START_STR.size());
-
-    int bbTagBeginIndex = videoUrl.indexOf(bbTagBegin);
-    if (bbTagBeginIndex >= 0)
-    {
-        int bbTagEndIndex = videoUrl.indexOf(bbTagEnd, bbTagBeginIndex);
-        if (bbTagEndIndex == -1)
-        {
-            Q_ASSERT(0);
-            return QString();
-        }
-
-        videoUrl = videoUrl.mid(bbTagBeginIndex + bbTagBegin.size(), bbTagEndIndex - bbTagBeginIndex - bbTagEnd.size() + 1);
-    }
-
-    return videoUrl;
-}
-
 void ForumPageParser::printTagsRecursively(QtGumboNodePtr node, int &level)
 {
     Q_UNUSED(level);
@@ -136,15 +104,26 @@ ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(QtGumboNodePtr us
 
     QtGumboNodePtr userNameNode = userInfoNode->getElementByClass("forum-user-name", HtmlTag::DIV);
     if (!userNameNode || !userNameNode->isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
-//    Q_ASSERT(userNameNode->getChildElementCount() == 1); if (userNameNode->getChildElementCount() != 1) return result;
+    if ((userNameNode->getChildElementCount() != 1) && (userNameNode->getChildElementCount() != 2)) { Q_ASSERT(0); return UserBaseInfo(); }
 
     QSharedPointer<PostHyperlink> userProfileRef = parseHyperlink(userNameNode->getElementByTag({HtmlTag::A, 0}));
     if(userProfileRef.isNull() || !userProfileRef->isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
+
+    // FIXME: check whether this code required
+    /*
+    Q_ASSERT(userNameNode.getChildren()[0].getTag() == HtmlTag::A || userNameNode.getChildren()[0].getTag() == HtmlTag::SCRIPT);
+    if (userNameNode.getChildElementCount() == 2)
+    {
+        Q_ASSERT(userNameNode.getChildren()[1].getTag() == HtmlTag::A || userNameNode.getChildren()[1].getTag() == HtmlTag::SCRIPT);
+    }
+    */
 
     result.m_id = parseUserId(userProfileRef->m_urlStr);
     result.m_name = userProfileRef->m_tip;
     result.m_profileUrl = QUrl(userProfileRef->m_urlStr);
 
+    if (result.m_id <= 0) { Q_ASSERT(0); return UserBaseInfo(); }
+    if (result.m_name.isEmpty()) { Q_ASSERT(0); return UserBaseInfo(); }
     if (!result.m_profileUrl.isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
 
     return result;
@@ -156,7 +135,7 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
 
     QtGumboNodePtr userAdditionalNode = userInfoNode->getElementByClass("forum-user-additional", HtmlTag::DIV);
     if (!userAdditionalNode || !userAdditionalNode->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
-//    Q_ASSERT(userAdditionalNode->getChildElementCount() >= 3 && userAdditionalNode->getChildElementCount() <= 5);
+//    Q_ASSERT(userAdditionalNode->getChildElementCount() >= 3 && userAdditionalNode->getChildElementCount() <= 6);
 
     // Read the all message URL and the post count
     QtGumboNodePtr postLinkNode = userAdditionalNode->getElementByTag(
@@ -329,7 +308,7 @@ Post ForumPageParser::getPostValue(QtGumboNodePtr trNode1)
     // 2) <div class="forum-post-entry" style="font-size: 14px;">
     QtGumboNodePtr postEntryNode = postNode->getElementByClass("forum-post-entry", HtmlTag::DIV);
     if (!postEntryNode || !postEntryNode->isValid()) { Q_ASSERT(0); return Post(); }
-//    Q_ASSERT(postEntryNode->getChildElementCount() <= 3);
+//    Q_ASSERT(postEntryNode->getChildElementCount() <= 4);
     if (postEntryNode->getClassAttribute() != "forum-post-entry") { Q_ASSERT(0); return Post(); }
 
     QtGumboNodePtr postTextNode = postEntryNode->getElementByClass("forum-post-text", HtmlTag::DIV);
@@ -395,45 +374,87 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             // Rich text
             case HtmlTag::B:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), true, false, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", true, false, false, false));
                 break;
             }
             case HtmlTag::I:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), false, true, false));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, true, false, false));
                 break;
             }
             case HtmlTag::U:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), false, false, true));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, false, true, false));
                 break;
             }
             case HtmlTag::S:
             {
-                // FIXME: support striked out text
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), false, false, true));
+                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, false, false, true));
                 break;
             }
             case HtmlTag::FONT:
             {
-                // FIXME: support font tag
-                // "<font color="#990033"><b>если не поменяют %</b></font>"
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), false, false, true));
+                Q_ASSERT(iChildPtr->getAttributeCount() == 1);
+
+                QString textColor = "black";
+                if (iChildPtr->hasAttribute("color"))
+                    textColor = iChildPtr->getAttribute("color");
+                QtGumboNodes fontTagChildren = iChildPtr->getChildren(false);
+                for (QtGumboNodePtr node : fontTagChildren)
+                {
+                    if (node->isElement())
+                    {
+                        switch (node->getTag())
+                        {
+                        case HtmlTag::B:
+                        {
+                            postObjects << QSharedPointer<PostRichText>(new PostRichText(" " + node->getChildrenInnerText() + " ", textColor, true, false, false, false));
+                            break;
+                        }
+                        // Line break
+                        case HtmlTag::BR:
+                        {
+                            postObjects << QSharedPointer<PostLineBreak>(new PostLineBreak());
+                            break;
+                        }
+                        // FIXME: implement other text formatting tags as above
+                        default:
+                        {
+                            Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML tag");
+                            break;
+                        }
+                        }
+                    }
+                    else if (node->isText())
+                    {
+                        //postObjects << QSharedPointer<PostPlainText>(new PostPlainText(node.getInnerText().trimmed()));
+                        postObjects << QSharedPointer<PostRichText>(new PostRichText(" " + node->getInnerText().trimmed() + " ", textColor, false, false, false, false));
+                    }
+                }
                 break;
             }
-
             // Quote
             case HtmlTag::TABLE:
             {
-                // <table class="forum-quote"> or <table class="forum-code">
+                // <table class="forum-quote">
+                // <table class="forum-code">
+                // <table class="forum-spoiler">
                 if (iChildPtr->getClassAttribute() == "forum-quote" || iChildPtr->getClassAttribute() == "forum-code")
                 {
                     postObjects << parseQuote(*iChild);
                 }
-                else Q_ASSERT(0);
+                else if (iChildPtr->getClassAttribute() == "forum-spoiler")
+                {
+                    postObjects << parseSpoiler(*iChild);
+                }
+                else
+                {
+                    Q_ASSERT_X(0, Q_FUNC_INFO, "invalid quote class");
+                }
                 break;
             }
             // Line break
+            case HtmlTag::WBR:  // FIXME: implement this correctly as browsers do
             case HtmlTag::BR:
             {
                 postObjects << QSharedPointer<PostLineBreak>(new PostLineBreak());
@@ -464,9 +485,30 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 if (!text.startsWith("window.bxPlayerOnloadbx_flv_player")) { Q_ASSERT(0); continue; }
 
                 // 'file':'https://www.youtube.com/watch?v=PI9o3v4nttU',
-                QString videoUrl = extractVideoUrl(text);
-                if (videoUrl.isEmpty())
-                    continue;
+                const QString VIDEO_URL_START_STR = "'file':'";
+                const QString VIDEO_URL_END_STR = "',";
+                const QString VIDEO_URL_TAG_START_STR = "[url]";
+                const QString VIDEO_URL_TAG_END_STR = "[/url]";
+                int videoUrlStartIndex = text.indexOf(VIDEO_URL_START_STR);
+                Q_ASSERT(videoUrlStartIndex >= 0);
+
+                int videoUrlEndIndex = text.indexOf(VIDEO_URL_END_STR, videoUrlStartIndex);
+                Q_ASSERT(videoUrlEndIndex > videoUrlStartIndex);
+
+                QString videoUrl = text.mid(videoUrlStartIndex + VIDEO_URL_START_STR.size(),
+                                            videoUrlEndIndex - videoUrlStartIndex - VIDEO_URL_START_STR.size());
+                videoUrl = videoUrl.trimmed();
+
+                int videoUrlTagStartIndex = videoUrl.indexOf(VIDEO_URL_TAG_START_STR);
+                if (videoUrlTagStartIndex >= 0)
+                {
+                    int videoUrlTagEndIndex = videoUrl.indexOf(VIDEO_URL_TAG_END_STR);
+                    Q_ASSERT(videoUrlTagEndIndex > videoUrlTagStartIndex);
+
+                    videoUrl = videoUrl.mid(videoUrlTagStartIndex + VIDEO_URL_TAG_START_STR.size(),
+                                            videoUrlTagEndIndex - videoUrlTagStartIndex - VIDEO_URL_TAG_START_STR.size());
+                    videoUrl = videoUrl.trimmed();
+                }
                 postObjects << QSharedPointer<PostVideo>(new PostVideo(videoUrl));
                 break;
             }
@@ -475,18 +517,33 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             {
                 break;
             }
-            default: Q_ASSERT(0); break;
+            default:
+            {
+                Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML tag");
+                break;
+            }
             }
         }
         else if (iChildPtr->isText())
         {
-            postObjects << QSharedPointer<PostPlainText>(new PostPlainText(iChildPtr->getInnerText().trimmed()));
+            // FIXME: ugly hack to remove ':' from the quote body beginning
+            QString text = iChildPtr->getInnerText().trimmed();
+            if (m_textQuoteFlag)
+            {
+                text = text.remove(0, 1);
+                text = text.trimmed();
+                m_textQuoteFlag = false;
+            }
+
+            postObjects << QSharedPointer<PostPlainText>(new PostPlainText(text));
         }
-        else if (iChildPtr->isWhitespace())
+        else
         {
-            // FIXME: handle
+            if (iChildPtr->isWhitespace()) continue;
+            if (iChildPtr->isComment()) continue;
+
+            Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML item");
         }
-        else Q_ASSERT(0);
     }
 }
 
@@ -566,6 +623,11 @@ QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode)
         auto iChildPtr = *iChild;
         switch (iChildPtr->getTag())
         {
+        case HtmlTag::B:
+        {
+            userSignatureStr += "<b>" + iChildPtr->getChildrenInnerText() + "</b><br/>";
+            break;
+        }
         case HtmlTag::A:
         {
             if (iChildPtr->getAttributeCount() != 3) { Q_ASSERT(0); return QString(); }
@@ -621,7 +683,7 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode
     QString attachmentsLabelStr = labelNode->getChildrenInnerText();
 
     result << QSharedPointer<PostLineBreak>(new PostLineBreak());
-    result << QSharedPointer<PostRichText>(new PostRichText(attachmentsLabelStr, true, false, false));
+    result << QSharedPointer<PostRichText>(new PostRichText(attachmentsLabelStr, "black", true, false, false, false));
     result << QSharedPointer<PostLineBreak>(new PostLineBreak());
 
     QtGumboNodes children = attachmentsNode->getElementsByClass("forum-post-attachment", HtmlTag::DIV);
@@ -727,6 +789,21 @@ void ForumPageParser::findPageCount(QtGumboNodePtr node, int &pageCount)
 
     if (paginationNodes.size() != 16)
         pageCount++;
+
+    // NOTE: alternative method
+    /*
+    const QString PAGES_STR = "pages: ";
+    int pagesIdxBegin = rawData.indexOf(PAGES_STR);
+    int pagesIdxEnd   = rawData.indexOf(",", pagesIdxBegin);
+    Q_ASSERT(pagesIdxBegin >= 0); if (pagesIdxBegin < 0) return;
+    Q_ASSERT(pagesIdxEnd > pagesIdxBegin); if (pagesIdxEnd <= pagesIdxBegin) return;
+    int pageCountStrSize = pagesIdxEnd - pagesIdxBegin - PAGES_STR.size();
+    Q_ASSERT(pageCountStrSize > 0); if (pageCountStrSize <= 0) return;
+    QString pageCountStr = rawData.mid(pagesIdxBegin + PAGES_STR.size(), pageCountStrSize);
+    bool pageCountOk = false;
+    pageCount = pageCountStr.toInt(&pageCountOk);
+    Q_ASSERT(pageCountOk); if (!pageCountOk) pageCount = 0;
+    */
 }
 
 void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts& posts)
@@ -878,13 +955,11 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNodePtr tableNode) 
     QString tbodyTrTdANodeText = tbodyTrTdANodeValid ? tbodyTrTdANode->getChildrenInnerText().trimmed() : QString();
     if (tbodyTrTdANodeValid && (tbodyTrTdANodeText.compare(QUOTE_WRITE_VERB, Qt::CaseInsensitive) == 0))
     {
-        tbodyTrTdNodeChildIndex++;
-
         QtGumboNodePtr tbodyTrTdBNode = tbodyTrTdNode->getElementByTag({HtmlTag::B, 0});
-        if (!tbodyTrTdBNode || !tbodyTrTdBNode->isValid()) { Q_ASSERT(0); return nullptr; }
         if (tbodyTrTdBNode && tbodyTrTdBNode->isValid())
         {
             result->m_userName = tbodyTrTdBNode->getChildrenInnerText();
+            tbodyTrTdNodeChildIndex++;
         }
 
         // <a>
@@ -898,33 +973,134 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNodePtr tableNode) 
         result->m_url = QUrl(quoteSourceUrl);
         if (!result->m_url.isValid()) { Q_ASSERT(0); return nullptr; }
 
-        // ":"
-        tbodyTrTdNodeChildIndex++;
-
-        // <br>
-        // FIXME: <br> is optional here
-        QtGumboNodePtr tbodyTrTdBrNode = tbodyTrTdNode->getElementByTag({HtmlTag::BR, 0});
-        //Q_ASSERT(tbodyTrTdBrNode->isValid());
-        if (tbodyTrTdBrNode && tbodyTrTdBrNode->isValid())
-            tbodyTrTdNodeChildIndex++;
+        // Find the quote body start
+        Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode->getChildElementCount(false));
+        QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
+        for (int i = tbodyTrTdNodeChildIndex; i < tbodyTrTdChildren.size(); ++i)
+        {
+            QtGumboNodePtr temp = tbodyTrTdChildren[i];
+            if (temp->isText())
+            {
+                QString tempText = temp->getInnerText().trimmed();
+                if (tempText == ":")
+                {
+                    tbodyTrTdNodeChildIndex += 2;
+                    break;
+                }
+                if (tempText.startsWith(":"))
+                {
+                    m_textQuoteFlag = true;
+                    break;
+                }
+            }
+        }
     }
 
     // Read the quote body
-    // NOTE: quote text is HTML
-    if (tbodyTrTdNodeChildIndex >= tbodyTrTdNode->getChildElementCount(false)) { Q_ASSERT(0); return nullptr; }
+    // NOTE: quote text is HTML too
+    Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode->getChildElementCount(false));
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
+
+ #ifdef RBR_PRINT_DEBUG_OUTPUT
+    qDebug() << "-------------------------------------";
+    qDebug() << "Start index:" << tbodyTrTdNodeChildIndex;
+    for (int i = 0; i < tbodyTrTdChildren.size(); ++i)
+    {
+        const QString idxString = i == tbodyTrTdNodeChildIndex ? QString("[ *") + QString::number(i) + QString("* ]")
+                                                               : QString("[ ")  + QString::number(i) + QString(" ]");
+
+        if (tbodyTrTdChildren[i].isElement())
+            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i].getTagName();
+        else if (tbodyTrTdChildren[i].isText())
+            qDebug() << idxString << "Text" << tbodyTrTdChildren[i].getInnerText();
+        else if (!tbodyTrTdChildren[i].isComment() && !tbodyTrTdChildren[i].isWhitespace())
+            qDebug() << idxString << "Unknown item:";
+    }
+    qDebug() << "-------------------------------------";
+#endif
+
     parseMessage(tbodyTrTdChildren.mid(tbodyTrTdNodeChildIndex), result->m_data);
     return result;
 }
 
-int ForumPageParser::getPagePosts(QString rawData, UserPosts &userPosts, int &pageCount)
+QSharedPointer<PostSpoiler> ForumPageParser::parseSpoiler(QtGumboNodePtr tableNode) const
+{
+    QSharedPointer<PostSpoiler> result(new PostSpoiler);
+
+    // Read the quote title
+    QtGumboNodePtr theadTrThNode = tableNode->getElementByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}, {HtmlTag::DIV, 0}});
+    Q_ASSERT(theadTrThNode->isValid()); if (!theadTrThNode->isValid()) return QSharedPointer<PostSpoiler>();
+    result->m_title = theadTrThNode->getChildrenInnerText();
+    Q_ASSERT(result->m_title[result->m_title.size()-1] == QChar(9650).unicode()
+          || result->m_title[result->m_title.size()-1] == QChar(9660).unicode());
+    if ((result->m_title[result->m_title.size()-1] != QChar(9650).unicode())
+     && (result->m_title[result->m_title.size()-1] != QChar(9660).unicode())) return QSharedPointer<PostSpoiler>();
+    result->m_title = result->m_title.remove(result->m_title.size()-1, 1);
+    result->m_title = result->m_title.trimmed();
+
+    QtGumboNodePtr tbodyTrTdNode = tableNode->getElementByTag({{HtmlTag::TBODY, 0}, {HtmlTag::TR, 0}, {HtmlTag::TD, 0}});
+    Q_ASSERT(tbodyTrTdNode->isValid());
+
+    // Read the spoiler body
+    // NOTE: spoiler text is HTML too
+    QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
+
+ #ifdef RBR_PRINT_DEBUG_OUTPUT
+    qDebug() << "-------------------------------------";
+    for (int i = 0; i < tbodyTrTdChildren.size(); ++i)
+    {
+        const QString idxString = QString("[ ")  + QString::number(i) + QString(" ]");
+
+        if (tbodyTrTdChildren[i].isElement())
+            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i].getTagName();
+        else if (tbodyTrTdChildren[i].isText())
+            qDebug() << idxString << "Text" << tbodyTrTdChildren[i].getInnerText();
+        else if (!tbodyTrTdChildren[i].isComment() && !tbodyTrTdChildren[i].isWhitespace())
+            qDebug() << idxString << "Unknown item:";
+    }
+    qDebug() << "-------------------------------------";
+#endif
+
+    parseMessage(tbodyTrTdChildren, result->m_data);
+    return result;
+}
+
+// IForumPageReader implementation ////////////////////////////////////////////
+
+namespace
+{
+QByteArray convertHtmlToUft8(QByteArray rawHtmlData)
+{
+    QByteArray result;
+
+    QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawHtmlData);
+    Q_ASSERT(htmlCodec); if (!htmlCodec) return QByteArray();
+#ifdef RBR_PRINT_DEBUG_OUTPUT
+    qDebug() << "HTML encoding/charset is:" << htmlCodec->name();
+#endif
+    QString resultStr = htmlCodec->toUnicode(rawHtmlData);
+    result = resultStr.toUtf8();
+    return result;
+}
+}
+
+int ForumPageParser::getPageCount(QByteArray rawData, int &pageCount)
+{
+    m_htmlDocument.reset(new QtGumboDocument(rawData));
+    findPageCount(m_htmlDocument->rootNode(), pageCount);
+
+    // TODO: implement error handling with different return code
+    return 0;
+}
+
+int ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
 {
     m_htmlDocument.reset(new QtGumboDocument(rawData));
 
     // Parse web page contents
-    findPageCount(m_htmlDocument->rootNode(), pageCount);
     fillPostList(m_htmlDocument->rootNode(), userPosts);
 
     // TODO: implement error handling with different return code
     return 0;
 }
+///////////////////////////////////////////////////////////////////////////////

@@ -2,13 +2,21 @@
 #define WEBSITEINTERFACE_H
 
 #include <QtCore/QtCore>
-#include <QtNetwork/QtNetwork>
 #include <QtWidgets/QApplication>
 
 //#define RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
 //#define RBR_PRINT_DEBUG_OUTPUT
 //#define RBR_DUMP_GENERATED_QML_IN_FILES
 //#define RBR_QML_OUTPUT_DIR QString("__temp_qml")
+
+#define RBR_SHOW_SPOILER
+#define RBR_SHOW_QUOTE
+#define RBR_SHOW_IMAGE
+#define RBR_SHOW_LINEBREAK
+#define RBR_SHOW_PLAINTEXT
+#define RBR_SHOW_RICHTEXT
+#define RBR_SHOW_VIDEO
+#define RBR_SHOW_HYPERLINK
 
 namespace BankiRuForum
 {
@@ -18,10 +26,24 @@ namespace BankiRuForum
     {
         virtual ~IPostObject();
 
-        virtual bool isValid() const = 0;
+        virtual bool    isValid() const = 0;
+        virtual uint    getHash(uint seed) const = 0;
         virtual QString getQmlString(int randomSeed) const = 0;
     };
-    typedef QList< QSharedPointer<IPostObject> > IPostObjectList;
+    typedef QList<QSharedPointer<IPostObject>> IPostObjectList;
+
+    // NOTE: spoiler text is HTML
+    struct PostSpoiler : IPostObject
+    {
+        QString m_title;
+        IPostObjectList m_data;
+
+        PostSpoiler();
+
+        bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+    };
 
     // NOTE: quote text is HTML
     struct PostQuote : IPostObject
@@ -34,6 +56,7 @@ namespace BankiRuForum
         PostQuote();
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
@@ -51,6 +74,7 @@ namespace BankiRuForum
         PostImage(QString url, int width, int height, int border = 0, QString altName = QString(), QString id = QString(), QString className = QString());
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
@@ -59,6 +83,7 @@ namespace BankiRuForum
         PostLineBreak();
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
@@ -70,21 +95,25 @@ namespace BankiRuForum
         PostPlainText(QString text);
 
         bool isValid() const Q_DECL_OVERRIDE;
-        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     struct PostRichText : IPostObject
     {
         QString m_text;
+        QString m_color = "black";
         bool m_isBold = false;
         bool m_isItalic = false;
         bool m_isUnderlined = false;
+        bool m_isStrikedOut = false;
 
         PostRichText();
-        PostRichText(QString text, bool isBold, bool isItalic, bool isUnderlined);
+        PostRichText(QString text, QString color, bool isBold, bool isItalic, bool isUnderlined, bool isStrikedOut);
 
         bool isValid() const Q_DECL_OVERRIDE;
-        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     struct PostVideo : IPostObject
@@ -97,7 +126,8 @@ namespace BankiRuForum
         PostVideo(QString urlStr);
 
         bool isValid() const Q_DECL_OVERRIDE;
-        virtual QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
     // FIXME: implement hyperlink using Qt/QML power only, without Qt primitive HTML-mode of Text item
@@ -119,16 +149,17 @@ namespace BankiRuForum
         PostHyperlink(QString urlStr, QString title, QString tip = QString(), QString rel = QString());
 
         bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
-    // -------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
 
-    struct Post
+    struct Post : IPostObject
     {
-        int m_id;
+        int m_id = -1;
 //      int m_postNumber;
-        int m_likeCounter;
+        int m_likeCounter = -1;
 
         //QString m_text;
         IPostObjectList m_data;
@@ -138,9 +169,16 @@ namespace BankiRuForum
         QString m_userSignature;
         QDateTime m_date;
 //		QUrl m_permalink;
+
+        //void addObject(QSharedPointer<IPostObject> obj);
+        //void removeObject(QSharedPointer<IPostObject> obj);
+
+        bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
-    struct User
+    struct User : IPostObject
     {
         // Base info
         int m_userId = -1;
@@ -156,9 +194,15 @@ namespace BankiRuForum
         QDate m_registrationDate;
         int m_reputation = -1;
         QString m_city;
+
+        bool isValid() const Q_DECL_OVERRIDE;
+        uint getHash(uint seed) const Q_DECL_OVERRIDE;
+        QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
-    typedef QVector< QPair<User, Post> > UserPosts;
+    typedef QPair<User, Post>  UserPost;
+    typedef QVector<UserPost>  UserPosts;
+    typedef QVector<UserPosts> PageUserPosts;
 
     //---------------------------------------------------------------------------------------------
     // Interfaces
@@ -168,9 +212,30 @@ namespace BankiRuForum
     public:
         virtual ~IForumPageReader();
 
-        virtual int getPagePosts(QString rawData, UserPosts& userPosts, int& pageCount) = 0;
+        virtual int getPageCount(QByteArray rawData, int& pageCount) = 0;
+        virtual int getPagePosts(QByteArray rawData, UserPosts& userPosts) = 0;
     };
 
+}   // namespace BankiRuForum
+
+//---------------------------------------------------------------------------------------------
+
+inline uint qHash(const BankiRuForum::IPostObjectList& key, uint seed)
+{
+    uint dataHash = 0;
+    for (auto obj : key)
+        dataHash ^= obj->getHash(seed);
+    return dataHash;
+}
+
+inline uint qHash(const BankiRuForum::Post& key, uint seed)
+{
+    return key.getHash(seed);
+}
+
+inline uint qHash(const BankiRuForum::User& key, uint seed)
+{
+    return key.getHash(seed);
 }
 
 #endif // WEBSITEINTERFACE_H

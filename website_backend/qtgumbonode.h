@@ -6,11 +6,42 @@
 #include "gumbo-parser/src/gumbo.h"
 #include "html_tag.h"
 
+//#define QT_GUMBO_METADATA
+
 class QtGumboNode;
 using QtGumboNodePtr = std::shared_ptr<QtGumboNode>;
 using QtGumboNodes = QVector<QtGumboNodePtr>;
 
-//#define QT_GUMBO_DEBUG
+#ifdef QT_GUMBO_METADATA
+typedef QMap<QString, QString> QtStringMap;
+
+struct QtGumboNodeProps
+{
+    bool m_isValid = false;
+
+    Type m_type;
+    // NodePath m_path;
+
+    QtGumboNodePtr m_parent;
+    size_t m_parentIndex;
+
+    HtmlTag m_tag = HtmlTag::UNKNOWN;
+    QString m_tagName;
+    QString m_html;
+
+    QtStringMap m_attributes;
+    QString m_id;
+    QString m_class;
+
+    // Text node only
+    QString m_text;
+    QString m_childrenText;
+
+    QtGumboNodes m_children;
+    QtGumboNodes m_elementChildren;
+    QtGumboNodes m_textChildren;
+};
+#endif
 
 class QtGumboNode
 {
@@ -23,19 +54,8 @@ public:
 private:
     GumboNode *m_node;
 
-#ifdef QT_GUMBO_DEBUG
-    Type m_type;
-    NodePath m_path;
-
-    QtGumboNodePtr m_parent;
-    size_t m_parentIndex;
-
-    // Element only
-    //QtGumboNodes m_children;
-    QString m_tagName;
-    QString m_html;
-    QString m_idAttr;
-    QString m_classAttr;
+#ifdef QT_GUMBO_METADATA
+    QtGumboNodeProps m_props;
 #endif
 
 public:
@@ -46,6 +66,7 @@ public:
 
     bool isValid() const;
     bool isWhitespace() const;
+    bool isComment() const;
     bool isElement() const;
     bool isText() const;
     bool isDocument() const;
@@ -69,6 +90,7 @@ public:
     QString getClassAttribute() const;
 
     QtGumboNodes getChildren(bool elementsOnly = true) const;
+    QtGumboNodes getTextChildren() const;
     int getChildElementCount(bool elementsOnly = true) const;
     int getTextChildrenCount() const;
 

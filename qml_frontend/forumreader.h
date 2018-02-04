@@ -1,57 +1,87 @@
 #ifndef FORUMREADER_H
 #define FORUMREADER_H
 
-#include <QObject>
-
+#include "common/resultcode.h"
+#include "common/filedownloader.h"
 #include "website_backend/websiteinterface.h"
+
+//#define FORUM_READER_SYNC_API
 
 class ForumReader : public QObject
 {
     Q_OBJECT
 
-    BankiRuForum::UserPosts m_userPosts;
-    int m_pageCount;
-    int m_pageNo;
+    typedef BankiRuForum::UserPosts                 UserPosts;
+    typedef QFutureWatcher<int>                     IntFutureWatcher;
+    typedef QFutureWatcher<BankiRuForum::UserPosts> ParserFutureWatcher;
+
+    FileDownloader m_downloader;
+
+    IntFutureWatcher    m_forumPageCountWatcher;
+    ParserFutureWatcher m_forumPageParserWatcher;
+
+    QByteArray m_pageData;
+    UserPosts  m_pagePosts;
+    int        m_pageCount;
+    int        m_pageNo;
+
+    ResultCode m_lastError;
 
 public:
     ForumReader();
     ~ForumReader();
 
-    explicit ForumReader( BankiRuForum::UserPosts userPosts, QObject *parent = 0 );
-
     // Helper functions
-    Q_INVOKABLE QString applicationDirPath() const;
-    Q_INVOKABLE QUrl convertToUrl(QString urlStr) const;
-    Q_INVOKABLE bool parseForumPage(QString forumPageRawHtml, int pageNo);
+    Q_INVOKABLE QString   applicationDirPath() const;
+    Q_INVOKABLE QUrl      convertToUrl(QString urlStr) const;
 
-    // Topic functions
-    Q_INVOKABLE int pageCount() const;
+    // Forum HTML page parser sync API (e.g. for testing purposes)
+#ifdef FORUM_READER_SYNC_API
+    Q_INVOKABLE int       parsePageCount(QString urlStr);
+    Q_INVOKABLE bool      parseForumPage(QString urlStr, int pageNo);
+#endif
 
-    // Page functions
+    // Forum HTML page parser async API (use Qt signal-slots system)
+    Q_INVOKABLE void      startPageCountAsync(QString urlStr);
+    Q_INVOKABLE void      startPageParseAsync(QString urlStr, int pageNo);
 
-    // Total post count on the page
-    Q_INVOKABLE int postCount() const;
+    // The number of pages and posts
+    Q_INVOKABLE int       pageCount() const;
+    Q_INVOKABLE int       postCount() const;
 
-    Q_INVOKABLE QString postAuthor(int index) const;
+    // Page posts properties getters
+    Q_INVOKABLE QString   postAuthorQml(int index) const;
+    Q_INVOKABLE QString   postAuthorSignature(int index) const;
 
-    Q_INVOKABLE QString postAvatarUrl(int index) const;
-    Q_INVOKABLE int postAvatarWidth(int index) const;
-    Q_INVOKABLE int postAvatarHeight(int index) const;
-    Q_INVOKABLE int postAvatarMaxWidth() const;
+    // FIXME: currently unused! use it or remove
+    Q_INVOKABLE int       postAvatarMaxWidth() const;
 
     Q_INVOKABLE QDateTime postDateTime(int index) const;
-    Q_INVOKABLE QString postText(int index) const;
-    Q_INVOKABLE QString postLastEdit(int index) const;
-    Q_INVOKABLE int postLikeCount(int index) const;
+    Q_INVOKABLE QString   postText(int index) const;
+    Q_INVOKABLE QString   postLastEdit(int index) const;
+    Q_INVOKABLE int       postLikeCount(int index) const;
 
-    Q_INVOKABLE int postAuthorPostCount(int index) const;
-    Q_INVOKABLE QDate postAuthorRegistrationDate(int index) const;
-    Q_INVOKABLE int postAuthorReputation(int index) const;
-    Q_INVOKABLE QString postAuthorCity(int index) const;
+signals:
+    // Forum parser signals
+    void pageCountParsed(int pageCount);
+    void pageContentParsed(int pageNo);
 
-    Q_INVOKABLE QString postAuthorSignature(int index) const;
+    void pageContentParseProgressRange(int minimum, int maximum);
+    void pageContentParseProgress(int value);
 
-    Q_INVOKABLE QString postFooterQml() const;
+private slots:
+    // Forum page count parser slots
+    void onForumPageCountParsed();
+    void onForumPageCountParsingCanceled();
+
+    // Forum page downloader slots
+    void onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void onForumPageDownloaded();
+    void onForumPageDownloadFailed(ResultCode code);
+
+    // Forum page user posts parser slots
+    void onForumPageParsed();
+    void onForumPageParsingCanceled();
 };
 
 #endif // FORUMREADER_H
