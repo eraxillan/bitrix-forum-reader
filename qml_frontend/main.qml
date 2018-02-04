@@ -201,15 +201,12 @@ ApplicationWindow {
 
                 text: "<<"
 
-                onClicked: { loadForumPage(1); }
-                //onClicked: cmbPage.value = 1;
+                onClicked: cmbPage.value = 1;
 
-                /*
                 Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.bottomMargin: dp(5)
-                */
             }
 
             SpinBox {
@@ -250,8 +247,7 @@ ApplicationWindow {
 
                 text: ">>"
 
-                onClicked: { loadForumPage(totalPageCount); }
-                // onClicked: cmbPage.value = totalPageCount;
+                onClicked: cmbPage.value = totalPageCount;
             }
         }
 
