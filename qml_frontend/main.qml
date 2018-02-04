@@ -287,7 +287,7 @@ ApplicationWindow
 
                 text: "<<"
 
-                onClicked: { loadForumPage(cmbPage.value - 1); }
+                onClicked: { loadForumPage(1); }
             }
 
             Button {
@@ -348,7 +348,7 @@ ApplicationWindow
 
                 text: ">>"
 
-                onClicked: { loadForumPage(cmbPage.value + 1); }
+                onClicked: { loadForumPage(totalPageCount); }
             }
         }
 
