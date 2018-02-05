@@ -6,8 +6,6 @@
 #include "gumbo-parser/src/gumbo.h"
 #include "html_tag.h"
 
-//#define QT_GUMBO_METADATA
-
 class QtGumboNode;
 using QtGumboNodePtr = std::shared_ptr<QtGumboNode>;
 using QtGumboNodes = QVector<QtGumboNodePtr>;

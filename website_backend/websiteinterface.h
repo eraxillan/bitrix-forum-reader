@@ -4,9 +4,6 @@
 #include <QtCore/QtCore>
 #include <QtWidgets/QApplication>
 
-//#define RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
-//#define RBR_PRINT_DEBUG_OUTPUT
-//#define RBR_DUMP_GENERATED_QML_IN_FILES
 //#define RBR_QML_OUTPUT_DIR QString("__temp_qml")
 
 #define RBR_SHOW_SPOILER

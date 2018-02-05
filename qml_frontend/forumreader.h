@@ -5,8 +5,6 @@
 #include "common/filedownloader.h"
 #include "website_backend/websiteinterface.h"
 
-//#define FORUM_READER_SYNC_API
-
 class ForumReader : public QObject
 {
     Q_OBJECT

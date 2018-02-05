@@ -27,7 +27,14 @@ Project {
 
         // Basic stuff
         cpp.includePaths: ["."]
-        
+
+        // QT_GUMBO_METADATA
+        // FORUM_READER_SYNC_API
+        // RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+        // RBR_PRINT_DEBUG_OUTPUT
+        // RBR_DUMP_GENERATED_QML_IN_FILES
+        //cpp.defines: concat([])
+
         // Project-bundled libraries
         Depends { name: "gumbo-parser" }
 
