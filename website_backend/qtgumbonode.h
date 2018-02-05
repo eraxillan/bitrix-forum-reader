@@ -11,6 +11,8 @@
 class QtGumboNode;
 using QtGumboNodePtr = std::shared_ptr<QtGumboNode>;
 using QtGumboNodes = QVector<QtGumboNodePtr>;
+using QtGumboNodePathItem = QPair<QString, size_t>;
+using QtGumboNodePath = QList<QtGumboNodePathItem>;
 
 enum class QtGumboNodeType { Invalid = -1, Document = 0, Element = 1, Text, CDATA, Comment, Whitespace, Template, Count };
 
@@ -22,7 +24,7 @@ struct QtGumboNodeProps
     bool m_isValid = false;
 
     QtGumboNodeType m_type;
-    // NodePath m_path;
+    QtGumboNodePath m_path;
 
     QtGumboNodePtr m_parent;
     size_t m_parentIndex;
@@ -45,26 +47,32 @@ struct QtGumboNodeProps
     QtGumboNodes m_elementChildren;
     QtGumboNodes m_textChildren;
 };
+
+using QtGumboNodePropsPtr = std::shared_ptr<QtGumboNodeProps>;
 #endif
 
 class QtGumboNode
 {
-public:
-    using NodePathItem = QPair<QString, size_t>;
-    using NodePath = QList<NodePathItem>;
-
-private:
     GumboNode *m_node;
 
 #ifdef QT_GUMBO_METADATA
-    QtGumboNodeProps m_props;
+    QtGumboNodePropsPtr m_props;
 #endif
 
 public:
     QtGumboNode();
     QtGumboNode(GumboNode *node);
 
-    // FIXME: implement copy ctor and operator, assignment operator
+#ifdef QT_GUMBO_METADATA
+    void fillMetadata(QtGumboNodePropsPtr props);
+    void setMetadata(QtGumboNodePropsPtr props) { m_props = props; }
+#endif
+
+    // Delete copy and move constructors and assign operators
+    QtGumboNode(QtGumboNode const&) = delete;             // Copy construct
+    QtGumboNode(QtGumboNode&&) = delete;                  // Move construct
+    QtGumboNode& operator=(QtGumboNode const&) = delete;  // Copy assign
+    QtGumboNode& operator=(QtGumboNode &&) = delete;      // Move assign
 
     bool isValid() const;
     bool isWhitespace() const;
@@ -78,7 +86,7 @@ public:
     QtGumboNodePtr getParent() const;
     size_t getParentIndex() const;
 
-    NodePath getPath() const;
+    QtGumboNodePath getPath() const;
 
     HtmlTag getTag() const;
     QString getTagName() const;
@@ -115,6 +123,32 @@ public:
     size_t getStartPos() const;
     size_t getEndPos() const;
     QString getHtml() const;
+};
+
+class QtGumboNodePool
+{
+protected:
+    using NodeMap = QMap<GumboNode*, QtGumboNodePtr>;
+    NodeMap m_nodes;
+
+#ifdef QT_GUMBO_METADATA
+    using MetainfoMap = QMap<GumboNode*, QtGumboNodePropsPtr>;
+    MetainfoMap m_nodeProps;
+#endif
+
+    QtGumboNodePool() {}
+    ~QtGumboNodePool() {}
+
+public:
+    static QtGumboNodePool &globalInstance();
+
+    // Delete copy and move constructors and assign operators
+    QtGumboNodePool(QtGumboNodePool const&) = delete;             // Copy construct
+    QtGumboNodePool(QtGumboNodePool&&) = delete;                  // Move construct
+    QtGumboNodePool& operator=(QtGumboNodePool const&) = delete;  // Copy assign
+    QtGumboNodePool& operator=(QtGumboNodePool &&) = delete;      // Move assign
+
+    QtGumboNodePtr getNode(GumboNode *node);
 };
 
 #endif // QTGUMBONODE_H

@@ -11,8 +11,8 @@ bool QtGumboDocument::Parse()
     if (!m_output)
         return false;
 
-    m_documentNode = QtGumboNodePtr(new QtGumboNode(m_output->document));
-    m_rootNode = QtGumboNodePtr(new QtGumboNode(m_output->root));
+    m_documentNode = QtGumboNodePool::globalInstance().getNode(m_output->document);
+    m_rootNode = QtGumboNodePool::globalInstance().getNode(m_output->root);
     return true;
 }
 
