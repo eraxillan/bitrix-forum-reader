@@ -533,15 +533,15 @@ static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
         qDebug() << "Video width:" << videoWidth;
         qDebug() << "Video height:" << videoHeight;
         qDebug() << "Video codec:" << videoCodecStr;
-        qDebug() << "Audio codec:" << audioCodecStr;
+//        qDebug() << "Audio codec:" << audioCodecStr;
         qDebug() << "File format:" << videoFormatNote;
-        qDebug() << "File extension:" << videoFileExt;
+//        qDebug() << "File extension:" << videoFileExt;
         qDebug() << "--------------------------------------------------";
 #endif
     }
 
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "Maximum resolution: " << maxVideoWidth << " x " << maxVideoHeight;
+//    qDebug() << "Maximum resolution: " << maxVideoWidth << " x " << maxVideoHeight;
 #endif
 
     return true;

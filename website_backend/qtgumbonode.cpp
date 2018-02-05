@@ -28,17 +28,12 @@ QtGumboNode::QtGumboNode(GumboNode *node)
 
     QtGumboNodeProps props;
 
-    m_type = getType();
-
-    // FIXME: infinite loop
-    //m_path = getPath();
-
-    m_parent = getParent();
-    m_parentIndex = getParentIndex();
-
     props.m_isValid = isValid();
-    props.m_isElement = isElement();
-    props.m_isText = isText();
+    props.m_type = getType();
+    //props.m_path = getPath();     // FIXME: infinite loop
+
+    props.m_parent = getParent();
+    props.m_parentIndex = getParentIndex();
 
     if (isElement())
     {
@@ -79,57 +74,57 @@ bool QtGumboNode::isValid() const
 
 bool QtGumboNode::isWhitespace() const
 {
-    return (getType() == Type::Whitespace);
+    return (getType() == QtGumboNodeType::Whitespace);
 }
 
 bool QtGumboNode::isElement() const
 {
     Q_ASSERT(isValid()); if (!isValid()) return false;
 
-    return (getType() == Type::Element);
+    return (getType() == QtGumboNodeType::Element);
 }
 
 bool QtGumboNode::isText() const
 {
     Q_ASSERT(isValid()); if (!isValid()) return false;
 
-    return (getType() == Type::Text);
+    return (getType() == QtGumboNodeType::Text);
 }
 
 bool QtGumboNode::isDocument() const
 {
     Q_ASSERT(isValid()); if (!isValid()) return false;
 
-    return (getType() == Type::Document);
+    return (getType() == QtGumboNodeType::Document);
 }
 
-QtGumboNode::Type QtGumboNode::getType() const
+QtGumboNodeType QtGumboNode::getType() const
 {
-    Q_ASSERT(isValid()); if (!isValid()) return Type::Invalid;
+    Q_ASSERT(isValid()); if (!isValid()) return QtGumboNodeType::Invalid;
 
-    Type result = Type::Invalid;
+    auto result = QtGumboNodeType::Invalid;
     switch (m_node->type)
     {
     case GUMBO_NODE_DOCUMENT:       // v will be a GumboDocument
-        result = Type::Document;
+        result = QtGumboNodeType::Document;
         break;
     case GUMBO_NODE_ELEMENT:        // v will be a GumboElement
-        result = Type::Element;
+        result = QtGumboNodeType::Element;
         break;
     case GUMBO_NODE_TEXT:           // v will be a GumboText
-        result = Type::Text;
+        result = QtGumboNodeType::Text;
         break;
     case GUMBO_NODE_CDATA:          // v will be a GumboText.
-        result = Type::CDATA;
+        result = QtGumboNodeType::CDATA;
         break;
     case GUMBO_NODE_COMMENT:        // v will be a GumboText, excluding comment delimiters
-        result = Type::Comment;
+        result = QtGumboNodeType::Comment;
         break;
     case GUMBO_NODE_WHITESPACE:
-        result = Type::Whitespace;  // v will be a GumboText
+        result = QtGumboNodeType::Whitespace;  // v will be a GumboText
         break;
     case GUMBO_NODE_TEMPLATE:       // v will be a GumboElement
-        result = Type::Template;
+        result = QtGumboNodeType::Template;
         break;
     default:
         Q_ASSERT_X(0, Q_FUNC_INFO, "Invalid node type");
@@ -145,10 +140,12 @@ QtGumboNodePtr QtGumboNode::getParent() const
     if (!m_node->parent)
         return QtGumboNodePtr();
 
-    return QtGumboNodePtr(new QtGumboNode(m_node->parent));
-    /*QtGumboNodePtr result(new QtGumboNode());
+    // FIXME: infinite
+    // return QtGumboNodePtr(new QtGumboNode(m_node->parent));
+    QtGumboNodePtr result(new QtGumboNode());
     result->m_node = m_node->parent;
-    return result;*/
+    //result->fillMetaData();
+    return result;
 }
 
 size_t QtGumboNode::getParentIndex() const

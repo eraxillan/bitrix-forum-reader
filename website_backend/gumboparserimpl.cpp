@@ -986,11 +986,11 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNodePtr tableNode) 
         const QString idxString = i == tbodyTrTdNodeChildIndex ? QString("[ *") + QString::number(i) + QString("* ]")
                                                                : QString("[ ")  + QString::number(i) + QString(" ]");
 
-        if (tbodyTrTdChildren[i].isElement())
-            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i].getTagName();
-        else if (tbodyTrTdChildren[i].isText())
-            qDebug() << idxString << "Text" << tbodyTrTdChildren[i].getInnerText();
-        else if (!tbodyTrTdChildren[i].isComment() && !tbodyTrTdChildren[i].isWhitespace())
+        if (tbodyTrTdChildren[i]->isElement())
+            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i]->getTagName();
+        else if (tbodyTrTdChildren[i]->isText())
+            qDebug() << idxString << "Text" << tbodyTrTdChildren[i]->getInnerText();
+        else if (!tbodyTrTdChildren[i]->isComment() && !tbodyTrTdChildren[i]->isWhitespace())
             qDebug() << idxString << "Unknown item:";
     }
     qDebug() << "-------------------------------------";
@@ -1028,11 +1028,11 @@ QSharedPointer<PostSpoiler> ForumPageParser::parseSpoiler(QtGumboNodePtr tableNo
     {
         const QString idxString = QString("[ ")  + QString::number(i) + QString(" ]");
 
-        if (tbodyTrTdChildren[i].isElement())
-            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i].getTagName();
-        else if (tbodyTrTdChildren[i].isText())
-            qDebug() << idxString << "Text" << tbodyTrTdChildren[i].getInnerText();
-        else if (!tbodyTrTdChildren[i].isComment() && !tbodyTrTdChildren[i].isWhitespace())
+        if (tbodyTrTdChildren[i]->isElement())
+            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i]->getTagName();
+        else if (tbodyTrTdChildren[i]->isText())
+            qDebug() << idxString << "Text" << tbodyTrTdChildren[i]->getInnerText();
+        else if (!tbodyTrTdChildren[i]->isComment() && !tbodyTrTdChildren[i]->isWhitespace())
             qDebug() << idxString << "Unknown item:";
     }
     qDebug() << "-------------------------------------";

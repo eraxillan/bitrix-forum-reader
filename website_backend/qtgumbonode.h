@@ -12,14 +12,16 @@ class QtGumboNode;
 using QtGumboNodePtr = std::shared_ptr<QtGumboNode>;
 using QtGumboNodes = QVector<QtGumboNodePtr>;
 
+enum class QtGumboNodeType { Invalid = -1, Document = 0, Element = 1, Text, CDATA, Comment, Whitespace, Template, Count };
+
 #ifdef QT_GUMBO_METADATA
-typedef QMap<QString, QString> QtStringMap;
+using QtStringMap = QMap<QString, QString>;
 
 struct QtGumboNodeProps
 {
     bool m_isValid = false;
 
-    Type m_type;
+    QtGumboNodeType m_type;
     // NodePath m_path;
 
     QtGumboNodePtr m_parent;
@@ -35,6 +37,8 @@ struct QtGumboNodeProps
 
     // Text node only
     QString m_text;
+
+    // Element only
     QString m_childrenText;
 
     QtGumboNodes m_children;
@@ -46,8 +50,6 @@ struct QtGumboNodeProps
 class QtGumboNode
 {
 public:
-    enum class Type { Invalid = -1, Document = 0, Element = 1, Text, CDATA, Comment, Whitespace, Template, Count };
-
     using NodePathItem = QPair<QString, size_t>;
     using NodePath = QList<NodePathItem>;
 
@@ -71,7 +73,7 @@ public:
     bool isText() const;
     bool isDocument() const;
 
-    Type getType() const;
+    QtGumboNodeType getType() const;
 
     QtGumboNodePtr getParent() const;
     size_t getParentIndex() const;
