@@ -54,8 +54,8 @@ private:
 
 public:
     // IForumPageReader implementation
-    int getPageCount(QByteArray rawData, int& pageCount) override;
-    int getPagePosts(QByteArray rawData, UserPosts& userPosts) override;
+    ResultCode getPageCount(QByteArray rawData, int& pageCount) override;
+    ResultCode getPagePosts(QByteArray rawData, UserPosts& userPosts) override;
 };
 
 }

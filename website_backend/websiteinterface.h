@@ -4,6 +4,8 @@
 #include <QtCore/QtCore>
 #include <QtWidgets/QApplication>
 
+#include <common/resultcode.h>
+
 //#define RBR_QML_OUTPUT_DIR QString("__temp_qml")
 
 #define RBR_SHOW_SPOILER
@@ -209,8 +211,8 @@ namespace BankiRuForum
     public:
         virtual ~IForumPageReader();
 
-        virtual int getPageCount(QByteArray rawData, int& pageCount) = 0;
-        virtual int getPagePosts(QByteArray rawData, UserPosts& userPosts) = 0;
+        virtual ResultCode getPageCount(QByteArray rawData, int &pageCount) = 0;
+        virtual ResultCode getPagePosts(QByteArray rawData, UserPosts &userPosts) = 0;
     };
 
 }   // namespace BankiRuForum

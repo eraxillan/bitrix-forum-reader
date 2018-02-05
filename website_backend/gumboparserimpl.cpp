@@ -1061,21 +1061,21 @@ QByteArray convertHtmlToUft8(QByteArray rawHtmlData)
 }
 }
 
-int ForumPageParser::getPageCount(QByteArray rawData, int &pageCount)
+ResultCode ForumPageParser::getPageCount(QByteArray rawData, int &pageCount)
 {
     QByteArray utfData = convertHtmlToUft8(rawData);
-    if (utfData.isEmpty()) { Q_ASSERT(0); return 0; }
+    if (utfData.isEmpty()) { Q_ASSERT(0); return ResultCode::Fail; }
 
     findPageCount(rawData, pageCount);
 
     // TODO: implement error handling with different return code
-    return 0;
+    return ResultCode::Ok;
 }
 
-int ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
+ResultCode ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
 {
     QByteArray utfData = convertHtmlToUft8(rawData);
-    if (utfData.isEmpty()) { Q_ASSERT(0); return 0; }
+    if (utfData.isEmpty()) { Q_ASSERT(0); return ResultCode::Fail; }
 
     m_htmlDocument.reset(new QtGumboDocument(utfData));
 
@@ -1083,6 +1083,6 @@ int ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
     fillPostList(m_htmlDocument->rootNode(), userPosts);
 
     // TODO: implement error handling with different return code
-    return 0;
+    return ResultCode::Ok;
 }
 ///////////////////////////////////////////////////////////////////////////////

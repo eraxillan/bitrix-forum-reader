@@ -115,8 +115,8 @@ int parsePageCountAsync(QString urlStr)
 
     // 2) Parse the page HTML to get the page number
     BankiRuForum::ForumPageParser fpp;
-    int resultFpp = fpp.getPageCount(htmlRawData, result);
-    if (resultFpp != 0)
+    ResultCode resultFpp = fpp.getPageCount(htmlRawData, result);
+    if (resultFpp != ResultCode::Ok)
     {
         Q_ASSERT(0);
         result = 0;
@@ -148,9 +148,8 @@ BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, R
     errorCode = ResultCode::Ok;
 
     // 2) Parse the page HTML to get the page number
-    // FIXME: rewrite with 'enum class'
     BankiRuForum::ForumPageParser fpp;
-    errorCode = (ResultCode)fpp.getPageCount(rawHtmlData, pageCount);
+    errorCode = fpp.getPageCount(rawHtmlData, pageCount);
     if (errorCode != ResultCode::Ok)
     {
         Q_ASSERT(0);
@@ -158,8 +157,7 @@ BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, R
     }
 
     // 3) Parse the page HTML to get the page user posts
-    // FIXME: rewrite with 'enum class'
-    errorCode = (ResultCode)fpp.getPagePosts(rawHtmlData, result);
+    errorCode = fpp.getPagePosts(rawHtmlData, result);
     if (errorCode != ResultCode::Ok)
     {
         Q_ASSERT(0);
