@@ -29,7 +29,7 @@ namespace BankiRuForum
         virtual uint    getHash(uint seed) const = 0;
         virtual QString getQmlString(int randomSeed) const = 0;
     };
-    typedef QList<QSharedPointer<IPostObject>> IPostObjectList;
+    using IPostObjectList = QList<QSharedPointer<IPostObject>>;
 
     // NOTE: spoiler text is HTML
     struct PostSpoiler : IPostObject
@@ -199,9 +199,9 @@ namespace BankiRuForum
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
 
-    typedef QPair<User, Post>  UserPost;
-    typedef QVector<UserPost>  UserPosts;
-    typedef QVector<UserPosts> PageUserPosts;
+    using UserPost = QPair<User, Post>;
+    using UserPosts = QVector<UserPost>;
+    using PageUserPosts = QVector<UserPosts>;
 
     //---------------------------------------------------------------------------------------------
     // Interfaces

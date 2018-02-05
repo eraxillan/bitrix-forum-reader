@@ -9,9 +9,9 @@ class ForumReader : public QObject
 {
     Q_OBJECT
 
-    typedef BankiRuForum::UserPosts                 UserPosts;
-    typedef QFutureWatcher<int>                     IntFutureWatcher;
-    typedef QFutureWatcher<BankiRuForum::UserPosts> ParserFutureWatcher;
+    using UserPosts = BankiRuForum::UserPosts;
+    using IntFutureWatcher = QFutureWatcher<int>;
+    using ParserFutureWatcher = QFutureWatcher<BankiRuForum::UserPosts>;
 
     FileDownloader m_downloader;
 
