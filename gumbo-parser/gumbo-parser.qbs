@@ -54,7 +54,13 @@ StaticLibrary {
 
     Properties {
         condition: qbs.targetOS.contains("android")
-        cpp.cFlags: outer.concat(["-std=c11"])
+
+        cpp.cxxFlags: outer.concat(["-Wformat"])
+        cpp.cLanguageVersion: "c11"
+
+        //Depends { name: "Android.sdk" }
+        Depends { name: "Android.ndk" }
+        Android.ndk.appStl: "gnustl_shared"
     }
     
     Export {

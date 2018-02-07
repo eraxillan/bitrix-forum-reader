@@ -3,6 +3,8 @@
 
 #include <QtCore/QtCore>
 
+#include <memory>
+
 #include "gumbo-parser/src/gumbo.h"
 #include "html_tag.h"
 
