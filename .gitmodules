@@ -1,0 +1,3 @@
+[submodule "curl"]
+	path = curl
+	url = https://www.github.com/gcesarmza/curl-android-ios
