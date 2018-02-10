@@ -7,9 +7,6 @@ CONFIG -= debug_and_release debug_and_release_target
 # Build mode (release by default)
 buildmode = release
 CONFIG(debug, debug|release):buildmode = debug
-contains(QT_ARCH, i386) {
-    message("FIXME: implement x64 build mode")
-}
 
 APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
 APP_ARCH = $$first( $$list( $$QT_ARCH ) )
@@ -26,19 +23,29 @@ MOC_DIR     = $${APP_BUILD_DIR}
 
 #######################################################################################################################
 
-QT += qml quick widgets network multimedia
-# QT += qml quick quickcontrols2
-# QT += multimedia concurrent
+QT += qml quick quickcontrols2
+QT += multimedia concurrent
+# USE_QT_NAM: QT += network
+# QT += widgets
 
 android: QT += androidextras
 
 CONFIG += c++11
+INCLUDEPATH += "."
+
+# USE_QT_NAM
+# QT_GUMBO_METADATA
+# FORUM_READER_SYNC_API
+# RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+# RBR_PRINT_DEBUG_OUTPUT
+# RBR_DUMP_GENERATED_QML_IN_FILES
 
 #######################################################################################################################
 
 SOURCES += \
     common/filedownloader.cpp               \
     website_backend/gumboparserimpl.cpp     \
+    website_backend/qtgumbodocument.cpp     \
     website_backend/qtgumbonode.cpp         \
     website_backend/websiteinterface.cpp    \
     qml_frontend/forumreader.cpp            \
@@ -48,11 +55,11 @@ SOURCES += \
 HEADERS += \
     common/filedownloader.h                 \
     common/resultcode.h                     \
-    website_backend/gumboparserimpl.h       \
-    website_backend/qtgumbonode.h           \
-    website_backend/websiteinterface.h      \
     website_backend/html_tag.h              \
     website_backend/qtgumbodocument.h       \
+    website_backend/qtgumbonode.h           \
+    website_backend/websiteinterface.h      \
+    website_backend/gumboparserimpl.h       \
     qml_frontend/forumreader.h
 
 RESOURCES += qml_frontend/qml.qrc
@@ -96,39 +103,69 @@ CONFIG(debug, debug|release) {
 #   1) OpenSSL library
 #   2) cURL library (compiled with OpenSSL support)
 #   3) Gumbo HTML5 parser library
-DEFINES += CURL_STATICLIB
-INCLUDEPATH += $$PWD/curl/include
 
 INCLUDEPATH += $$PWD/gumbo-parser/src
 
 windows {
+    # Windows (Desktop, X86_64, static libraries)
+    DEFINES += CURL_STATICLIB
+    INCLUDEPATH += $$PWD/libs/curl/win32/include
+    
     QMAKE_LFLAGS_DEBUG += /ignore:4099
     LIBS += -ladvapi32 -luser32 -lgdi32 -lws2_32 -lwsock32 -lWldap32
 
     # OpenSSL
-    LIBS += -L$$PWD/libs/openssl/$$APP_PLATFORM/VC14/$$ARCH/$$buildmode
+    LIBS += -L$$PWD/libs/openssl/win32/VC14/$$ARCH/$$buildmode
     # cURL
-    LIBS += -L$$PWD/libs/curl/$$APP_PLATFORM/VC14/$$ARCH/$$buildmode
+    LIBS += -L$$PWD/libs/curl/win32/VC14/$$ARCH/$$buildmode
     # Gumbo
-    LIBS += -L$$PWD/libs/gumbo-parser/$$APP_PLATFORM/VC14/$$ARCH/$$buildmode
+    LIBS += -L$$PWD/libs/gumbo-parser/win32/VC14/$$ARCH/$$buildmode
 
     LIBS += -llibeay32 -lssleay32
     LIBS += -llibcurl$$SUFFIX
     LIBS += -lgumbo-parser
 } else:macx {
-    # FIXME: implement
-} else:linux:!android {
-    # FIXME: implement
-} else:android {
-    # cURL
-    LIBS += -L$$PWD/libs/curl/$$APP_PLATFORM/$$ARCH
-    # Gumbo
-    LIBS += -L$$PWD/libs/gumbo-parser/$$APP_PLATFORM/$$ARCH/$$buildmode
+    # FIXME: implement using Homebrew-installed cURL
 
+    # cURL
+
+    # Gumbo
+    LIBS += -L$$GUMBO_BUILD_DIR
+    LIBS += -lgumbo-parser
+} else:linux:!android {
+    # Linux (Desktop, X86_64, shared libraries)
+
+    # cURL
+    # Just use system library installed ("sudo apt-get install libcurl4-openssl-dev" command for Ubuntu)
+    INCLUDEPATH += "/usr/include/x86_64-linux-gnu"
+    LIBS += -L"/usr/lib/x86_64-linux-gnu"
+    LIBS += -l"curl"
+
+    # Gumbo
+    LIBS += -L$$GUMBO_BUILD_DIR
+    LIBS += -lgumbo-parser
+} else:android {
+    # Android (Mobile, X86/ARMv7, static libraries)
+
+    # cURL
+    INCLUDEPATH += $$PWD/curl/prebuilt-with-ssl/android/include
+    LIBS += -L$$PWD/curl/prebuilt-with-ssl/android/$$ARCH
     LIBS += -lcurl
+
+    # Gumbo
+    LIBS += -L$$GUMBO_BUILD_DIR
     LIBS += -lgumbo-parser
 } else:ios {
-    # FIXME: implement
+    # iOS (Mobile, Universal binary, static libraries)
+
+    # cURL
+    INCLUDEPATH += $$PWD/curl/prebuilt-with-ssl/iOS/include
+    LIBS += -L$$PWD/curl/prebuilt-with-ssl/iOS
+    LIBS += -lcurl
+
+    # Gumbo
+    LIBS += -L$$GUMBO_BUILD_DIR
+    LIBS += -lgumbo-parser
 } else {
     error("Unsupported OS")
 }
@@ -140,4 +177,3 @@ QML_IMPORT_PATH =
 
 # Default rules for deployment
 include(deployment.pri)
-
