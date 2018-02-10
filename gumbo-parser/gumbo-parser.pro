@@ -12,7 +12,7 @@ CONFIG(debug, debug|release):buildmode = debug
 APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
 APP_ARCH = $$first( $$list( $$QT_ARCH ) )
 APP_COMPILER = $$first( $$list( $$QMAKE_COMPILER ) )
-APP_BUILD_DIR = ../__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
+APP_BUILD_DIR = $$PWD/../__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
 
 # Output directories setup
 DESTDIR     = $${APP_BUILD_DIR}

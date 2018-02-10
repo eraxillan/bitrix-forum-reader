@@ -1,6 +1,60 @@
-TEMPLATE = app
+defineTest(minQtVersion) {
+    maj = $$1
+    min = $$2
+    patch = $$3
+    isEqual(QT_MAJOR_VERSION, $$maj) {
+        isEqual(QT_MINOR_VERSION, $$min) {
+            isEqual(QT_PATCH_VERSION, $$patch) {
+                return(true)
+            }
+            greaterThan(QT_PATCH_VERSION, $$patch) {
+                return(true)
+            }
+        }
+        greaterThan(QT_MINOR_VERSION, $$min) {
+            return(true)
+        }
+    }
+    greaterThan(QT_MAJOR_VERSION, $$maj) {
+        return(true)
+    }
+    return(false)
+}
 
+!minQtVersion(5, 8, 0) {
+    message("Cannot build this demo with Qt version $${QT_VERSION}.")
+    error("Use at least Qt 5.8.0.")
+}
+
+#######################################################################################################################
+
+TEMPLATE = app
 CONFIG -= debug_and_release debug_and_release_target
+
+#######################################################################################################################
+# Platform-specific setup
+
+darwin: TARGET = "Bitrix Forum Reader"
+else:   TARGET = "bitrix-forum-reader"
+
+darwin: QMAKE_RPATHDIR += @loader_path/../Frameworks
+
+darwin: target.path = /Applications
+else:   target.path = /opt/bitrix-forum-reader
+INSTALLS += target
+
+android {
+    DISTFILES += \
+        android/AndroidManifest.xml \
+        android/res/values/libs.xml \
+        android/build.gradle
+
+    ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+} else:macos {
+    QMAKE_INFO_PLIST = Info.plist
+} else:ios|tvos {
+    QMAKE_INFO_PLIST = Info-ios.plist
+}
 
 #######################################################################################################################
 
@@ -26,7 +80,7 @@ MOC_DIR     = $${APP_BUILD_DIR}
 QT += qml quick quickcontrols2
 QT += multimedia concurrent
 # USE_QT_NAM: QT += network
-# QT += widgets
+# QT += gui widgets
 
 android: QT += androidextras
 
