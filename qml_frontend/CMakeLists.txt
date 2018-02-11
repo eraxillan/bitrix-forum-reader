@@ -22,7 +22,7 @@ if (ANDROID)
 endif()
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
-set(RUBANKIREADER_LIBS)
+set(bitrixforumreader_LIBS)
 
 if(ANDROID)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
@@ -30,20 +30,20 @@ endif()
 
 # Qt5 stuff
 # QtCore
-list(APPEND RUBANKIREADER_LIBS Core)
+list(APPEND bitrixforumreader_LIBS Core)
 # QtNetwork
-list(APPEND RUBANKIREADER_LIBS Network)
+list(APPEND bitrixforumreader_LIBS Network)
 # QtWidgets
-list(APPEND RUBANKIREADER_LIBS Widgets)
+list(APPEND bitrixforumreader_LIBS Widgets)
 # QtQml
-list(APPEND RUBANKIREADER_LIBS Qml)
+list(APPEND bitrixforumreader_LIBS Qml)
 # QtQuick
-list(APPEND RUBANKIREADER_LIBS Quick)
+list(APPEND bitrixforumreader_LIBS Quick)
 # QtMultimedia
-list(APPEND RUBANKIREADER_LIBS Multimedia)
+list(APPEND bitrixforumreader_LIBS Multimedia)
 # QtAndroidExtras
 if (ANDROID)
-    list(APPEND RUBANKIREADER_LIBS AndroidExtras)
+    list(APPEND bitrixforumreader_LIBS AndroidExtras)
 endif()
 
 SET(qml_frontend_RESOURCES qml.qrc)
@@ -65,7 +65,7 @@ get_filename_component(QT_LIBRARY_DIR ${QT_LIBRARY_DIR} PATH)
 
 # Build binary and link it
 if (ANDROID)
-    ADD_LIBRARY(rubankireader_qml_frontend SHARED
+    ADD_LIBRARY(bitrixforumreader_qml_frontend SHARED
         ${qml_frontend_SOURCES}
         ${qml_frontend_HEADERS}
         ${qml_frontend_QM}
@@ -73,7 +73,7 @@ if (ANDROID)
         ${qml_frontend_MOC_SRCS}
     )
 else()
-    ADD_EXECUTABLE(rubankireader_qml_frontend WIN32 MACOSX_BUNDLE
+    ADD_EXECUTABLE(bitrixforumreader_qml_frontend WIN32 MACOSX_BUNDLE
         ${qml_frontend_SOURCES}
         ${qml_frontend_HEADERS}
         ${qml_frontend_QM}
@@ -83,17 +83,18 @@ else()
 endif()
 
 if(MSVC)
-    TARGET_LINK_LIBRARIES(rubankireader_qml_frontend rubankireader_common gumbo-parser rubankireader_website_backend Qt5::WinMain)
+    TARGET_LINK_LIBRARIES(bitrixforumreader_qml_frontend bitrixforumreader_common gumbo-parser bitrixforumreader_website_backend Qt5::WinMain)
 else()
-    TARGET_LINK_LIBRARIES(rubankireader_qml_frontend rubankireader_common gumbo-parser rubankireader_website_backend)
+    TARGET_LINK_LIBRARIES(bitrixforumreader_qml_frontend bitrixforumreader_common gumbo-parser bitrixforumreader_website_backend)
 endif()
-qt5_use_modules(rubankireader_qml_frontend ${RUBANKIREADER_LIBS})
+qt5_use_modules(bitrixforumreader_qml_frontend ${bitrixforumreader_LIBS})
 
 if(ANDROID)
     include(../cmake/AddQtAndroidApk.cmake)
-    add_qt_android_apk(rubankireader_qml_frontend_apk rubankireader_qml_frontend
-        NAME "Banki.ru forum viewer app"
+    add_qt_android_apk(bitrixforumreader_qml_frontend_apk bitrixforumreader_qml_frontend
+        NAME "Bitrix forum viewer"
         VERSION_CODE 1
-        PACKAGE_NAME "name.eraxillan.rubankireader"
+        PACKAGE_NAME "name.eraxillan.bitrixforumreader"
     )
 endif()
+

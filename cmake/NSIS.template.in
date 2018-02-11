@@ -6,7 +6,7 @@ Name "@CPACK_PACKAGE_NAME@"
 BrandingText "@CPACK_PACKAGE_NAME@-@CPACK_PACKAGE_VERSION_MAJOR@"
 OutFile "@CPACK_TOPLEVEL_DIRECTORY@/@CPACK_OUTPUT_FILE_NAME@"
 SetCompressor /SOLID lzma
-InstallDir "$PROGRAMFILES\rubankireader"
+InstallDir "$PROGRAMFILES\bitrixforumreader"
 !define INST_DIR "@CPACK_TEMPORARY_DIRECTORY@"
 
 !define MUI_ABORTWARNING
@@ -15,9 +15,9 @@ InstallDir "$PROGRAMFILES\rubankireader"
 ;!define MUI_HEADERIMAGE
 ;!define MUI_HEADERIMAGE_BITMAP "${NSIS_SOURCE_PATH}\cmake\headerimage.bmp"
 ;!define MUI_HEADERIMAGE_UNBITMAP "${NSIS_SOURCE_PATH}\cmake\headerimage.bmp"
-!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of Rubankireader.$\r$\n$\r$\nClick Next to continue."
-!define MUI_FINISHPAGE_RUN "$INSTDIR/rubankireader.exe"
-!define MUI_FINISHPAGE_RUN_TEXT "Run 'Rubankireader' now"
+!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of bitrixforumreader.$\r$\n$\r$\nClick Next to continue."
+!define MUI_FINISHPAGE_RUN "$INSTDIR/bitrixforumreader.exe"
+!define MUI_FINISHPAGE_RUN_TEXT "Run 'bitrixforumreader' now"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${NSIS_SOURCE_PATH}\COPYING"
@@ -43,28 +43,28 @@ Section "Application" SecApplication
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 	${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 	IntFmt $0 "0x%08X" $0
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Rubankireader" "DisplayName" "Rubankireader"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Rubankireader" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Rubankireader" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Rubankireader" "InstallLocation" "$INSTDIR"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Rubankireader" "DisplayIcon" "$INSTDIR\rubankireader.exe"
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Rubankireader" "EstimatedSize" "$0"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\bitrixforumreader" "DisplayName" "bitrixforumreader"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\bitrixforumreader" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\bitrixforumreader" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\bitrixforumreader" "InstallLocation" "$INSTDIR"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\bitrixforumreader" "DisplayIcon" "$INSTDIR\bitrixforumreader.exe"
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\bitrixforumreader" "EstimatedSize" "$0"
 SectionEnd
 
 ;Section "Update configuration" SecUpdateConfig
 ;    SetShellVarContext current
-;    WriteRegStr HKCU "Software\Rubankireader\Rubankireader\paths" "carddatabase" "$LOCALAPPDATA\Rubankireader\cards.xml"
-;    WriteRegStr HKCU "Software\Rubankireader\Rubankireader\paths" "tokendatabase" "$LOCALAPPDATA\Rubankireader\tokens.xml"
-;    WriteRegStr HKCU "Software\Rubankireader\Rubankireader\paths" "decks" "$LOCALAPPDATA\Rubankireader\decks"
-;    WriteRegStr HKCU "Software\Rubankireader\Rubankireader\paths" "pics" "$LOCALAPPDATA\Rubankireader\pics"
-;    WriteRegStr HKCU "Software\Rubankireader\Rubankireader\replays" "pics" "$LOCALAPPDATA\Rubankireader\replays"
-;    WriteRegStr HKCU "Software\Rubankireader\Rubankireader\sound" "path" "$INSTDIR\sounds"
+;    WriteRegStr HKCU "Software\bitrixforumreader\bitrixforumreader\paths" "carddatabase" "$LOCALAPPDATA\bitrixforumreader\cards.xml"
+;    WriteRegStr HKCU "Software\bitrixforumreader\bitrixforumreader\paths" "tokendatabase" "$LOCALAPPDATA\bitrixforumreader\tokens.xml"
+;    WriteRegStr HKCU "Software\bitrixforumreader\bitrixforumreader\paths" "decks" "$LOCALAPPDATA\bitrixforumreader\decks"
+;    WriteRegStr HKCU "Software\bitrixforumreader\bitrixforumreader\paths" "pics" "$LOCALAPPDATA\bitrixforumreader\pics"
+;    WriteRegStr HKCU "Software\bitrixforumreader\bitrixforumreader\replays" "pics" "$LOCALAPPDATA\bitrixforumreader\replays"
+;    WriteRegStr HKCU "Software\bitrixforumreader\bitrixforumreader\sound" "path" "$INSTDIR\sounds"
 ;SectionEnd
 
 Section "Start menu item" SecStartMenu
     SetShellVarContext all
-    createDirectory "$SMPROGRAMS\Rubankireader"
-    createShortCut "$SMPROGRAMS\Rubankireader\Rubankireader.lnk" "$INSTDIR\rubankireader.exe"
+    createDirectory "$SMPROGRAMS\bitrixforumreader"
+    createShortCut "$SMPROGRAMS\bitrixforumreader\bitrixforumreader.lnk" "$INSTDIR\bitrixforumreader.exe"
 SectionEnd
 
 Section "un.Application" UnSecApplication
@@ -74,7 +74,7 @@ Section "un.Application" UnSecApplication
 ;    RMDir /r "$INSTDIR\themes"
 ;    RMDir /r "$INSTDIR\translations"
     Delete "$INSTDIR\uninstall.exe"
-    Delete "$INSTDIR\rubankireader.exe"
+    Delete "$INSTDIR\bitrixforumreader.exe"
     Delete "$INSTDIR\Qt*.dll"
 ;    Delete "$INSTDIR\libmysql.dll"
     Delete "$INSTDIR\icu*.dll"
@@ -87,29 +87,29 @@ Section "un.Application" UnSecApplication
 ;    Delete "$INSTDIR\zlib*.dll"
     RMDir "$INSTDIR"
 
-    RMDir "$SMPROGRAMS\Rubankireader"
+    RMDir "$SMPROGRAMS\bitrixforumreader"
 
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Rubankireader"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\bitrixforumreader"
 SectionEnd
 
 ; unselected because it is /o
 ; Section /o "un.Configurations, decks, cards, pics" UnSecConfiguration
 ;    SetShellVarContext current
-;    DeleteRegKey HKCU "Software\Rubankireader"
+;    DeleteRegKey HKCU "Software\bitrixforumreader"
 ;
-;    RMDir /r "$LOCALAPPDATA\Rubankireader"
+;    RMDir /r "$LOCALAPPDATA\bitrixforumreader"
 ;SectionEnd
 
-LangString DESC_SecApplication ${LANG_ENGLISH} "Rubankireader program files"
+LangString DESC_SecApplication ${LANG_ENGLISH} "bitrixforumreader program files"
 ;LangString DESC_SecUpdateConfig ${LANG_ENGLISH} "Update the paths in the application settings according to the installation paths."
-LangString DESC_SecStartMenu ${LANG_ENGLISH} "Create start menu items for Rubankireader and Oracle."
+LangString DESC_SecStartMenu ${LANG_ENGLISH} "Create start menu items for bitrixforumreader and Oracle."
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecApplication} $(DESC_SecApplication)
 ;    !insertmacro MUI_DESCRIPTION_TEXT ${SecUpdateConfig} $(DESC_SecUpdateConfig)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecStartMenu} $(DESC_SecStartMenu)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
-LangString DESC_UnSecApplication ${LANG_ENGLISH} "Rubankireader program files and start menu items"
+LangString DESC_UnSecApplication ${LANG_ENGLISH} "bitrixforumreader program files and start menu items"
 ;LangString DESC_UnSecConfiguration ${LANG_ENGLISH} "Configurations, decks, card database, pictures"
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${UnSecApplication} $(DESC_UnSecApplication)
@@ -119,10 +119,10 @@ LangString DESC_UnSecApplication ${LANG_ENGLISH} "Rubankireader program files an
 
 Function .onInit
     SetShellVarContext all
-    ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Rubankireader" "UninstallString"
+    ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\bitrixforumreader" "UninstallString"
     StrCmp $R0 "" done
 
-    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "A previous version of Rubankireader must be uninstalled before installing the new one." IDOK uninst
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "A previous version of bitrixforumreader must be uninstalled before installing the new one." IDOK uninst
     Abort
 
 uninst:

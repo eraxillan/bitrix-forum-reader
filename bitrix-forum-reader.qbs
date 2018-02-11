@@ -39,8 +39,8 @@ Project {
         // NOTE: may be just "QtGuiApplication"?
         QtQmlApplication
         {
-            //name: "rubankireader_desktop"
-            //appShortName: "rubankireader"
+            //name: "bitrix-forum-reader"
+            //appShortName: "bitrix-forum-reader"
 
             // Android NDK
             Depends { name: "Android.ndk"; required: false }

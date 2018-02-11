@@ -1,4 +1,4 @@
-# RuBankiReader's main CMakeLists.txt
+# Bitrix Forum Reader main CMakeLists.txt
 #
 # This is basically a wrapper to enable/disable the compilation
 # of the different projects: website_backend, qml_frontend, test
@@ -31,7 +31,7 @@ if(POLICY CMP0064)
     cmake_policy(SET CMP0064 OLD)
 endif()
 
-set(PROJECT_NAME "rubankireader")
+set(PROJECT_NAME "bitrix_forum_reader")
 
 # Debug build by default
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -187,7 +187,7 @@ if(UNIX)
         set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
         set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
         set(CPACK_DEBIAN_PACKAGE_SECTION "web")
-        set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://github.com/eraxillan/rubankireader")
+        set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://github.com/eraxillan/bitrix-forum-reader")
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5multimedia5-plugins")
     endif()
 elseif(WIN32)
