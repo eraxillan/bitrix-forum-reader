@@ -230,6 +230,7 @@ void ForumReader::onForumPageDownloaded()
 void ForumReader::onForumPageDownloadFailed(ResultCode code)
 {
     // FIXME: implement
+    Q_UNUSED(code);
 }
 
 void ForumReader::onForumPageParsed()
