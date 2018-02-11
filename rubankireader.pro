@@ -39,10 +39,6 @@ else:   TARGET = "bitrix-forum-reader"
 
 darwin: QMAKE_RPATHDIR += @loader_path/../Frameworks
 
-darwin: target.path = /Applications
-else:   target.path = /opt/bitrix-forum-reader
-INSTALLS += target
-
 android {
     DISTFILES += \
         android/AndroidManifest.xml \
