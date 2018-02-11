@@ -27,6 +27,8 @@
 // FIXME: add full error stack storage code like PCode do
 // FIXME: save full post history to the LOCAL SQLite database
 // FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
+
+/*
 static float getDpi(float& textScaleFactor)
 {
     QScreen* screen = qApp->primaryScreen();
@@ -59,6 +61,7 @@ static float getDpi(float& textScaleFactor)
 #endif
     return dpi;
 }
+*/
 
 int main(int argc, char *argv[])
 {
@@ -106,10 +109,12 @@ int main(int argc, char *argv[])
     {
         QQmlApplicationEngine engine;
 
+        /*
         float textScaleFactor = 0.0f;
         float displayDpi = getDpi(textScaleFactor);
         engine.rootContext()->setContextProperty("displayDpi", displayDpi);
         engine.rootContext()->setContextProperty("textScaleFactor", textScaleFactor);
+        */
 
         engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
         if (engine.rootObjects().isEmpty())
