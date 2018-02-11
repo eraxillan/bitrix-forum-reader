@@ -1,9 +1,10 @@
-import QtQuick 2.7
+import QtMultimedia 5.8
+import QtQuick 2.10
 import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.1
+import QtQuick.Controls 2.3
+import QtQuick.Controls.Material 2.3
+import QtQuick.Controls.Universal 2.3
 import QtQuick.Window 2.2
-import QtQuick.Controls.Material 2.1
-import QtQuick.Controls.Universal 2.1
 import Qt.labs.settings 1.0
 
 import ru.banki.reader 1.0
@@ -16,7 +17,7 @@ ApplicationWindow {
     title:   qsTr("banki.ru forum viewer")
     color:   "white"
 
-    function dp(x) { return x * (displayDpi / 160); }
+    function dp(x) { return x; }
 //    function sp(x) { return x * (displayDpi / 160) * textScaleFactor; }
 
     property bool qmlInit: false

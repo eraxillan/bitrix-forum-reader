@@ -725,13 +725,13 @@ uint Post::getHash(uint seed) const
 QString Post::getQmlString(int randomSeed) const
 {
     QString qmlStr =
-            "import QtMultimedia 5.6;\n"
-            "import QtQuick 2.7;\n"
+            "import QtMultimedia 5.8;\n"
+            "import QtQuick 2.10;\n"
             "import QtQuick.Layouts 1.3;\n"
             "import QtQuick.Window 2.2;\n"
-            "import QtQuick.Controls 2.1;\n"
-            "import QtQuick.Controls.Material 2.1;\n"
-            "import QtQuick.Controls.Universal 2.1;\n\n";
+            "import QtQuick.Controls 2.3;\n"
+            "import QtQuick.Controls.Material 2.3;\n"
+            "import QtQuick.Controls.Universal 2.3;\n\n";
 
     qmlStr +=
             "Column {\n"
@@ -906,12 +906,12 @@ uint User::getHash(uint seed) const
 QString User::getQmlString(int randomSeed) const
 {
     const QString qmlStr =
-        "import QtQuick 2.7;\n"
+        "import QtQuick 2.10;\n"
         "import QtQuick.Layouts 1.3;\n"
-        "import QtQuick.Controls 2.1;\n"
+        "import QtQuick.Controls 2.3;\n"
+        "import QtQuick.Controls.Material 2.3;\n"
+        "import QtQuick.Controls.Universal 2.3;\n"
         "import QtQuick.Window 2.2;\n"
-        "import QtQuick.Controls.Material 2.1;\n"
-        "import QtQuick.Controls.Universal 2.1;\n"
         "\n"
         "   Column {\n"
         "       id: clmnUserInfo%1;\n"
@@ -938,14 +938,14 @@ QString User::getQmlString(int randomSeed) const
         "\n"
         "       Text {\n"
         "           id: txtAuthorPostCount%1;\n"
-        "           text: \"Post count: \" + %6;\n"
+        "           text: \"Posts: \" + %6;\n"
         "\n"
         "           font.pointSize: 14;\n"
         "       }\n"
         "\n"
         "       Text {\n"
         "           id: txtAuthorRegistrationDate%1;\n"
-        "           text: \"Registered: \" + '%7';\n"
+        "           text: \"Registered:\n\" + '%7';\n"
         "\n"
         "           font.pointSize: 14;\n"
         "       }\n"
