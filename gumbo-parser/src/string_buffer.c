@@ -101,6 +101,8 @@ char* gumbo_string_buffer_to_string(
 
 void gumbo_string_buffer_clear(
     struct GumboInternalParser* parser, GumboStringBuffer* input) {
+  UNUSED_ARG(parser);
+
   input->length = 0;
 }
 

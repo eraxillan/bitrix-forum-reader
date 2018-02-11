@@ -148,6 +148,8 @@ static const char* find_last_newline(
 // terminating null byte if this is the last line.
 static const char* find_next_newline(
     const char* original_text, const char* error_location) {
+  UNUSED_ARG(original_text);
+
   const char* c = error_location;
   for (; *c && *c != '\n'; ++c)
     ;

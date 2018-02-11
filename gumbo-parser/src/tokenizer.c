@@ -377,7 +377,7 @@ static bool temporary_buffer_equals(GumboParser* parser, const char* text) {
   // TODO(jdtang): See if the extra strlen is a performance problem, and replace
   // it with an explicit sizeof(literal) if necessary.  I don't think it will
   // be, as this is only used in a couple of rare states.
-  int text_len = strlen(text);
+  size_t text_len = strlen(text);
   return text_len == buffer->length &&
          memcmp(buffer->data, text, text_len) == 0;
 }
@@ -583,6 +583,8 @@ static void abandon_current_tag(GumboParser* parser) {
 // error occurred, RETURN_SUCCESS otherwise.
 static StateResult emit_char_ref(GumboParser* parser,
     int additional_allowed_char, bool is_in_attribute, GumboToken* output) {
+  UNUSED_ARG(is_in_attribute);
+
   GumboTokenizerState* tokenizer = parser->_tokenizer_state;
   OneOrTwoCodepoints char_ref;
   bool status = consume_char_ref(
@@ -758,6 +760,8 @@ static void finish_tag_name(GumboParser* parser) {
 // Adds an ERR_DUPLICATE_ATTR parse error to the parser's error struct.
 static void add_duplicate_attr_error(GumboParser* parser, const char* attr_name,
     int original_index, int new_index) {
+  UNUSED_ARG(attr_name);
+
   GumboError* error = gumbo_add_error(parser);
   if (!error) {
     return;
@@ -917,6 +921,9 @@ static StateResult handle_data_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#character-reference-in-data-state
 static StateResult handle_char_ref_in_data_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(c);
+  UNUSED_ARG(tokenizer);
+
   gumbo_tokenizer_set_state(parser, GUMBO_LEX_DATA);
   return emit_char_ref(parser, ' ', false, output);
 }
@@ -946,6 +953,9 @@ static StateResult handle_rcdata_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#character-reference-in-rcdata-state
 static StateResult handle_char_ref_in_rcdata_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(c);
+  UNUSED_ARG(tokenizer);
+
   gumbo_tokenizer_set_state(parser, GUMBO_LEX_RCDATA);
   return emit_char_ref(parser, ' ', false, output);
 }
@@ -953,6 +963,8 @@ static StateResult handle_char_ref_in_rcdata_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#rawtext-state
 static StateResult handle_rawtext_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '<':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_RAWTEXT_LT);
@@ -971,6 +983,8 @@ static StateResult handle_rawtext_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#script-data-state
 static StateResult handle_script_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '<':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_SCRIPT_LT);
@@ -989,6 +1003,8 @@ static StateResult handle_script_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#plaintext-state
 static StateResult handle_plaintext_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '\0':
       return emit_replacement_char(parser, output);
@@ -1002,6 +1018,8 @@ static StateResult handle_plaintext_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#tag-open-state
 static StateResult handle_tag_open_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   assert(temporary_buffer_equals(parser, "<"));
   switch (c) {
     case '!':
@@ -1035,6 +1053,8 @@ static StateResult handle_tag_open_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#end-tag-open-state
 static StateResult handle_end_tag_open_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   assert(temporary_buffer_equals(parser, "</"));
   switch (c) {
     case '>':
@@ -1062,6 +1082,8 @@ static StateResult handle_end_tag_open_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#tag-name-state
 static StateResult handle_tag_name_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '\t':
     case '\n':
@@ -1111,6 +1133,8 @@ static StateResult handle_rcdata_lt_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#rcdata-end-tag-open-state
 static StateResult handle_rcdata_end_tag_open_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   assert(temporary_buffer_equals(parser, "</"));
   if (is_alpha(c)) {
     gumbo_tokenizer_set_state(parser, GUMBO_LEX_RCDATA_END_TAG_NAME);
@@ -1174,6 +1198,8 @@ static StateResult handle_rawtext_lt_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#rawtext-end-tag-open-state
 static StateResult handle_rawtext_end_tag_open_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   assert(temporary_buffer_equals(parser, "</"));
   if (is_alpha(c)) {
     gumbo_tokenizer_set_state(parser, GUMBO_LEX_RAWTEXT_END_TAG_NAME);
@@ -1243,6 +1269,8 @@ static StateResult handle_script_lt_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#script-data-end-tag-open-state
 static StateResult handle_script_end_tag_open_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   assert(temporary_buffer_equals(parser, "</"));
   if (is_alpha(c)) {
     gumbo_tokenizer_set_state(parser, GUMBO_LEX_SCRIPT_END_TAG_NAME);
@@ -1316,6 +1344,8 @@ static StateResult handle_script_escaped_start_dash_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#script-data-escaped-state
 static StateResult handle_script_escaped_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_SCRIPT_ESCAPED_DASH);
@@ -1338,6 +1368,8 @@ static StateResult handle_script_escaped_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#script-data-escaped-dash-state
 static StateResult handle_script_escaped_dash_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_SCRIPT_ESCAPED_DASH_DASH);
@@ -1363,6 +1395,8 @@ static StateResult handle_script_escaped_dash_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#script-data-escaped-dash-dash-state
 static StateResult handle_script_escaped_dash_dash_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       return emit_current_char(parser, output);
@@ -1411,6 +1445,8 @@ static StateResult handle_script_escaped_lt_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#script-data-escaped-end-tag-open-state
 static StateResult handle_script_escaped_end_tag_open_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   assert(temporary_buffer_equals(parser, "</"));
   if (is_alpha(c)) {
     gumbo_tokenizer_set_state(parser, GUMBO_LEX_SCRIPT_ESCAPED_END_TAG_NAME);
@@ -1487,6 +1523,8 @@ static StateResult handle_script_double_escaped_start_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#script-data-double-escaped-state
 static StateResult handle_script_double_escaped_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_SCRIPT_DOUBLE_ESCAPED_DASH);
@@ -1508,6 +1546,8 @@ static StateResult handle_script_double_escaped_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#script-data-double-escaped-dash-state
 static StateResult handle_script_double_escaped_dash_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(
@@ -1533,6 +1573,8 @@ static StateResult handle_script_double_escaped_dash_state(GumboParser* parser,
 static StateResult handle_script_double_escaped_dash_dash_state(
     GumboParser* parser, GumboTokenizerState* tokenizer, int c,
     GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       return emit_current_char(parser, output);
@@ -1601,6 +1643,8 @@ static StateResult handle_script_double_escaped_end_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#before-attribute-name-state
 static StateResult handle_before_attr_name_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '\t':
     case '\n':
@@ -1639,6 +1683,8 @@ static StateResult handle_before_attr_name_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#attribute-name-state
 static StateResult handle_attr_name_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '\t':
     case '\n':
@@ -1682,6 +1728,8 @@ static StateResult handle_attr_name_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#after-attribute-name-state
 static StateResult handle_after_attr_name_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '\t':
     case '\n':
@@ -1771,6 +1819,8 @@ static StateResult handle_before_attr_value_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#attribute-value-double-quoted-state
 static StateResult handle_attr_value_double_quoted_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(output);
+
   switch (c) {
     case '"':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_AFTER_ATTR_VALUE_QUOTED);
@@ -1799,6 +1849,8 @@ static StateResult handle_attr_value_double_quoted_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#attribute-value-single-quoted-state
 static StateResult handle_attr_value_single_quoted_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(output);
+
   switch (c) {
     case '\'':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_AFTER_ATTR_VALUE_QUOTED);
@@ -1870,6 +1922,9 @@ static StateResult handle_attr_value_unquoted_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#character-reference-in-attribute-value-state
 static StateResult handle_char_ref_in_attr_value_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(c);
+  UNUSED_ARG(output);
+
   OneOrTwoCodepoints char_ref;
   int allowed_char;
   bool is_unquoted = false;
@@ -1979,6 +2034,9 @@ static StateResult handle_bogus_comment_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#markup-declaration-open-state
 static StateResult handle_markup_declaration_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(c);
+  UNUSED_ARG(output);
+
   if (utf8iterator_maybe_consume_match(
           &tokenizer->_input, "--", sizeof("--") - 1, true)) {
     gumbo_tokenizer_set_state(parser, GUMBO_LEX_COMMENT_START);
@@ -2014,6 +2072,8 @@ static StateResult handle_markup_declaration_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#comment-start-state
 static StateResult handle_comment_start_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_COMMENT_START_DASH);
@@ -2043,6 +2103,8 @@ static StateResult handle_comment_start_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#comment-start-dash-state
 static StateResult handle_comment_start_dash_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_COMMENT_END);
@@ -2074,6 +2136,8 @@ static StateResult handle_comment_start_dash_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#comment-state
 static StateResult handle_comment_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_COMMENT_END_DASH);
@@ -2096,6 +2160,8 @@ static StateResult handle_comment_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#comment-end-dash-state
 static StateResult handle_comment_end_dash_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_COMMENT_END);
@@ -2122,6 +2188,8 @@ static StateResult handle_comment_end_dash_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#comment-end-state
 static StateResult handle_comment_end_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '>':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_DATA);
@@ -2161,6 +2229,8 @@ static StateResult handle_comment_end_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#comment-end-bang-state
 static StateResult handle_comment_end_bang_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   switch (c) {
     case '-':
       gumbo_tokenizer_set_state(parser, GUMBO_LEX_COMMENT_END_DASH);
@@ -2741,6 +2811,8 @@ static StateResult handle_after_doctype_system_id_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete.html#bogus-doctype-state
 static StateResult handle_bogus_doctype_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
+  UNUSED_ARG(tokenizer);
+
   if (c == '>' || c == -1) {
     gumbo_tokenizer_set_state(parser, GUMBO_LEX_DATA);
     emit_doctype(parser, output);

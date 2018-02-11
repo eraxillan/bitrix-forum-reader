@@ -25,6 +25,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define UNUSED_ARG(arg) (void)arg
+
 #ifdef __cplusplus
 extern "C" {
 #endif

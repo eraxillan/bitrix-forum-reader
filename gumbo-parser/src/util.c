@@ -54,5 +54,7 @@ void gumbo_debug(const char* format, ...) {
   vprintf(format, args);
   va_end(args);
   fflush(stdout);
+#else
+  UNUSED_ARG(format);
 #endif
 }

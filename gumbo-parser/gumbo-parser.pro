@@ -5,6 +5,8 @@ TEMPLATE = lib
 CONFIG  += staticlib
 VERSION = 0.10.1
 
+#DEFINES += GUMBO_DEBUG
+
 # Build mode (release by default)
 buildmode = release
 CONFIG(debug, debug|release):buildmode = debug
