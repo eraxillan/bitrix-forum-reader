@@ -178,6 +178,9 @@ windows {
     # FIXME: implement using Homebrew-installed cURL
 
     # cURL
+    INCLUDEPATH += $$PWD/libs/curl/macos/include
+    LIBS += -L$$PWD/libs/curl/macos/lib
+    LIBS += -lcurl
 
     # Gumbo
     LIBS += -L$$GUMBO_BUILD_DIR
