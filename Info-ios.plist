@@ -7,7 +7,7 @@
     <key>CFBundleExecutable</key>
     <string>Bitrix Forum Reader</string>
     <key>CFBundleIdentifier</key>
-    <string>org.example.bitrix-forum-reader</string>
+    <string>name.eraxillan.bitrix-forum-reader</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
