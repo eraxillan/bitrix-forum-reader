@@ -34,8 +34,15 @@ CONFIG -= debug_and_release debug_and_release_target
 #######################################################################################################################
 # Platform-specific setup
 
-darwin: TARGET = "Bitrix Forum Reader"
-else:   TARGET = "bitrix-forum-reader"
+darwin {
+    TARGET = "Bitrix Forum Reader"
+
+    # NOTE: Qt Creator unable to run application with different bundle and executable names
+#    TARGET = "bitrix-forum-reader"
+#    QMAKE_APPLICATION_BUNDLE_NAME = "Bitrix Forum Reader"
+} else {
+    TARGET = "bitrix-forum-reader"
+}
 
 darwin: QMAKE_RPATHDIR += @loader_path/../Frameworks
 
