@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     qsrand(1);
     qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
 
-    QGuiApplication::setApplicationName("Banki.ru Reader");
+    QGuiApplication::setApplicationName("Bitrix Forum Reader");
     QGuiApplication::setOrganizationName("Alexander Kamyshnikov");
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);

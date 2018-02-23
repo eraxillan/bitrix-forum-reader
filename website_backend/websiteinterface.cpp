@@ -731,17 +731,15 @@ QString Post::getQmlString(int randomSeed) const
             "import QtQuick.Window 2.2;\n"
             "import QtQuick.Controls 2.3;\n"
             "import QtQuick.Controls.Material 2.3;\n"
-            "import QtQuick.Controls.Universal 2.3;\n\n";
-
-    qmlStr +=
+            "import QtQuick.Controls.Universal 2.3;\n"
+            "\n"
             "Column {\n"
             "    id: clmnPost;\n"
             "\n"
             "    spacing: dp(10);\n"
             "    leftPadding: dp(10);\n"
-            "    rightPadding: dp(10);\n\n";
-
-    qmlStr +=
+            "    rightPadding: dp(10);\n"
+            "\n"
             "    Text {\n"
 //            "       id: txtPostDateTime;\n"
             "        width: rctItem.width;\n"

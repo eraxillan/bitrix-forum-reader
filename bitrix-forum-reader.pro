@@ -85,7 +85,7 @@ INCLUDEPATH += "."
 
 # USE_QT_NAM
 # QT_GUMBO_METADATA
-# FORUM_READER_SYNC_API
+# BITRIX_FORUM_READER_SYNC_API
 # RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
 # RBR_PRINT_DEBUG_OUTPUT
 # RBR_DUMP_GENERATED_QML_IN_FILES
@@ -175,8 +175,6 @@ windows {
     LIBS += -llibcurl$$SUFFIX
     LIBS += -lgumbo-parser
 } else:macx {
-    # FIXME: implement using Homebrew-installed cURL
-
     # cURL
     INCLUDEPATH += $$PWD/libs/curl/macos/include
     LIBS += -L$$PWD/libs/curl/macos/lib

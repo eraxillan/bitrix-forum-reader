@@ -34,7 +34,7 @@ public:
     Q_INVOKABLE QUrl      convertToUrl(QString urlStr) const;
 
     // Forum HTML page parser sync API (e.g. for testing purposes)
-#ifdef FORUM_READER_SYNC_API
+#ifdef BITRIX_FORUM_READER_SYNC_API
     Q_INVOKABLE int       parsePageCount(QString urlStr);
     Q_INVOKABLE bool      parseForumPage(QString urlStr, int pageNo);
 #endif

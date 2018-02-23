@@ -14,7 +14,7 @@ ApplicationWindow {
     visible: true
     width:   Screen.width
     height:  Screen.height
-    title:   qsTr("banki.ru forum viewer")
+    title:   qsTr("Bitrix Forum Reader")
     color:   "white"
 
     function dp(x) { return x; }

@@ -59,7 +59,7 @@ QUrl ForumReader::convertToUrl(QString urlStr) const
     return QUrl(urlStr);
 }
 
-#ifdef FORUM_READER_SYNC_API
+#ifdef BITRIX_FORUM_READER_SYNC_API
 int ForumReader::parsePageCount(QString urlStr)
 {
     // Cleanup
