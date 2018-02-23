@@ -30,7 +30,7 @@ ForumReader::ForumReader() :
     m_pagePosts(),
     m_pageCount(0),
     m_pageNo(0),
-    m_lastError(ResultCode::Ok)
+    m_lastError(result_code::Type::Ok)
 {
     connect(&m_downloader, &FileDownloader::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
     connect(&m_downloader, &FileDownloader::downloadFinished, this, &ForumReader::onForumPageDownloaded);
@@ -72,8 +72,8 @@ int ForumReader::parsePageCount(QString urlStr)
 
     // 2) Parse the page HTML to get the page number
     BankiRuForum::ForumPageParser fpp;
-    int resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
-    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pageCount = 0; return 0; }
+    result_code::Type resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
+    Q_ASSERT(result_code::succeeded(resultFpp)); if (result_code::failed(resultFpp)) { m_pageCount = 0; return 0; }
     return m_pageCount;
 }
 
@@ -90,12 +90,12 @@ bool ForumReader::parseForumPage(QString urlStr, int pageNo)
 
     // 2) Parse the page HTML to get the page number
     BankiRuForum::ForumPageParser fpp;
-    int resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
-    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pageCount = 0; return false; }
+    result_code::Type resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
+    Q_ASSERT(result_code::succeeded(resultFpp)); if (result_code::failed(resultFpp)) { m_pageCount = 0; return false; }
 
     // 3) Parse the page HTML to get the page user posts
     resultFpp = fpp.getPagePosts(htmlRawData, m_pagePosts);
-    Q_ASSERT(resultFpp == 0); if (resultFpp != 0) { m_pagePosts.clear(); return false; }
+    Q_ASSERT(result_code::succeeded(resultFpp)); if (result_code::failed(resultFpp)) { m_pagePosts.clear(); return false; }
     return true;
 }
 #endif
@@ -115,8 +115,8 @@ int parsePageCountAsync(QString urlStr)
 
     // 2) Parse the page HTML to get the page number
     BankiRuForum::ForumPageParser fpp;
-    ResultCode resultFpp = fpp.getPageCount(htmlRawData, result);
-    if (resultFpp != ResultCode::Ok)
+    result_code::Type resultFpp = fpp.getPageCount(htmlRawData, result);
+    if (result_code::failed(resultFpp))
     {
         Q_ASSERT(0);
         result = 0;
@@ -142,15 +142,15 @@ void ForumReader::startPageCountAsync(QString urlStr)
 
 namespace {
 // NOTE: QtConcurrent require to return collection; return result code will be much more straightforward to reader
-BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, ResultCode& errorCode)
+BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, result_code::Type& errorCode)
 {
     BankiRuForum::UserPosts result;
-    errorCode = ResultCode::Ok;
+    errorCode = result_code::Type::Ok;
 
     // 2) Parse the page HTML to get the page number
     BankiRuForum::ForumPageParser fpp;
     errorCode = fpp.getPageCount(rawHtmlData, pageCount);
-    if (errorCode != ResultCode::Ok)
+    if (errorCode != result_code::Type::Ok)
     {
         Q_ASSERT(0);
         return result;
@@ -158,7 +158,7 @@ BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, R
 
     // 3) Parse the page HTML to get the page user posts
     errorCode = fpp.getPagePosts(rawHtmlData, result);
-    if (errorCode != ResultCode::Ok)
+    if (errorCode != result_code::Type::Ok)
     {
         Q_ASSERT(0);
         return result;
@@ -227,7 +227,7 @@ void ForumReader::onForumPageDownloaded()
     m_forumPageParserWatcher.setFuture(forumPageParseFuture);
 }
 
-void ForumReader::onForumPageDownloadFailed(ResultCode code)
+void ForumReader::onForumPageDownloadFailed(result_code::Type code)
 {
     // FIXME: implement
     Q_UNUSED(code);

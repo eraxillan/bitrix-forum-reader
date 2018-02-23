@@ -23,7 +23,7 @@ class ForumReader : public QObject
     int        m_pageCount;
     int        m_pageNo;
 
-    ResultCode m_lastError;
+    result_code::Type m_lastError;
 
 public:
     ForumReader();
@@ -75,7 +75,7 @@ private slots:
     // Forum page downloader slots
     void onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void onForumPageDownloaded();
-    void onForumPageDownloadFailed(ResultCode code);
+    void onForumPageDownloadFailed(result_code::Type code);
 
     // Forum page user posts parser slots
     void onForumPageParsed();

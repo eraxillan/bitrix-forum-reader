@@ -211,8 +211,8 @@ namespace BankiRuForum
     public:
         virtual ~IForumPageReader();
 
-        virtual ResultCode getPageCount(QByteArray rawData, int &pageCount) = 0;
-        virtual ResultCode getPagePosts(QByteArray rawData, UserPosts &userPosts) = 0;
+        virtual result_code::Type getPageCount(QByteArray rawData, int &pageCount) = 0;
+        virtual result_code::Type getPagePosts(QByteArray rawData, UserPosts &userPosts) = 0;
     };
 
 }   // namespace BankiRuForum

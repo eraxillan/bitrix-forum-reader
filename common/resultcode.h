@@ -1,11 +1,14 @@
 #ifndef BRR_RESULTCODE_H
 #define BRR_RESULTCODE_H
 
-enum class ResultCode
+namespace result_code {
+
+enum class Type
 {
     // General
     Ok = 0,
-    Fail = 1,
+    OkFalse = 1,
+    Fail,
     // CURL
     CurlError,
     // System
@@ -15,5 +18,17 @@ enum class ResultCode
     ForumParserError
     // TODO: others
 };
+
+inline bool succeeded(Type rc)
+{
+    return (rc == Type::Ok || rc == Type::OkFalse);
+}
+
+inline bool failed(Type rc)
+{
+    return !succeeded(rc);
+}
+
+}  // namespace result_code
 
 #endif // BRR_RESULTCODE_H

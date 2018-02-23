@@ -43,7 +43,7 @@ public:
 signals:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void downloadFinished();
-    void downloadFailed(ResultCode code);
+    void downloadFailed(result_code::Type code);
 
 #ifdef USE_QT_NAM
 private slots:
@@ -59,7 +59,7 @@ private:
 #endif
 
     QByteArray m_downloadedData;
-    ResultCode m_lastError;
+    result_code::Type m_lastError;
 
     // Async API
     QFutureWatcher<QByteArray> m_downloadedDataWatcher;
