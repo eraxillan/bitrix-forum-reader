@@ -36,6 +36,7 @@ public:
     // Async API
     void startDownloadAsync(QUrl url);
     QByteArray downloadedData() const;
+    result_code::Type lastError() const;
 
     // Sync API
     static bool downloadUrl(QString urlStr, QByteArray& data);

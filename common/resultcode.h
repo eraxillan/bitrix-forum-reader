@@ -5,18 +5,21 @@ namespace result_code {
 
 enum class Type
 {
+    Invalid = -1,
     // General
     Ok = 0,
     OkFalse = 1,
     Fail,
+    InProgress,
     // CURL
     CurlError,
     // System
     NetworkError,
     // Forum parser
     ForumPageParserError,
-    ForumParserError
+    ForumParserError,
     // TODO: others
+    Count
 };
 
 inline bool succeeded(Type rc)

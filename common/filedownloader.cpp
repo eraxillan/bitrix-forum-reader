@@ -128,7 +128,7 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
 
 void FileDownloader::startDownloadAsync(QUrl url)
 {
-    m_lastError = result_code::Type::Ok;
+    m_lastError = result_code::Type::Invalid;
     m_downloadedData.clear();
 
 #ifdef USE_QT_NAM
@@ -152,15 +152,24 @@ QByteArray FileDownloader::downloadedData() const
     return m_downloadedData;
 }
 
+result_code::Type FileDownloader::lastError() const
+{
+    return m_lastError;
+}
+
 #ifdef USE_QT_NAM
 void FileDownloader::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
+    m_lastError = result_code::Type::InProgress;
+
     emit downloadProgress(bytesReceived, bytesTotal);
 }
 
 void FileDownloader::onDownloadFinished()
 {
     Q_CHECK_PTR(m_reply); if (!m_reply) return;
+
+    m_lastError = result_code::Type::Ok;
 
     m_downloadedData = m_reply->readAll();
     m_reply->deleteLater();
@@ -170,8 +179,10 @@ void FileDownloader::onDownloadFinished()
 
 void FileDownloader::onDownloadFailed(QNetworkReply::NetworkError code)
 {
+    m_lastError = result_code::Type::NetworkError;
+
     // FIXME: map the NetworkError to the ResultCode
-    emit downloadFailed(ResultCode::NetworkError);
+    emit downloadFailed(result_code::Type::NetworkError/*, code*/);
 }
 #endif
 
@@ -181,8 +192,15 @@ void FileDownloader::onDownloadFailed(QNetworkReply::NetworkError code)
 #ifdef USE_QT_NAM
 bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
 {
-    throw std::runtime_error("not implemented");
-    return false;
+    FileDownloader fd;
+    fd.startDownloadAsync(urlStr);
+
+    Q_ASSERT(fd.lastError() == result_code::Type::Invalid);
+    while (fd.lastError() == result_code::Type::Invalid || fd.lastError() == result_code::Type::InProgress)
+        qApp->processEvents();
+
+    data = fd.downloadedData();
+    return result_code::succeeded(fd.lastError());
 }
 #else
 bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
