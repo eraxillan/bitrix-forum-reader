@@ -34,12 +34,22 @@ CONFIG -= debug_and_release debug_and_release_target
 #######################################################################################################################
 # Platform-specific setup
 
-darwin {
+macx {
     TARGET = "Bitrix Forum Reader"
 
     # NOTE: Qt Creator unable to run application with different bundle and executable names
 #    TARGET = "bitrix-forum-reader"
 #    QMAKE_APPLICATION_BUNDLE_NAME = "Bitrix Forum Reader"
+} else:ios {
+    # FIXME: build failed on iOS if bundle name contains whitespaces
+    #
+    # PhaseScriptExecution Project\ Copy __BUILD__/client/debug/ios-arm64-gcc/Bitrix\ Forum\ Reader.build/Debug-iphonesimulator/Bitrix\ Forum\ Reader.build/Script-9C316F444A62BF296E3E1F25.sh
+    #    cd /Users/eraxillan/Projects/bitrix-forum-reader
+    #    /bin/sh -c \"/Users/eraxillan/Projects/bitrix-forum-reader/__BUILD__/client/debug/ios-arm64-gcc/Bitrix\ Forum\ Reader.build/Debug-iphonesimulator/Bitrix\ Forum\ Reader.build/Script-9C316F444A62BF296E3E1F25.sh\"
+    # cp: /Users/eraxillan/Projects/bitrix-forum-reader/Debug-iphonesimulator/Bitrix: No such file or directory
+    # cp: Forum: No such file or directory
+    # cp: Reader.app: No such file or directory
+    TARGET = "bitrix-forum-reader"
 } else {
     TARGET = "bitrix-forum-reader"
 }
@@ -131,7 +141,8 @@ windows {
         ARCH = x64
     }
 } else:macx {
-    # FIXME: implement
+    # NOTE: modern macOS are 64-bit
+    ARCH = x64
 } else:linux:!android {
     # FIXME: implement
 } else:android {
@@ -144,7 +155,7 @@ windows {
         error("Unsupported OS")
     }
 } else:ios {
-    # FIXME: implement
+    ARCH = arm64
 } else {
     error("Unsupported OS")
 }
