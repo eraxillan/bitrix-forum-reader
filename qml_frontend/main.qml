@@ -100,7 +100,7 @@ ApplicationWindow {
     ListView {
         id: view
 
-        anchors.margins: dp(10)
+        anchors.margins: dp(5)
         anchors.fill: parent
         spacing: dp(5)
         model: dataModel
@@ -190,11 +190,8 @@ ApplicationWindow {
             enabled: pageLoaded
 
             width: view.width
-            height: dp(50)
+            height: dp(30)
             spacing: dp(5)
-
-            property int childCount: 3
-            property int childHeight: height
 
             Button {
                 id: btnFirstPage
