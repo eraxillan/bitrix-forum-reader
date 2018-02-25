@@ -144,7 +144,7 @@ windows {
     # NOTE: modern macOS are 64-bit
     ARCH = x64
 } else:linux:!android {
-    # FIXME: implement
+    ARCH = x64
 } else:android {
     # TODO: only armeabi-v7a and x86 are currently supported
     contains(QT_ARCH, arm) {
@@ -152,7 +152,7 @@ windows {
     } else:contains(QT_ARCH, i386) {
         ARCH = x86
     } else {
-        error("Unsupported OS")
+        error("Unsupported Android architecture")
     }
 } else:ios {
     ARCH = arm64
