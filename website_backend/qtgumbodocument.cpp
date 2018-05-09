@@ -1,4 +1,5 @@
 #include "qtgumbodocument.h"
+#include "common/logger.h"
 
 #include <iostream>
 
@@ -26,7 +27,7 @@ QtGumboDocument::QtGumboDocument(QString rawData)
     QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
 
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "HTML encoding/charset is" << htmlCodec->name();
+    ConsoleLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
 #endif
 
     // Convert to UTF-8: Gumbo library understands only this encoding
@@ -133,8 +134,9 @@ static std::string handle_unknown_tag(GumboStringPiece *text)
     gumbo_tag_from_original_text(&gsp);
     tagname = std::string(gsp.data, gsp.length);
 
-    qDebug() << "UNKNOWN TAG: " << tagname.c_str();
-//    qWarning(tagname.c_str());
+#ifdef RBR_PRINT_DEBUG_OUTPUT
+    ConsoleLogger->info("UNKNOWN TAG: {}", tagname);
+#endif
     return tagname;
 }
 

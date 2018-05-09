@@ -127,7 +127,8 @@ HEADERS += \
     website_backend/qtgumbonode.h           \
     website_backend/websiteinterface.h      \
     website_backend/gumboparserimpl.h       \
-    qml_frontend/forumreader.h
+    qml_frontend/forumreader.h \
+    common/logger.h
 
 RESOURCES += qml_frontend/qml.qrc
 
@@ -173,6 +174,7 @@ CONFIG(debug, debug|release) {
 #   3) Gumbo HTML5 parser library
 
 INCLUDEPATH += $$PWD/gumbo-parser/src
+INCLUDEPATH += $$PWD/spdlog/include
 
 windows {
     # Windows (Desktop, X86_64, static libraries)

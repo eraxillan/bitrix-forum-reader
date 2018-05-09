@@ -130,7 +130,7 @@ Project {
 
             // Basic compiler options
             cpp.cxxLanguageVersion: "c++11"
-            cpp.includePaths: ["."]
+            cpp.includePaths: [".", "spdlog/include"]
 
             // Custom project defines to enable/disable features
             // QT_GUMBO_METADATA
@@ -159,6 +159,7 @@ Project {
                 files: [
                     "common/resultcode.h",
                     "common/filedownloader.h",
+                    "common/logger.h",
                     "website_backend/html_tag.h",
                     "website_backend/qtgumbodocument.h",
                     "website_backend/qtgumbonode.h",

@@ -1,3 +1,6 @@
 [submodule "curl"]
 	path = curl
 	url = https://www.github.com/gcesarmza/curl-android-ios
+[submodule "spdlog"]
+	path = spdlog
+	url = https://github.com/gabime/spdlog

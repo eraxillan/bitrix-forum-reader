@@ -1,4 +1,5 @@
 #include "websiteinterface.h"
+#include "common/logger.h"
 
 #ifdef RBR_DUMP_GENERATED_QML_IN_FILES
 namespace {
@@ -529,19 +530,19 @@ static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
         }
 
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-        qDebug() << "--------------------------------------------------";
-        qDebug() << "Video width:" << videoWidth;
-        qDebug() << "Video height:" << videoHeight;
-        qDebug() << "Video codec:" << videoCodecStr;
-//        qDebug() << "Audio codec:" << audioCodecStr;
-        qDebug() << "File format:" << videoFormatNote;
-//        qDebug() << "File extension:" << videoFileExt;
-        qDebug() << "--------------------------------------------------";
+        ConsoleLogger->info("--------------------------------------------------");
+        ConsoleLogger->info("Video width: {}", videoWidth);
+        ConsoleLogger->info("Video height: {}", videoHeight);
+        ConsoleLogger->info("Video codec: {}", videoCodecStr);
+//        ConsoleLogger->info("Audio codec: {}", audioCodecStr);
+        ConsoleLogger->info("File format: {}", videoFormatNote);
+//        ConsoleLogger->info("File extension: {}", videoFileExt);
+        ConsoleLogger->info("--------------------------------------------------");
 #endif
     }
 
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-//    qDebug() << "Maximum resolution: " << maxVideoWidth << " x " << maxVideoHeight;
+//    ConsoleLogger->info("Maximum resolution: {} x {}", maxVideoWidth, maxVideoHeight);
 #endif
 
     return true;

@@ -19,6 +19,8 @@
 #define CATCH_CONFIG_RUNNER     // no generated main()
 #include "catch.hpp"
 
+#include <common/logger.h>
+
 #include "website_backend/gumboparserimpl.h"
 #include "qml_frontend/forumreader.h"
 
@@ -63,8 +65,45 @@ static float getDpi(float& textScaleFactor)
 }
 */
 
+bool initLogLibrary()
+{
+    try
+    {
+        std::cout << "initializing spdlog..." << std::endl;
+
+        // Console logger with color
+        spdlog::stdout_color_mt("console");
+
+        // Customize msg format for all messages
+        spdlog::set_pattern("[%^%L%$][%D %H:%M:%S.%e][%P:%t] %v");
+
+        ConsoleLogger->info("spdlog was successfully initialized");
+    }
+    // Exceptions will only be thrown upon failed logger or sink construction (not during logging)
+    catch (const spdlog::spdlog_ex& ex)
+    {
+        std::cout << "spdlog init failed: " << ex.what() << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+void deinitLogLibrary()
+{
+    ConsoleLogger->info("deinitializing spdlog...");
+
+    // Release and close all loggers
+    spdlog::drop_all();
+
+    std::cout << "spdlog deinit succeeded" << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
+    if (!initLogLibrary())
+        return 1;
+
     qsrand(1);
     qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
 
@@ -105,6 +144,7 @@ int main(int argc, char *argv[])
     Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
 #endif
 
+    int exitCode = -1;
     try
     {
         QQmlApplicationEngine engine;
@@ -118,13 +158,18 @@ int main(int argc, char *argv[])
 
         engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
         if (engine.rootObjects().isEmpty())
-            return 1;
+            throw 1;
 
-        return app.exec();
+        exitCode = app.exec();
     }
     catch (...)
     {
-        qDebug() << "ERROR: exception caught!";
-        return 2;
+        ConsoleLogger->critical("ERROR: unhandled exception caught!");
+
+        deinitLogLibrary();
+        return 1;
     }
+
+    deinitLogLibrary();
+    return exitCode;
 }

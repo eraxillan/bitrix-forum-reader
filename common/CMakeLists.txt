@@ -10,8 +10,10 @@ SET(bitrixforumreader_common_SOURCES
 
 SET(bitrixforumreader_common_HEADERS
     filedownloader.h
+    logger.h
 )
 
+include_directories("spdlog/include")
 INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${Qt5Network_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})

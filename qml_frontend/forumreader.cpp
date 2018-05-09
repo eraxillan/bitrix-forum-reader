@@ -1,22 +1,23 @@
 #include "forumreader.h"
 
-#include "website_backend/gumboparserimpl.h"
+#include "common/logger.h"
 #include "common/filedownloader.h"
+#include "website_backend/gumboparserimpl.h"
 
 namespace {
 template <typename T>
 void dumpFutureObj(QFuture<T> future, QString name)
 {
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "----------------------------------------------------";
-    qDebug() << "Future name:"        << name;
-    qDebug() << "Future is started:"  << future.isStarted();
-    qDebug() << "Future is running:"  << future.isRunning();
-    qDebug() << "Future is finished:" << future.isFinished();
-    qDebug() << "Future is paused:"   << future.isPaused();
-    qDebug() << "Future is canceled:" << future.isCanceled();
-    qDebug() << "Future has result:"  << future.isResultReadyAt(0);
-    qDebug() << "----------------------------------------------------";
+    ConsoleLogger->info("----------------------------------------------------");
+    ConsoleLogger->info("Future name: {}", name);
+    ConsoleLogger->info("Future is started: {}",  future.isStarted());
+    ConsoleLogger->info("Future is running: {}",  future.isRunning());
+    ConsoleLogger->info("Future is finished: {}", future.isFinished());
+    ConsoleLogger->info("Future is paused: {}",   future.isPaused());
+    ConsoleLogger->info("Future is canceled: {}", future.isCanceled());
+    ConsoleLogger->info("Future has result: {}",  future.isResultReadyAt(0));
+    ConsoleLogger->info("----------------------------------------------------");
 #else
     Q_UNUSED(future);
     Q_UNUSED(name);
@@ -203,7 +204,9 @@ void ForumReader::onForumPageCountParsingCanceled()
 
 void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
-//    qDebug() << Q_FUNC_INFO << bytesReceived << "/" << bytesTotal;
+#ifdef RBR_PRINT_DEBUG_OUTPUT
+    ConsoleLogger->info("{}: {} bytes received, from {} bytes total", Q_FUNC_INFO, bytesReceived, bytesTotal);
+#endif
 
     // NOTE: currently banki.ru server don't return Content-Length header
     Q_ASSERT(bytesTotal <= 0);

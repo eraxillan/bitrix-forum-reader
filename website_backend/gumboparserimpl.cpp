@@ -1,4 +1,5 @@
 #include "gumboparserimpl.h"
+#include "common/logger.h"
 
 // FIXME: temp ban support:
 // <div class = "forum-ban-info">
@@ -38,7 +39,7 @@ void ForumPageParser::printTagsRecursively(QtGumboNodePtr node, int &level)
     if (node->hasClassAttribute())
         classAttrValue = ", class = " + node->getClassAttribute();
 
-    qDebug().noquote() << levelStr << node->getTagName() << idAttrValue << classAttrValue;
+    ConsoleLogger->info("{} {} {} {}", levelStr, node->getTagName(), idAttrValue, classAttrValue);
 
     QtGumboNodes children = node->getChildren();
     for (auto iChild = children.begin(); iChild != children.end(); ++iChild)
@@ -188,8 +189,8 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
     }
 
 #ifdef  RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "post count: " + QString::number(postCount) + ", reputation: " + QString::number(reputation) + ", city: " + cityStr
-                + ", url: " + userAllPosts + ", date: " + registrationDate.toString(Qt::SystemLocaleShortDate);
+    ConsoleLogger->info("post count: {}, reputation: {}, city: {}, all posts url: {}, registration date: {}",
+                        postCount, reputation, cityStr, userAllPosts, registrationDate.toString(Qt::SystemLocaleShortDate));
 #endif // RBR_PRINT_DEBUG_OUTPUT
 
     result.m_allPostsUrl = QUrl(userAllPosts);
@@ -255,11 +256,11 @@ User ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
     QSharedPointer<PostImage> userAvatar = getUserAvatar(userInfoNode);
     //if (!userAvatar || !userAvatar->isValid()) { Q_ASSERT(0); return User(); }
 
-#ifdef  RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "User info:" << QString::number(ubi.m_id) + ", " + ubi.m_name + ", " + ubi.m_profileUrl.toDisplayString();
+#ifdef RBR_PRINT_DEBUG_OUTPUT
+    ConsoleLogger->info("User info: id = {}, name = {}, profile url: {}", ubi.m_id, ubi.m_name, ubi.m_profileUrl.toDisplayString());
     if (userAvatar)
-    qDebug() << "User avatar info:" << userAvatar->m_url + ": " + QString::number(userAvatar->m_width) + " x " + QString::number(userAvatar->m_height);
-#endif // RBR_PRINT_DEBUG_OUTPUT
+        ConsoleLogger->info("User avatar info: url = {}, size = {} x {}", userAvatar->m_url, userAvatar->m_width, userAvatar->m_height);
+#endif
 
     // Base info
     userInfo.m_userId = ubi.m_id;
@@ -343,11 +344,11 @@ Post ForumPageParser::getPostValue(QtGumboNodePtr trNode1)
     lastEditStr = lastEditStr.replace("/profile/", g_bankiRuHost + "/profile/");
 
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "Post:";
-    qDebug() << "	ID: " << id;
+    ConsoleLogger->info("Post:");
+    ConsoleLogger->info("	ID: {}", id);
     if (!userSignatureStr.isEmpty())
-        qDebug() << "   User signature: " << userSignatureStr;
-    qDebug() << "	Date: " << postDate;
+        ConsoleLogger->info("   User signature: {}", userSignatureStr);
+    ConsoleLogger->info("	Date: {}", postDate);
 #endif //  RBR_PRINT_DEBUG_OUTPUT
 
     postInfo.m_id = id;
@@ -979,21 +980,21 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNodePtr tableNode) 
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
 
  #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "-------------------------------------";
-    qDebug() << "Start index:" << tbodyTrTdNodeChildIndex;
+    ConsoleLogger->info("-------------------------------------");
+    ConsoleLogger->info("Start index: {}", tbodyTrTdNodeChildIndex);
     for (int i = 0; i < tbodyTrTdChildren.size(); ++i)
     {
         const QString idxString = i == tbodyTrTdNodeChildIndex ? QString("[ *") + QString::number(i) + QString("* ]")
                                                                : QString("[ ")  + QString::number(i) + QString(" ]");
 
         if (tbodyTrTdChildren[i]->isElement())
-            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i]->getTagName();
+            ConsoleLogger->info("{} Element: {}", idxString, tbodyTrTdChildren[i]->getTagName());
         else if (tbodyTrTdChildren[i]->isText())
-            qDebug() << idxString << "Text" << tbodyTrTdChildren[i]->getInnerText();
+            ConsoleLogger->info("{} Text: {}", idxString, tbodyTrTdChildren[i]->getInnerText());
         else if (!tbodyTrTdChildren[i]->isComment() && !tbodyTrTdChildren[i]->isWhitespace())
-            qDebug() << idxString << "Unknown item:";
+            ConsoleLogger->info("{} Unknown item", idxString);
     }
-    qDebug() << "-------------------------------------";
+    ConsoleLogger->info("-------------------------------------");
 #endif
 
     parseMessage(tbodyTrTdChildren.mid(tbodyTrTdNodeChildIndex), result->m_data);
@@ -1023,19 +1024,19 @@ QSharedPointer<PostSpoiler> ForumPageParser::parseSpoiler(QtGumboNodePtr tableNo
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
 
  #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "-------------------------------------";
+    ConsoleLogger->info("-------------------------------------");
     for (int i = 0; i < tbodyTrTdChildren.size(); ++i)
     {
         const QString idxString = QString("[ ")  + QString::number(i) + QString(" ]");
 
         if (tbodyTrTdChildren[i]->isElement())
-            qDebug() << idxString << "Element:" << tbodyTrTdChildren[i]->getTagName();
+            ConsoleLogger->info("{} Element: {}", idxString, tbodyTrTdChildren[i]->getTagName());
         else if (tbodyTrTdChildren[i]->isText())
-            qDebug() << idxString << "Text" << tbodyTrTdChildren[i]->getInnerText();
+            ConsoleLogger->info("{} Text: {}", idxString, tbodyTrTdChildren[i]->getInnerText());
         else if (!tbodyTrTdChildren[i]->isComment() && !tbodyTrTdChildren[i]->isWhitespace())
-            qDebug() << idxString << "Unknown item:";
+            ConsoleLogger->info("{} Unknown item", idxString);
     }
-    qDebug() << "-------------------------------------";
+    ConsoleLogger->info("-------------------------------------");
 #endif
 
     parseMessage(tbodyTrTdChildren, result->m_data);
@@ -1053,7 +1054,7 @@ QByteArray convertHtmlToUft8(QByteArray rawHtmlData)
     QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawHtmlData);
     Q_ASSERT(htmlCodec); if (!htmlCodec) return QByteArray();
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "HTML encoding/charset is:" << htmlCodec->name();
+    ConsoleLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
 #endif
     QString resultStr = htmlCodec->toUnicode(rawHtmlData);
     result = resultStr.toUtf8();

@@ -1,4 +1,5 @@
 #include "filedownloader.h"
+#include "common/logger.h"
 
 #ifndef USE_QT_NAM
 #include <curl/curl.h>
@@ -27,7 +28,7 @@ int downloadFileProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t d
     if (dltotal > 0 || dlnow > 0)
     {
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-        qDebug("Download progress: %" CURL_FORMAT_CURL_OFF_T " of %" CURL_FORMAT_CURL_OFF_T "\r\n", dlnow, dltotal);
+        ConsoleLogger->info("Download progress: {} of {} bytes", dlnow, dltotal);
 #endif
 
         emit thisObj->downloadProgress(dlnow, dltotal);
@@ -46,7 +47,7 @@ size_t downloadFileWriteCallback(void *ptr, size_t size, size_t nmemb, QByteArra
 QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray& resultData, result_code::Type& resultCode)
 {
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "libcurl version: " << LIBCURL_VERSION;
+    ConsoleLogger->info("libcurl version: {}", LIBCURL_VERSION);
 #endif
 
     // FIXME: curl_global_init is not thread-safe, so call it manually
@@ -55,9 +56,10 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
     CURLcode result = curl_global_init(CURL_GLOBAL_ALL);
     if (result != CURLE_OK)
     {
-        qDebug() << "curl_global_init() failed";
-        qDebug() << "Error code: " << result;
-        qDebug() << "Error string: " << curl_easy_strerror(result);
+        ConsoleLogger->error("curl_global_init() failed");
+        ConsoleLogger->error("Error code: {}", result);
+        ConsoleLogger->error("Error string: {}", curl_easy_strerror(result));
+
         resultCode = result_code::Type::CurlError;
         emit thisObj->downloadFailed(result_code::Type::NetworkError);
         return QByteArray();
@@ -66,7 +68,8 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
     CURL* curl = curl_easy_init();
     if (!curl)
     {
-        qDebug() << "curl_easy_init() failed";
+        ConsoleLogger->error("curl_easy_init() failed");
+
         resultCode = result_code::Type::CurlError;
         emit thisObj->downloadFailed(result_code::Type::NetworkError);
         return QByteArray();
@@ -92,9 +95,10 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
     result = curl_easy_perform(curl);
     if (result != CURLE_OK)
     {
-        qDebug() << "curl_easy_perform() failed";
-        qDebug() << "Error code:" << result;
-        qDebug() << "Error string: " << curl_easy_strerror(result);
+        ConsoleLogger->error("curl_easy_perform() failed");
+        ConsoleLogger->error("Error code: {}", result);
+        ConsoleLogger->error("Error string: {}", curl_easy_strerror(result));
+
         resultCode = result_code::Type::NetworkError;
         emit thisObj->downloadFailed(result_code::Type::NetworkError);
         return QByteArray();
@@ -107,12 +111,13 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
     curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &elapsed);
     curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
-    qDebug() << "libcurl response:";
-    qDebug() << "Elapsed time: " << elapsed;
-    qDebug() << "Redirected URL: " << url;
-    qDebug() << "Response code: " << response_code;
-    qDebug() << "Response header: " << header_string;
-    qDebug() << "Response string: " << response_string;
+
+    ConsoleLogger->info("libcurl response:");
+    ConsoleLogger->info("Elapsed time: {}", elapsed);
+    ConsoleLogger->info("Redirected URL: {}", url);
+    ConsoleLogger->info("Response code: {}", response_code);
+    ConsoleLogger->info("Response header: {}", header_string.toStdString());
+    ConsoleLogger->info("Response string: {}", response_string.toStdString());
 #endif
 
     curl_easy_cleanup(curl);
@@ -208,7 +213,7 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
     data.clear();
 
 #ifdef RBR_PRINT_DEBUG_OUTPUT
-    qDebug() << "libcurl version: " << LIBCURL_VERSION;
+    ConsoleLogger->info("libcurl version: {}", LIBCURL_VERSION);
 #endif
 
     // FIXME: curl_global_init is not thread-safe, so call it manually
@@ -217,16 +222,16 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
     CURLcode result = curl_global_init(CURL_GLOBAL_ALL);
     if (result != CURLE_OK)
     {
-        qDebug() << "curl_global_init() failed";
-        qDebug() << "Error code: " << result;
-        qDebug() << "Error string: " << curl_easy_strerror(result);
+        ConsoleLogger->error( "curl_global_init() failed");
+        ConsoleLogger->error("Error code: {}", result);
+        ConsoleLogger->error("Error string: {}", curl_easy_strerror(result));
         return false;
     }
 
     CURL* curl = curl_easy_init();
     if (!curl)
     {
-        qDebug() << "curl_easy_init() failed";
+        ConsoleLogger->error("curl_easy_init() failed");
         return false;
     }
 
@@ -247,9 +252,9 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
     result = curl_easy_perform(curl);
     if (result != CURLE_OK)
     {
-        qDebug() << "curl_easy_perform() failed";
-        qDebug() << "Error code:" << result;
-        qDebug() << "Error string: " << curl_easy_strerror(result);
+        ConsoleLogger->error("curl_easy_perform() failed");
+        ConsoleLogger->error("Error code: {}", result);
+        ConsoleLogger->error("Error string: {}", curl_easy_strerror(result));
         return false;
     }
 
@@ -260,12 +265,13 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
     curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &elapsed);
     curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
-    qDebug() << "libcurl response:";
-    qDebug() << "Elapsed time: " << elapsed;
-    qDebug() << "Redirected URL: " << url;
-    qDebug() << "Response code: " << response_code;
-    qDebug() << "Response header: " << header_string;
-    qDebug() << "Response string: " << response_string;
+
+    ConsoleLogger->info("libcurl response:");
+    ConsoleLogger->info("Elapsed time: {}", elapsed);
+    ConsoleLogger->info("Redirected URL: {}", url);
+    ConsoleLogger->info("Response code: {}", response_code);
+    ConsoleLogger->info("Response header: {}", header_string.toStdString());
+    ConsoleLogger->info("Response string: {}", response_string.toStdString());
 #endif
 
     curl_easy_cleanup(curl);
