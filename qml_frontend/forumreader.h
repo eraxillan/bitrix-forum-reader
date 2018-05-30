@@ -9,25 +9,33 @@ class ForumReader : public QObject
 {
     Q_OBJECT
 
-    using UserPosts = BankiRuForum::UserPosts;
+//    using PostCollection = BankiRuForum::PostCollection;
     using IntFutureWatcher = QFutureWatcher<int>;
-    using ParserFutureWatcher = QFutureWatcher<BankiRuForum::UserPosts>;
+    using ParserFutureWatcher = QFutureWatcher<BankiRuForum::PostCollection>;
 
     FileDownloader m_downloader;
 
     IntFutureWatcher    m_forumPageCountWatcher;
     ParserFutureWatcher m_forumPageParserWatcher;
 
-    QByteArray m_pageData;
-    UserPosts  m_pagePosts;
-    int        m_pageCount;
-    int        m_pageNo;
+    QByteArray      m_pageData;
+    BankiRuForum::PostCollection  m_pagePosts;
+    int             m_pageCount;
+    int             m_pageNo;
 
     result_code::Type m_lastError;
 
 public:
     ForumReader();
     ~ForumReader();
+
+#ifdef HAVE_QX_ORM
+    // FIXME: constness
+    Q_INVOKABLE result_code::Type openDatabase();
+    Q_INVOKABLE result_code::Type closeDatabase();
+    Q_INVOKABLE result_code::Type serializeToDatabase(/*const*/ BankiRuForum::PostCollection &posts);
+    Q_INVOKABLE result_code::Type deserializeFromDatabase(BankiRuForum::PostCollection &posts);
+#endif
 
     // Helper functions
     Q_INVOKABLE QString   applicationDirPath() const;

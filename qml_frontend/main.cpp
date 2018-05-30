@@ -24,11 +24,18 @@
 #include "website_backend/gumboparserimpl.h"
 #include "qml_frontend/forumreader.h"
 
-// FIXME: add user whitelist
+// FIXME: add Catch unit test library as git submodule
+// FIXME: add AppImage/DEB/RPM distribution option for Unix-like OS
+//
+// FIXME: add forum thread selection combobox (or another control)
+// FIXME: add user whitelist/blacklist
 // FIXME: add sorting by user/post reputation option
 // FIXME: add full error stack storage code like PCode do
 // FIXME: save full post history to the LOCAL SQLite database
 // FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
+// FIXME: check whether Golang will be usable in this project
+
+namespace {
 
 /*
 static float getDpi(float& textScaleFactor)
@@ -99,18 +106,42 @@ void deinitLogLibrary()
     std::cout << "spdlog deinit succeeded" << std::endl;
 }
 
+void initLocalDataDir()
+{
+    QString appDataDirStr = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QDir appDataDir(appDataDirStr);
+    if (!appDataDir.exists())
+    {
+        ConsoleLogger->info("application local data directory was not found, so trying to create it...");
+        if (!appDataDir.mkpath(appDataDirStr))
+            ConsoleLogger->error("unable to create local data directory");
+        else
+            ConsoleLogger->info("local data directory was successfully created");
+    }
+}
+
+} // anonymous namespace
+
 int main(int argc, char *argv[])
 {
     if (!initLogLibrary())
         return 1;
 
+    //
+    //QHash<QString, QString> * lstSqlType = qx::QxClassX::getAllSqlTypeByClassName();
+    //lstSqlType->insert("QUrl", "TEXT");
+    //
+
     qsrand(1);
     qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
 
-    QGuiApplication::setApplicationName("Bitrix Forum Reader");
-    QGuiApplication::setOrganizationName("Alexander Kamyshnikov");
+    QGuiApplication::setApplicationName("bitrix-forum-reader");
+    QGuiApplication::setOrganizationName("eraxillan-software");
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
+
+    // Init application local data directory to store SQLite database in
+    initLocalDataDir();
 
     Catch::Session session;
     int returnCode = session.applyCommandLine(argc, argv, Catch::Session::OnUnusedOptions::Ignore);

@@ -35,27 +35,27 @@ private:
     void findPageCount(QString rawData, int &pageCount);
     UserBaseInfo getUserBaseInfo(QtGumboNodePtr userInfoNode);
     UserAdditionalInfo getUserAdditionalInfo(QtGumboNodePtr userInfoNode);
-    QSharedPointer<PostImage> getUserAvatar(QtGumboNodePtr userInfoNode);
-    User getPostUser(QtGumboNodePtr trNode1);
-    Post getPostValue(QtGumboNodePtr trNode1);
+     std::shared_ptr<PostImage> getUserAvatar(QtGumboNodePtr userInfoNode);
+    UserPtr getPostUser(QtGumboNodePtr trNode1);
+    PostPtr getPostValue(QtGumboNodePtr trNode1);
     QString getPostLastEdit(QtGumboNodePtr postEntryNode);
     QString getPostUserSignature(QtGumboNodePtr postEntryNode);
     IPostObjectList getPostAttachments(QtGumboNodePtr postEntryNode);
     int getLikeCounterValue(QtGumboNodePtr trNode2);
     int getPostId(QtGumboNodePtr msdivNode);
-    void fillPostList(QtGumboNodePtr node, UserPosts &posts);
+    void fillPostList(QtGumboNodePtr node, PostCollection &posts);
 
-    QSharedPointer<PostHyperlink> parseHyperlink(QtGumboNodePtr aNode) const;
-    QSharedPointer<PostImage> parseImage(QtGumboNodePtr imgNode) const;
-    QSharedPointer<PostQuote> parseQuote(QtGumboNodePtr tableNode) const;
-    QSharedPointer<PostSpoiler> parseSpoiler(QtGumboNodePtr tableNode) const;
+     std::shared_ptr<PostHyperlink> parseHyperlink(QtGumboNodePtr aNode) const;
+     std::shared_ptr<PostImage> parseImage(QtGumboNodePtr imgNode) const;
+     std::shared_ptr<PostQuote> parseQuote(QtGumboNodePtr tableNode) const;
+     std::shared_ptr<PostSpoiler> parseSpoiler(QtGumboNodePtr tableNode) const;
 
     void parseMessage(QtGumboNodes nodes, IPostObjectList& postObjects) const;
 
 public:
     // IForumPageReader implementation
     result_code::Type getPageCount(QByteArray rawData, int& pageCount) override;
-    result_code::Type getPagePosts(QByteArray rawData, UserPosts& userPosts) override;
+    result_code::Type getPagePosts(QByteArray rawData, PostCollection& userPosts) override;
 };
 
 }

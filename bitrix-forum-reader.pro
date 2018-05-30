@@ -109,6 +109,8 @@ INCLUDEPATH += "."
 
 #######################################################################################################################
 
+# FIXME: implement precompiled header
+
 SOURCES += \
     common/filedownloader.cpp               \
     website_backend/gumboparserimpl.cpp     \
@@ -128,7 +130,8 @@ HEADERS += \
     website_backend/websiteinterface.h      \
     website_backend/gumboparserimpl.h       \
     qml_frontend/forumreader.h \
-    common/logger.h
+    common/logger.h \
+    common/export.h
 
 RESOURCES += qml_frontend/qml.qrc
 
@@ -172,9 +175,19 @@ CONFIG(debug, debug|release) {
 #   1) OpenSSL library
 #   2) cURL library (compiled with OpenSSL support)
 #   3) Gumbo HTML5 parser library
+#   4) QxOrm SQL framework
 
 INCLUDEPATH += $$PWD/gumbo-parser/src
 INCLUDEPATH += $$PWD/spdlog/include
+INCLUDEPATH += $$PWD/QxOrm/include
+
+# QxOrm
+DEFINES += _BUILDING_BFR
+DEFINES += HAVE_QX_ORM
+include($$PWD/QxOrm/QxOrm.pri)
+INCLUDEPATH += $$PWD/QxOrm/include
+LIBS += -L$$PWD/QxOrm/lib
+LIBS += -lQxOrm$$SUFFIX
 
 windows {
     # Windows (Desktop, X86_64, static libraries)

@@ -1,6 +1,245 @@
 #include "websiteinterface.h"
 #include "common/logger.h"
 
+#ifdef HAVE_QX_ORM
+#include <QxOrm_Impl.h>
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------
+
+QX_REGISTER_CPP_BFR(BasePostData)
+QX_REGISTER_CPP_BFR(PostSpoilerData)
+QX_REGISTER_CPP_BFR(PostQuoteData)
+QX_REGISTER_CPP_BFR(PostImageData)
+QX_REGISTER_CPP_BFR(PostLineBreakData)
+QX_REGISTER_CPP_BFR(PostPlainTextData)
+QX_REGISTER_CPP_BFR(PostRichTextData)
+QX_REGISTER_CPP_BFR(PostVideoData)
+QX_REGISTER_CPP_BFR(PostHyperlinkData)
+QX_REGISTER_CPP_BFR(PostData)
+QX_REGISTER_CPP_BFR(UserData)
+
+namespace qx {
+
+    template <> void register_class(QxClass<BasePostData> &obj)
+    {
+        obj.id(&BasePostData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<PostSpoilerData> &obj)
+    {
+        obj.id(&PostSpoilerData::m_databaseId, "spoiler_id", 0);
+
+//  t.relationManyToMany(& category::m_blogX, "list_blog", "category_blog", "category_id", "blog_id");
+        obj.relationManyToMany(&PostSpoilerData::m_data, "objects", "spoiler_objects", "spoiler_id", "id");
+    }
+
+    template <> void register_class(QxClass<PostQuoteData> &obj)
+    {
+        obj.id(&PostQuoteData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<PostImageData> &obj)
+    {
+        obj.id(&PostImageData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<PostLineBreakData> &obj)
+    {
+        obj.id(&PostLineBreakData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<PostPlainTextData> &obj)
+    {
+        obj.id(&PostPlainTextData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<PostRichTextData> &obj)
+    {
+        obj.id(&PostRichTextData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<PostVideoData> &obj)
+    {
+        obj.id(&PostVideoData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<PostHyperlinkData> &obj)
+    {
+        obj.id(&PostHyperlinkData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<PostData> &obj)
+    {
+        obj.id(&PostData::m_databaseId, "id", 0);
+    }
+
+    template <> void register_class(QxClass<UserData> &obj)
+    {
+        obj.id(&UserData::m_databaseId, "id", 0);
+    }
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------
+
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::IPostObject, qx_test_IPostObject)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::PostSpoiler, qx_test_PostSpoiler)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::PostQuote, qx_test_PostQuote)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::PostImage, qx_test_PostImage)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::PostLineBreak, qx_test_PostLineBreak)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::PostPlainText, qx_test_PostPlainText)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::PostRichText, qx_test_PostRichText)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::PostVideo, qx_test_PostVideo)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::PostHyperlink, qx_test_PostHyperlink)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::Post, qx_test_Post)
+QX_REGISTER_COMPLEX_CLASS_NAME_CPP_BFR(BankiRuForum::User, qx_test_User)
+
+namespace qx {
+
+    template <> void register_class(QxClass<BankiRuForum::IPostObject> &obj)
+    {
+        obj.setName("IPostObject");
+
+        obj.id(&BankiRuForum::IPostObject::m_databaseId, "ipostobject_id", 0);
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::PostSpoiler> &spoiler)
+    {
+        spoiler.setName("PostSpoiler");
+
+        spoiler.data(&BankiRuForum::PostSpoiler::m_title, "spoiler_title");
+
+        // FIXME: `IPostObjectList m_data;`
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::PostQuote> &quote)
+    {        
+        quote.setName("PostQuote");
+
+        quote.data(&BankiRuForum::PostQuote::m_title, "quote_title");
+        quote.data(&BankiRuForum::PostQuote::m_userName, "quote_author");
+        quote.data(&BankiRuForum::PostQuote::m_url, "quote_url");
+
+        // FIXME: `IPostObjectList m_data;`
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::PostImage> &image)
+    {
+        image.setName("PostImage");
+
+        image.data(&BankiRuForum::PostImage::m_id, "image_bitrix_id");
+        image.data(&BankiRuForum::PostImage::m_url, "image_url");
+        image.data(&BankiRuForum::PostImage::m_width, "image_width");
+        image.data(&BankiRuForum::PostImage::m_height, "image_height");
+        image.data(&BankiRuForum::PostImage::m_border, "image_border_width");
+        image.data(&BankiRuForum::PostImage::m_altName, "image_aln_name");
+        image.data(&BankiRuForum::PostImage::m_className, "image_class_name");
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::PostLineBreak> &lb)
+    {
+        lb.setName("PostLineBreak");
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::PostPlainText> &text)
+    {
+        text.setName("PostPlainText");
+
+        text.data(&BankiRuForum::PostPlainText::m_text, "plain_text_string");
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::PostRichText> &text)
+    {
+        text.setName("PostRichText");
+
+        text.data(&BankiRuForum::PostRichText::m_text, "rich_text_string");
+        text.data(&BankiRuForum::PostRichText::m_color, "rich_text_color");
+        text.data(&BankiRuForum::PostRichText::m_isBold, "rich_text_is_bold");
+        text.data(&BankiRuForum::PostRichText::m_isItalic, "rich_text_is_italic");
+        text.data(&BankiRuForum::PostRichText::m_isUnderlined, "rich_text_is_underlined");
+        text.data(&BankiRuForum::PostRichText::m_isStrikedOut, "rich_text_is_striked_out");
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::PostVideo> &video)
+    {
+        video.setName("PostVideo");
+
+        video.data(&BankiRuForum::PostVideo::m_urlStr, "video_url_string");
+        video.data(&BankiRuForum::PostVideo::m_url, "video_url");
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::PostHyperlink> &hyperlink)
+    {
+        hyperlink.setName("PostHyperlink");
+
+        hyperlink.data(&BankiRuForum::PostHyperlink::m_urlStr, "hyperlink_url_string");
+        hyperlink.data(&BankiRuForum::PostHyperlink::m_url, "hyperlink_url");
+        hyperlink.data(&BankiRuForum::PostHyperlink::m_title, "hyperlink_title");
+        hyperlink.data(&BankiRuForum::PostHyperlink::m_tip, "hyperlink_tip");
+        hyperlink.data(&BankiRuForum::PostHyperlink::m_rel, "hyperlink_rel");
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::Post> &post)
+    {
+        post.setName("Post");
+
+//        post.data(&BankiRuForum::Post::m_author, "post_author");
+        //  t.relationManyToOne(& blog::m_author, "author_id");
+        post.relationManyToOne(&BankiRuForum::Post::m_author, "post_author");
+
+        post.data(&BankiRuForum::Post::m_likeCounter, "post_like_counter");
+        post.data(&BankiRuForum::Post::m_id, "post_bitrix_id");
+        post.data(&BankiRuForum::Post::m_lastEdit, "post_last_edit");
+        post.data(&BankiRuForum::Post::m_userSignature, "post_signature");
+        post.data(&BankiRuForum::Post::m_date, "post_date");
+
+        // FIXME: find a way to bind `IPostObjectList m_data` member variable too
+        //  t.relationManyToMany(& category::m_blogX, "list_blog", "category_blog", "category_id", "blog_id");
+//        post.relationManyToMany(&BankiRuForum::Post::m_data, "post_object_collection", "post_object", "ipostobject_id", "ipostobject_id");
+    }
+
+    template <> void register_class(QxClass<BankiRuForum::User> &user)
+    {
+        IxDataMember *pDataMember = nullptr;
+
+        user.setName("User");
+
+        pDataMember = user.data(&BankiRuForum::User::m_userId, "user_bitrix_id");
+        ConsoleLogger->info("{}", pDataMember->getSqlType());
+        Q_ASSERT(!pDataMember->getSqlType().isEmpty());
+
+        pDataMember = user.data(&BankiRuForum::User::m_userName, "user_name");
+        ConsoleLogger->info("{}", pDataMember->getSqlType());
+        Q_ASSERT(!pDataMember->getSqlType().isEmpty());
+
+        pDataMember = user.data(&BankiRuForum::User::m_userProfileUrl, "user_profile_url");
+        // FIXME: according to documentation adding "QUrl" to `qx::QxClassX::getAllSqlTypeByClassName()` must be enough;
+        //        however, this do not work, so set type manually
+        pDataMember->setSqlType("TEXT");
+        ConsoleLogger->info("{}", pDataMember->getSqlType());
+        Q_ASSERT(!pDataMember->getSqlType().isEmpty());
+
+        pDataMember = user.data(&BankiRuForum::User::m_userAvatar, "user_avatar_url");
+        // FIXME: workaround
+        pDataMember->setSqlType("TEXT");
+        ConsoleLogger->info("{}", pDataMember->getSqlType());
+        Q_ASSERT(!pDataMember->getSqlType().isEmpty());
+
+        pDataMember = user.data(&BankiRuForum::User::m_allPostsUrl, "user_posts_url");
+        // FIXME: workaround
+        pDataMember->setSqlType("TEXT");
+        ConsoleLogger->info("{}", pDataMember->getSqlType());
+        Q_ASSERT(!pDataMember->getSqlType().isEmpty());
+
+        user.data(&BankiRuForum::User::m_postCount, "user_post_count");
+        user.data(&BankiRuForum::User::m_registrationDate, "user_registration_date");
+        user.data(&BankiRuForum::User::m_reputation, "user_global_reputation");
+        user.data(&BankiRuForum::User::m_city, "user_city");
+
+        user.relationOneToMany(&BankiRuForum::User::m_posts, "user_posts", "ipostobject_id");
+    }
+}
+#endif
+
 #ifdef RBR_DUMP_GENERATED_QML_IN_FILES
 namespace {
 static bool WriteTextFile(QString fileName, QString fileContents)
@@ -31,7 +270,7 @@ PostSpoiler::PostSpoiler()
 
 bool PostSpoiler::isValid() const
 {
-    return !m_data.isEmpty();
+    return !m_data.empty();
 }
 
 uint PostSpoiler::getHash(uint seed) const
@@ -139,7 +378,7 @@ PostQuote::PostQuote()
 
 bool PostQuote::isValid() const
 {
-    return !m_data.isEmpty();
+    return !m_data.empty();
 }
 
 uint PostQuote::getHash(uint seed) const
@@ -704,14 +943,14 @@ QString PostHyperlink::getQmlString(int randomSeed) const
 
 IForumPageReader::~IForumPageReader() {}
 
-//void Post::addObject(QSharedPointer<IPostObject> obj)
+//void Post::addObject( std::shared_ptr<IPostObject> obj)
 //{
 //    m_data.append(obj);
 //}
 
 bool Post::isValid() const
 {
-    return (m_id > 0) && (m_likeCounter >= 0) && !m_data.isEmpty() && m_date.isValid();
+    return (m_id > 0) && (m_likeCounter >= 0) && !m_data.empty() && m_date.isValid();
 }
 
 uint Post::getHash(uint seed) const

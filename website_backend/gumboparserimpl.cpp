@@ -107,8 +107,8 @@ ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(QtGumboNodePtr us
     if (!userNameNode || !userNameNode->isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
     if ((userNameNode->getChildElementCount() != 1) && (userNameNode->getChildElementCount() != 2)) { Q_ASSERT(0); return UserBaseInfo(); }
 
-    QSharedPointer<PostHyperlink> userProfileRef = parseHyperlink(userNameNode->getElementByTag({HtmlTag::A, 0}));
-    if(userProfileRef.isNull() || !userProfileRef->isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
+    std::shared_ptr<PostHyperlink> userProfileRef = parseHyperlink(userNameNode->getElementByTag({HtmlTag::A, 0}));
+    if (!userProfileRef || !userProfileRef->isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
 
     // FIXME: check whether this code required
     /*
@@ -143,7 +143,7 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
         {{HtmlTag::SPAN, 1}, {HtmlTag::SPAN, 1}, {HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}});
     if (!postLinkNode || !postLinkNode->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
 
-    QSharedPointer<PostHyperlink> userPostsLinks = parseHyperlink(postLinkNode);
+     std::shared_ptr<PostHyperlink> userPostsLinks = parseHyperlink(postLinkNode);
     if (!userPostsLinks || !userPostsLinks->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
 
     QString userAllPosts = userPostsLinks->m_urlStr;
@@ -166,7 +166,7 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
     QtGumboNodePtr userReputationRefNode = userAdditionalNode->getElementByTag({{HtmlTag::SPAN, 5}, {HtmlTag::SPAN, 1}, {HtmlTag::A, 0}});
     if (!userReputationRefNode || !userReputationRefNode->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
 
-    QSharedPointer<PostHyperlink> userReputationRef = parseHyperlink(userReputationRefNode);
+     std::shared_ptr<PostHyperlink> userReputationRef = parseHyperlink(userReputationRefNode);
     if (!userReputationRef || !userReputationRef->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
 
     bool reputationOk = false;
@@ -201,11 +201,11 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
     return result;
 }
 
-QSharedPointer<PostImage> ForumPageParser::getUserAvatar(QtGumboNodePtr userInfoNode)
+ std::shared_ptr<PostImage> ForumPageParser::getUserAvatar(QtGumboNodePtr userInfoNode)
 {
     if (!userInfoNode || !userInfoNode->isValid()) { Q_ASSERT(0); return nullptr; }
 
-    QSharedPointer<PostImage> result;
+     std::shared_ptr<PostImage> result;
 
     QtGumboNodePtr userAvatarNode = userInfoNode->getElementByClass("forum-user-avatar", HtmlTag::DIV);
     if (!userAvatarNode || !userAvatarNode->isValid())
@@ -227,24 +227,24 @@ QSharedPointer<PostImage> ForumPageParser::getUserAvatar(QtGumboNodePtr userInfo
     return result;
 }
 
-User ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
+UserPtr ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
 {
-    if (!trNode1 || !trNode1->isValid()) { Q_ASSERT(0); return User(); }
+    if (!trNode1 || !trNode1->isValid()) { Q_ASSERT(0); return UserPtr(); }
 
-    User userInfo;
+    UserPtr userInfo(new User);
 
     QtGumboNodePtr userNode = trNode1->getElementByClass("forum-cell-user", HtmlTag::TD);
-    if (!userNode->isValid()) { Q_ASSERT(0); return User(); }
-    if (userNode->getChildElementCount() != 1) { Q_ASSERT(0); return User(); }
-    if (userNode->getClassAttribute() != "forum-cell-user") { Q_ASSERT(0); return User(); }
+    if (!userNode->isValid()) { Q_ASSERT(0); return UserPtr(); }
+    if (userNode->getChildElementCount() != 1) { Q_ASSERT(0); return UserPtr(); }
+    if (userNode->getClassAttribute() != "forum-cell-user") { Q_ASSERT(0); return UserPtr(); }
 
     QtGumboNodePtr userInfoNode = userNode->getElementByClass("forum-user-info", HtmlTag::DIV);
     if (!userInfoNode || !userInfoNode->isValid())
         userInfoNode = userNode->getElementByClass("forum-user-info w-el-dropDown", HtmlTag::DIV);
-    if (!userInfoNode->isValid()) { Q_ASSERT(0); return User(); }
-    if (userInfoNode->getChildElementCount() < 4) { Q_ASSERT(0); return User(); }
+    if (!userInfoNode->isValid()) { Q_ASSERT(0); return UserPtr(); }
+    if (userInfoNode->getChildElementCount() < 4) { Q_ASSERT(0); return UserPtr(); }
     if ((userInfoNode->getClassAttribute() != "forum-user-info w-el-dropDown") && (userInfoNode->getClassAttribute() != "forum-user-info"))
-    { Q_ASSERT(0); return User(); }
+    { Q_ASSERT(0); return UserPtr(); }
 
     // Get user base info: id, name, profile URL
     UserBaseInfo ubi = getUserBaseInfo(userInfoNode);
@@ -253,7 +253,7 @@ User ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
     UserAdditionalInfo uai = getUserAdditionalInfo(userInfoNode);
 
     // Get user avatar image
-    QSharedPointer<PostImage> userAvatar = getUserAvatar(userInfoNode);
+     std::shared_ptr<PostImage> userAvatar = getUserAvatar(userInfoNode);
     //if (!userAvatar || !userAvatar->isValid()) { Q_ASSERT(0); return User(); }
 
 #ifdef RBR_PRINT_DEBUG_OUTPUT
@@ -263,71 +263,71 @@ User ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
 #endif
 
     // Base info
-    userInfo.m_userId = ubi.m_id;
-    userInfo.m_userName = ubi.m_name;
-    userInfo.m_userProfileUrl = ubi.m_profileUrl;
+    userInfo->m_userId = ubi.m_id;
+    userInfo->m_userName = ubi.m_name;
+    userInfo->m_userProfileUrl = ubi.m_profileUrl;
 
     // Avatar image
-    userInfo.m_userAvatar = userAvatar;
+    userInfo->m_userAvatar = userAvatar;
 
     // Additional info
-    userInfo.m_allPostsUrl = uai.m_allPostsUrl;
-    userInfo.m_postCount = uai.m_postCount;
-    userInfo.m_registrationDate = uai.m_registrationDate;
-    userInfo.m_reputation = uai.m_reputation;
-    userInfo.m_city = uai.m_city;
+    userInfo->m_allPostsUrl = uai.m_allPostsUrl;
+    userInfo->m_postCount = uai.m_postCount;
+    userInfo->m_registrationDate = uai.m_registrationDate;
+    userInfo->m_reputation = uai.m_reputation;
+    userInfo->m_city = uai.m_city;
 
     return userInfo;
 }
 
-Post ForumPageParser::getPostValue(QtGumboNodePtr trNode1)
+PostPtr ForumPageParser::getPostValue(QtGumboNodePtr trNode1)
 {
-    if (!trNode1 || !trNode1->isValid()) { Q_ASSERT(0); return Post(); }
+    if (!trNode1 || !trNode1->isValid()) { Q_ASSERT(0); return PostPtr(); }
 
-    Post postInfo;
+    PostPtr postInfo(new Post);
 
     QtGumboNodePtr postNode = trNode1->getElementByClass("forum-cell-post", HtmlTag::TD);
-    if (!postNode || !postNode->isValid()) { Q_ASSERT(0); return Post(); }
-    if (postNode->getChildElementCount() != 2) { Q_ASSERT(0); return Post(); }
-    if (postNode->getClassAttribute() != "forum-cell-post") { Q_ASSERT(0); return Post(); }
+    if (!postNode || !postNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
+    if (postNode->getChildElementCount() != 2) { Q_ASSERT(0); return PostPtr(); }
+    if (postNode->getClassAttribute() != "forum-cell-post") { Q_ASSERT(0); return PostPtr(); }
 
     // 1) <div class="forum-post-date">
     QtGumboNodePtr postDateNode = postNode->getElementByClass("forum-post-date", HtmlTag::DIV);
-    if (!postDateNode || !postDateNode->isValid()) { Q_ASSERT(0); return Post(); }
-    if (postDateNode->getChildElementCount() > 3) { Q_ASSERT(0); return Post(); }
-    if (postDateNode->getClassAttribute() != "forum-post-date") { Q_ASSERT(0); return Post(); }
+    if (!postDateNode || !postDateNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
+    if (postDateNode->getChildElementCount() > 3) { Q_ASSERT(0); return PostPtr(); }
+    if (postDateNode->getClassAttribute() != "forum-post-date") { Q_ASSERT(0); return PostPtr(); }
 
     QtGumboNodePtr spanNode = postDateNode->getElementByTag({HtmlTag::SPAN, 0});
-    if (!spanNode || !spanNode->isValid()) { Q_ASSERT(0); return Post(); }
-    if (spanNode->getChildElementCount() != 0) { Q_ASSERT(0); return Post(); }
-    if (spanNode->getTextChildrenCount() != 1) { Q_ASSERT(0); return Post(); }
+    if (!spanNode || !spanNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
+    if (spanNode->getChildElementCount() != 0) { Q_ASSERT(0); return PostPtr(); }
+    if (spanNode->getTextChildrenCount() != 1) { Q_ASSERT(0); return PostPtr(); }
 
     QString postDateStr = spanNode->getChildrenInnerText();
     QDateTime postDate = QDateTime::fromString(postDateStr, "dd.MM.yyyy hh:mm");
-    if (!postDate.isValid()) { Q_ASSERT(0); return Post(); }
+    if (!postDate.isValid()) { Q_ASSERT(0); return PostPtr(); }
 
     // 2) <div class="forum-post-entry" style="font-size: 14px;">
     QtGumboNodePtr postEntryNode = postNode->getElementByClass("forum-post-entry", HtmlTag::DIV);
-    if (!postEntryNode || !postEntryNode->isValid()) { Q_ASSERT(0); return Post(); }
+    if (!postEntryNode || !postEntryNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
 //    Q_ASSERT(postEntryNode->getChildElementCount() <= 4);
-    if (postEntryNode->getClassAttribute() != "forum-post-entry") { Q_ASSERT(0); return Post(); }
+    if (postEntryNode->getClassAttribute() != "forum-post-entry") { Q_ASSERT(0); return PostPtr(); }
 
     QtGumboNodePtr postTextNode = postEntryNode->getElementByClass("forum-post-text", HtmlTag::DIV);
-    if (!postTextNode->isValid()) { Q_ASSERT(0); return Post(); }
-    if ((postTextNode->getChildElementCount() == 0) && (postTextNode->getTextChildrenCount() == 0)) { Q_ASSERT(0); return Post(); }
-    if (postTextNode->getClassAttribute() != "forum-post-text") { Q_ASSERT(0); return Post(); }
+    if (!postTextNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
+    if ((postTextNode->getChildElementCount() == 0) && (postTextNode->getTextChildrenCount() == 0)) { Q_ASSERT(0); return PostPtr(); }
+    if (postTextNode->getClassAttribute() != "forum-post-text") { Q_ASSERT(0); return PostPtr(); }
 
     // Read message id
     QString messageIdStr = postTextNode->getIdAttribute();
-    if (!messageIdStr.startsWith("message_text_", Qt::CaseInsensitive)) { Q_ASSERT(0); return Post(); }
+    if (!messageIdStr.startsWith("message_text_", Qt::CaseInsensitive)) { Q_ASSERT(0); return PostPtr(); }
     QString idStr = messageIdStr.remove("message_text_", Qt::CaseInsensitive);
     bool idOk = false;
     int id = idStr.toInt(&idOk);
-    if (!idOk) { Q_ASSERT(0); return Post(); }
+    if (!idOk) { Q_ASSERT(0); return PostPtr(); }
 
     // Read message contents (HTML)
     QtGumboNodes postTextNodeChildren = postTextNode->getChildren(false);
-    parseMessage(postTextNodeChildren, postInfo.m_data);
+    parseMessage(postTextNodeChildren, postInfo->m_data);
 
     // Read user signature
     QString userSignatureStr = getPostUserSignature(postEntryNode);
@@ -335,7 +335,8 @@ Post ForumPageParser::getPostValue(QtGumboNodePtr trNode1)
     userSignatureStr = userSignatureStr.replace("\n", "<br>");
 
     // Read file attachments
-    postInfo.m_data << getPostAttachments(postEntryNode);
+    auto postAttachments = getPostAttachments(postEntryNode);
+    postInfo->m_data.insert(postInfo->m_data.cend(), postAttachments.cbegin(), postAttachments.cend());
 
     // Read post last edit "credentials" (optional)
     QString lastEditStr = getPostLastEdit(postEntryNode);
@@ -351,14 +352,15 @@ Post ForumPageParser::getPostValue(QtGumboNodePtr trNode1)
     ConsoleLogger->info("	Date: {}", postDate);
 #endif //  RBR_PRINT_DEBUG_OUTPUT
 
-    postInfo.m_id = id;
-//  postInfo.m_postNumber = -1;
-    postInfo.m_likeCounter = -1;	// NOTE: will be filled later
-    postInfo.m_lastEdit = lastEditStr;
-//  postInfo.m_style = "";
-    postInfo.m_userSignature = userSignatureStr;
-    postInfo.m_date = postDate;
-//  postInfo.m_permalink = "";
+    postInfo->m_author.reset();
+    postInfo->m_id = id;
+//  postInfo->m_postNumber = -1;
+    postInfo->m_likeCounter = -1;	// NOTE: will be filled later
+    postInfo->m_lastEdit = lastEditStr;
+//  postInfo->m_style = "";
+    postInfo->m_userSignature = userSignatureStr;
+    postInfo->m_date = postDate;
+//  postInfo->m_permalink = "";
 
     return postInfo;
 }
@@ -375,22 +377,22 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             // Rich text
             case HtmlTag::B:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", true, false, false, false));
+                postObjects.push_back(std::shared_ptr<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", true, false, false, false)));
                 break;
             }
             case HtmlTag::I:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, true, false, false));
+                postObjects.push_back(std::shared_ptr<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, true, false, false)));
                 break;
             }
             case HtmlTag::U:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, false, true, false));
+                postObjects.push_back(std::shared_ptr<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, false, true, false)));
                 break;
             }
             case HtmlTag::S:
             {
-                postObjects << QSharedPointer<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, false, false, true));
+                postObjects.push_back(std::shared_ptr<PostRichText>(new PostRichText(iChildPtr->getChildrenInnerText(), "black", false, false, false, true)));
                 break;
             }
             case HtmlTag::FONT:
@@ -409,13 +411,13 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                         {
                         case HtmlTag::B:
                         {
-                            postObjects << QSharedPointer<PostRichText>(new PostRichText(" " + node->getChildrenInnerText() + " ", textColor, true, false, false, false));
+                            postObjects.push_back(std::shared_ptr<PostRichText>(new PostRichText(" " + node->getChildrenInnerText() + " ", textColor, true, false, false, false)));
                             break;
                         }
                         // Line break
                         case HtmlTag::BR:
                         {
-                            postObjects << QSharedPointer<PostLineBreak>(new PostLineBreak());
+                            postObjects.push_back(std::shared_ptr<PostLineBreak>(new PostLineBreak()));
                             break;
                         }
                         // FIXME: implement other text formatting tags as above
@@ -428,8 +430,8 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                     }
                     else if (node->isText())
                     {
-                        //postObjects << QSharedPointer<PostPlainText>(new PostPlainText(node.getInnerText().trimmed()));
-                        postObjects << QSharedPointer<PostRichText>(new PostRichText(" " + node->getInnerText().trimmed() + " ", textColor, false, false, false, false));
+                        //postObjects <<  std::shared_ptr<PostPlainText>(new PostPlainText(node.getInnerText().trimmed()));
+                        postObjects.push_back(std::shared_ptr<PostRichText>(new PostRichText(" " + node->getInnerText().trimmed() + " ", textColor, false, false, false, false)));
                     }
                 }
                 break;
@@ -442,11 +444,11 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 // <table class="forum-spoiler">
                 if (iChildPtr->getClassAttribute() == "forum-quote" || iChildPtr->getClassAttribute() == "forum-code")
                 {
-                    postObjects << parseQuote(*iChild);
+                    postObjects.push_back(parseQuote(*iChild));
                 }
                 else if (iChildPtr->getClassAttribute() == "forum-spoiler")
                 {
-                    postObjects << parseSpoiler(*iChild);
+                    postObjects.push_back(parseSpoiler(*iChild));
                 }
                 else
                 {
@@ -458,19 +460,19 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             case HtmlTag::WBR:  // FIXME: implement this correctly as browsers do
             case HtmlTag::BR:
             {
-                postObjects << QSharedPointer<PostLineBreak>(new PostLineBreak());
+                postObjects.push_back(std::shared_ptr<PostLineBreak>(new PostLineBreak()));
                 break;
             }
             // Image (usually smile)
             case HtmlTag::IMG:
             {
-                postObjects << parseImage(*iChild);
+                postObjects.push_back(parseImage(*iChild));
                 break;
             }
             // Hyperlink
             case HtmlTag::A:
             {
-                postObjects << parseHyperlink(*iChild);
+                postObjects.push_back(parseHyperlink(*iChild));
                 break;
             }
             case HtmlTag::DIV:
@@ -510,7 +512,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                                             videoUrlTagEndIndex - videoUrlTagStartIndex - VIDEO_URL_TAG_START_STR.size());
                     videoUrl = videoUrl.trimmed();
                 }
-                postObjects << QSharedPointer<PostVideo>(new PostVideo(videoUrl));
+                postObjects.push_back(std::shared_ptr<PostVideo>(new PostVideo(videoUrl)));
                 break;
             }
             case HtmlTag::STYLE:
@@ -536,7 +538,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 m_textQuoteFlag = false;
             }
 
-            postObjects << QSharedPointer<PostPlainText>(new PostPlainText(text));
+            postObjects.push_back(std::shared_ptr<PostPlainText>(new PostPlainText(text)));
         }
         else
         {
@@ -569,7 +571,7 @@ QString ForumPageParser::getPostLastEdit(QtGumboNodePtr postEntryNode)
     QtGumboNodePtr posLastEditUserLinkNode = postLastEditUserNode->getElementByTag({{HtmlTag::UNKNOWN, 1}, {HtmlTag::A, 0}});
     if (!posLastEditUserLinkNode || !posLastEditUserLinkNode->isValid()) { Q_ASSERT(0); return QString(); }
 
-    QSharedPointer<PostHyperlink> postLastEditUserLink = parseHyperlink(posLastEditUserLinkNode);
+     std::shared_ptr<PostHyperlink> postLastEditUserLink = parseHyperlink(posLastEditUserLinkNode);
 
     QString userNameRelStr = postLastEditUserLink->m_rel;
     QString userNameHrefStr = postLastEditUserLink->m_urlStr;
@@ -649,7 +651,7 @@ QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode)
         }
         case HtmlTag::IMG:
         {
-            QSharedPointer<PostImage> imageObj = parseImage(iChildPtr);
+             std::shared_ptr<PostImage> imageObj = parseImage(iChildPtr);
             if (!imageObj || !imageObj->isValid()) { Q_ASSERT(0); return QString(); }
 
             // FIXME: specify width and height if present
@@ -683,9 +685,9 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode
 
     QString attachmentsLabelStr = labelNode->getChildrenInnerText();
 
-    result << QSharedPointer<PostLineBreak>(new PostLineBreak());
-    result << QSharedPointer<PostRichText>(new PostRichText(attachmentsLabelStr, "black", true, false, false, false));
-    result << QSharedPointer<PostLineBreak>(new PostLineBreak());
+    result.push_back(std::shared_ptr<PostLineBreak>(new PostLineBreak()));
+    result.push_back(std::shared_ptr<PostRichText>(new PostRichText(attachmentsLabelStr, "black", true, false, false, false)));
+    result.push_back(std::shared_ptr<PostLineBreak>(new PostLineBreak()));
 
     QtGumboNodes children = attachmentsNode->getElementsByClass("forum-post-attachment", HtmlTag::DIV);
     for (auto iChild = children.begin(); iChild != children.end(); ++iChild)
@@ -697,7 +699,7 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode
         QtGumboNodePtr imgNode = attachNode->getElementByClass("popup_image", HtmlTag::IMG);
         if (!imgNode || !imgNode->isValid()) { Q_ASSERT(0); return IPostObjectList(); }
 
-        result << parseImage(imgNode);
+        result.push_back(parseImage(imgNode));
     }
 
     return result;
@@ -784,7 +786,7 @@ void ForumPageParser::findPageCount(QString rawData, int &pageCount)
     Q_ASSERT(pageCountOk); if (!pageCountOk) pageCount = 0;
 }
 
-void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts& posts)
+void ForumPageParser::fillPostList(QtGumboNodePtr node, PostCollection &posts)
 {
     if (!node || !node->isValid()) { Q_ASSERT(0); return; }
 
@@ -820,20 +822,22 @@ void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts& posts)
 
         // each tr tag has two child td tags
         // tr1:
-        User forumUser = getPostUser(trNode1);
-        Post forumPost = getPostValue(trNode1);
-        forumPost.m_id = getPostId(msdivNode);
+        UserPtr forumUser = getPostUser(trNode1);
+        PostPtr forumPost = getPostValue(trNode1);
+        forumPost->m_id = getPostId(msdivNode);
 
         // Read the like counter value from tr2
-        forumPost.m_likeCounter = getLikeCounterValue(trNode2);
+        forumPost->m_likeCounter = getLikeCounterValue(trNode2);
 
         // FIXME: fill other post/user info
 
-        posts.append(qMakePair<User, Post>(forumUser, forumPost));
+//        posts.append(qMakePair<User, Post>(forumUser, forumPost));
+        forumPost->m_author = forumUser;
+        posts.push_back(forumPost);
     }
 }
 
-QSharedPointer<PostHyperlink> ForumPageParser::parseHyperlink(QtGumboNodePtr aNode) const
+ std::shared_ptr<PostHyperlink> ForumPageParser::parseHyperlink(QtGumboNodePtr aNode) const
 {
     if (!aNode || !aNode->isValid() || !aNode->isElement()) { Q_ASSERT(0); return nullptr; }
 
@@ -850,14 +854,14 @@ QSharedPointer<PostHyperlink> ForumPageParser::parseHyperlink(QtGumboNodePtr aNo
     // Read hyperlink display name
     QString titleStr = aNode->getChildrenInnerText();
 
-    return QSharedPointer<PostHyperlink>(new PostHyperlink(urlStr, titleStr, tipStr, relStr));
+    return  std::shared_ptr<PostHyperlink>(new PostHyperlink(urlStr, titleStr, tipStr, relStr));
 }
 
-QSharedPointer<PostImage> ForumPageParser::parseImage(QtGumboNodePtr imgNode) const
+ std::shared_ptr<PostImage> ForumPageParser::parseImage(QtGumboNodePtr imgNode) const
 {
     if (!imgNode || !imgNode->isValid() || !imgNode->isElement()) { Q_ASSERT(0); return nullptr; }
 
-    QSharedPointer<PostImage> result(new PostImage);
+     std::shared_ptr<PostImage> result(new PostImage);
 
     // Get image URL
     QString imageSrcStr = imgNode->getAttribute("src");
@@ -909,11 +913,11 @@ QSharedPointer<PostImage> ForumPageParser::parseImage(QtGumboNodePtr imgNode) co
     return result;
 }
 
-QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const
+ std::shared_ptr<PostQuote> ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const
 {
     if (!tableNode || !tableNode->isValid()) { Q_ASSERT(0); return nullptr; }
 
-    QSharedPointer<PostQuote> result(new PostQuote);
+     std::shared_ptr<PostQuote> result(new PostQuote);
 
     // Read the quote title
     QtGumboNodePtr theadTrThNode = tableNode->getElementByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}});
@@ -1001,18 +1005,18 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNodePtr tableNode) 
     return result;
 }
 
-QSharedPointer<PostSpoiler> ForumPageParser::parseSpoiler(QtGumboNodePtr tableNode) const
+ std::shared_ptr<PostSpoiler> ForumPageParser::parseSpoiler(QtGumboNodePtr tableNode) const
 {
-    QSharedPointer<PostSpoiler> result(new PostSpoiler);
+     std::shared_ptr<PostSpoiler> result(new PostSpoiler);
 
     // Read the quote title
     QtGumboNodePtr theadTrThNode = tableNode->getElementByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}, {HtmlTag::DIV, 0}});
-    Q_ASSERT(theadTrThNode->isValid()); if (!theadTrThNode->isValid()) return QSharedPointer<PostSpoiler>();
+    Q_ASSERT(theadTrThNode->isValid()); if (!theadTrThNode->isValid()) return  std::shared_ptr<PostSpoiler>();
     result->m_title = theadTrThNode->getChildrenInnerText();
     Q_ASSERT(result->m_title[result->m_title.size()-1] == QChar(9650).unicode()
           || result->m_title[result->m_title.size()-1] == QChar(9660).unicode());
     if ((result->m_title[result->m_title.size()-1] != QChar(9650).unicode())
-     && (result->m_title[result->m_title.size()-1] != QChar(9660).unicode())) return QSharedPointer<PostSpoiler>();
+     && (result->m_title[result->m_title.size()-1] != QChar(9660).unicode())) return  std::shared_ptr<PostSpoiler>();
     result->m_title = result->m_title.remove(result->m_title.size()-1, 1);
     result->m_title = result->m_title.trimmed();
 
@@ -1073,7 +1077,7 @@ result_code::Type ForumPageParser::getPageCount(QByteArray rawData, int &pageCou
     return result_code::Type::Ok;
 }
 
-result_code::Type ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
+result_code::Type ForumPageParser::getPagePosts(QByteArray rawData, PostCollection &userPosts)
 {
     QByteArray utfData = convertHtmlToUft8(rawData);
     if (utfData.isEmpty()) { Q_ASSERT(0); return result_code::Type::Fail; }

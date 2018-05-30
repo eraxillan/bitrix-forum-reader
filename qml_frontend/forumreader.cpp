@@ -48,6 +48,149 @@ ForumReader::~ForumReader()
 {
 }
 
+#ifdef HAVE_QX_ORM
+result_code::Type ForumReader::openDatabase()
+{
+    QString appDataDirStr = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QDir appDataDir(appDataDirStr);
+    // FIXME: generate database name from forum topic URL
+    QString fullDbPath = appDataDir.filePath("forum_page_X_cache.sqlite");
+    ConsoleLogger->info("Trying to open database file '{}'", fullDbPath);
+
+    if (!appDataDir.exists())
+    {
+        if (!appDataDir.mkpath(appDataDirStr))
+        {
+            ConsoleLogger->error("Unable to create application local data writeable directory");
+            return result_code::Type::IoError;
+        }
+    }
+    else
+        ConsoleLogger->info("Application local data directory already exists");
+
+    if (QFile::exists(fullDbPath))
+    {
+        ConsoleLogger->info("Database file exists");
+
+        // FIXME: remove this code after testing complete
+        if (QFile::remove(fullDbPath))
+            ConsoleLogger->info("Database file was removed");
+        else
+            ConsoleLogger->info("Unable to remove database file");
+    }
+    else
+        ConsoleLogger->info("Database file is absent");
+
+    // Parameters to connect to database
+    qx::QxSqlDatabase::getSingleton()->setDriverName("QSQLITE");
+    qx::QxSqlDatabase::getSingleton()->setDatabaseName(fullDbPath);
+    qx::QxSqlDatabase::getSingleton()->setHostName("localhost");
+    qx::QxSqlDatabase::getSingleton()->setUserName("root");
+    qx::QxSqlDatabase::getSingleton()->setPassword("");
+
+    // Only for debug purpose : assert if invalid offset detected fetching a relation
+#ifdef QT_DEBUG
+    qx::QxSqlDatabase::getSingleton()->setVerifyOffsetRelation(true);
+#endif
+
+    // Create all tables in database
+    QSqlError daoError = qx::dao::create_table<BankiRuForum::User>();
+    if (daoError.isValid())
+    {
+        ConsoleLogger->error("Unable to create table 'User': '{}'", daoError.text());
+        return result_code::Type::DatabaseError;
+    }
+
+    daoError = qx::dao::create_table<BankiRuForum::Post>();
+    if (daoError.isValid())
+    {
+        ConsoleLogger->error("Unable to create table 'Post': '{}'", daoError.text());
+        return result_code::Type::DatabaseError;
+    }
+
+    // FIXME: implement
+    /*
+    QSqlError daoError = qx::dao::create_table<author>();
+    daoError = qx::dao::create_table<comment>();
+    daoError = qx::dao::create_table<category>();
+    daoError = qx::dao::create_table<blog>();
+    */
+    //
+
+    return result_code::Type::Ok;
+}
+
+result_code::Type ForumReader::closeDatabase()
+{
+    //
+    return result_code::Type::Ok;
+}
+
+result_code::Type ForumReader::serializeToDatabase(/*const*/ BankiRuForum::PostCollection &posts)
+{
+    // QSqlError daoError = qx::dao::insert(posts);
+    QSqlError daoError = qx::dao::insert_with_all_relation(posts);
+    if (daoError.isValid())
+        ConsoleLogger->error("Unable to insert new posts to database: '{}'", daoError.text());
+    else
+        ConsoleLogger->info("New posts were inserted in teh database");
+
+    return (daoError.isValid() ? result_code::Type::DatabaseError : result_code::Type::Ok);
+
+    // Create a scope to destroy temporary connexion to database
+    /*{
+        // Open a transaction to database
+        QSqlDatabase db = qx::QxSqlDatabase::getDatabase();
+        bool bCommit = db.transaction();
+
+        // Insert 3 categories into database, use 'db' parameter for the transaction
+        //daoError = qx::dao::insert(posts, &db);
+        bCommit = (bCommit && ! daoError.isValid());
+
+        qAssert(bCommit);
+
+        // Terminate transaction => commit or rollback if there is error
+        if (bCommit) { db.commit(); }
+        else { db.rollback(); }
+    }*/
+    // End of scope : 'db' is destroyed
+}
+
+result_code::Type ForumReader::deserializeFromDatabase(BankiRuForum::PostCollection &posts)
+{
+    /*
+    // Fetch drug with id '3' into a new variable
+    drug_ptr d; d.reset(new drug());
+    d->id = 3;
+    QSqlError daoError = qx::dao::fetch_by_id(d);
+    */
+
+    /*
+// Fetch blog into a new variable with all relation : 'author', 'comment' and 'category'
+   blog_ptr blog_tmp; blog_tmp.reset(new blog());
+   blog_tmp->m_id = blog_1->m_id;
+   daoError = qx::dao::fetch_by_id_with_all_relation(blog_tmp);
+
+   qAssert(blog_tmp->m_commentX.count() == 2);
+   qAssert(blog_tmp->m_categoryX.count() == 2);
+   qAssert(blog_tmp->m_text == "update blog_text_1");
+   qAssert(blog_tmp->m_author && blog_tmp->m_author->m_id == "author_id_2");
+
+   // Dump 'blog_tmp' result from database (XML or JSON serialization)
+   qx::dump(blog_tmp);
+    */
+
+    QSqlError daoError;
+    daoError = qx::dao::fetch_all_with_all_relation(posts);
+    if (daoError.isValid())
+        ConsoleLogger->error("Unable to fetch posts from database: '{}'", daoError.text());
+    else
+        ConsoleLogger->info("Posts were fetched from teh database");
+
+    return (daoError.isValid() ? result_code::Type::DatabaseError : result_code::Type::Ok);
+}
+#endif
+
 QString ForumReader::applicationDirPath() const
 {
     QString result = qApp->applicationDirPath();
@@ -143,9 +286,9 @@ void ForumReader::startPageCountAsync(QString urlStr)
 
 namespace {
 // NOTE: QtConcurrent require to return collection; return result code will be much more straightforward to reader
-BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, result_code::Type& errorCode)
+BankiRuForum::PostCollection parsePageAsync(QByteArray rawHtmlData, int& pageCount, result_code::Type& errorCode)
 {
-    BankiRuForum::UserPosts result;
+    BankiRuForum::PostCollection result;
     errorCode = result_code::Type::Ok;
 
     // 2) Parse the page HTML to get the page number
@@ -241,6 +384,22 @@ void ForumReader::onForumPageParsed()
     dumpFutureObj(m_forumPageParserWatcher.future(), "m_forumPageParserWatcher");
 
     m_pagePosts = m_forumPageParserWatcher.result();
+
+    // FIXME: save to SQLite database
+#ifdef HAVE_QX_ORM
+    if (result_code::succeeded(openDatabase()))
+    {
+        if (result_code::succeeded(serializeToDatabase(m_pagePosts)))
+        {
+            BankiRuForum::PostCollection test;
+            if (result_code::succeeded(deserializeFromDatabase(test)))
+            {
+                ConsoleLogger->info("Fetched {} records", test.size());
+            }
+        }
+    }
+#endif
+
     emit pageContentParsed(m_pageNo);
 }
 
@@ -263,18 +422,20 @@ int ForumReader::postCount() const
 
 QString ForumReader::postAuthorQml(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
+    Q_ASSERT(index >= 0 && index < static_cast<int>(m_pagePosts.size()));
 
-    return m_pagePosts[index].first.getQmlString(qrand());
+    return m_pagePosts[index]->m_author->getQmlString(qrand());
 }
 
 int ForumReader::postAvatarMaxWidth() const
 {
     int maxWidth = 100;
-    for(int i = 0; i < m_pagePosts.size(); ++i)
+    for(int i = 0; i < static_cast<int>(m_pagePosts.size()); ++i)
     {
-        if (m_pagePosts[i].first.m_userAvatar.isNull()) continue;
-        int width = m_pagePosts[i].first.m_userAvatar->m_width;
+        if (!m_pagePosts[i]->m_author->m_userAvatar)
+            continue;
+
+        int width = m_pagePosts[i]->m_author->m_userAvatar->m_width;
         if(width > maxWidth) maxWidth = width;
     }
     return maxWidth;
@@ -282,36 +443,37 @@ int ForumReader::postAvatarMaxWidth() const
 
 QDateTime ForumReader::postDateTime(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
+    Q_ASSERT(index >= 0 && index < static_cast<int>(m_pagePosts.size()));
 
-    return m_pagePosts[index].second.m_date;
+    return m_pagePosts[index]->m_date;
 }
 
 QString ForumReader::postText(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-    if (m_pagePosts[index].second.m_data.empty()) return QString();
+    Q_ASSERT(index >= 0 && index < static_cast<int>(m_pagePosts.size()));
+    if (m_pagePosts[index]->m_data.empty())
+        return QString();
 
-    return m_pagePosts[index].second.getQmlString(qrand());
+    return m_pagePosts[index]->getQmlString(qrand());
 }
 
 QString ForumReader::postLastEdit(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
+    Q_ASSERT(index >= 0 && index < static_cast<int>(m_pagePosts.size()));
 
-    return m_pagePosts[index].second.m_lastEdit;
+    return m_pagePosts[index]->m_lastEdit;
 }
 
 int ForumReader::postLikeCount(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
+    Q_ASSERT(index >= 0 && index < static_cast<int>(m_pagePosts.size()));
 
-    return m_pagePosts[index].second.m_likeCounter;
+    return m_pagePosts[index]->m_likeCounter;
 }
 
 QString ForumReader::postAuthorSignature(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
+    Q_ASSERT(index >= 0 && index < static_cast<int>(m_pagePosts.size()));
 
-    return m_pagePosts[index].second.m_userSignature;
+    return m_pagePosts[index]->m_userSignature;
 }

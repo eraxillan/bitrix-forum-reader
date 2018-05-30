@@ -193,6 +193,12 @@ ApplicationWindow {
             height: dp(30)
             spacing: dp(5)
 
+            ComboBox {
+                id: cmbThread
+                //
+                model: ["First", "Second", "Third"]
+            }
+
             Button {
                 id: btnFirstPage
                 enabled: parent.enabled && (cmbPage.value >= 2)

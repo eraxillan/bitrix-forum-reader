@@ -15,9 +15,13 @@ enum class Type
     CurlError,
     // System
     NetworkError,
+    IoError,
     // Forum parser
     ForumPageParserError,
     ForumParserError,
+#ifdef HAVE_QX_ORM
+    DatabaseError,
+#endif
     // TODO: others
     Count
 };
