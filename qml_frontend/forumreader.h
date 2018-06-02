@@ -1,5 +1,5 @@
-#ifndef FORUMREADER_H
-#define FORUMREADER_H
+#ifndef __BFR_FORUMREADER_H__
+#define __BFR_FORUMREADER_H__
 
 #include "common/resultcode.h"
 #include "common/filedownloader.h"
@@ -82,4 +82,4 @@ private slots:
     void onForumPageParsingCanceled();
 };
 
-#endif // FORUMREADER_H
+#endif // __BFR_FORUMREADER_H__

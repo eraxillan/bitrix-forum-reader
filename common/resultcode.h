@@ -1,5 +1,5 @@
-#ifndef BRR_RESULTCODE_H
-#define BRR_RESULTCODE_H
+#ifndef __BFR_RESULTCODE_H__
+#define __BFR_RESULTCODE_H__
 
 namespace result_code {
 
@@ -34,4 +34,4 @@ inline bool failed(Type rc)
 
 }  // namespace result_code
 
-#endif // BRR_RESULTCODE_H
+#endif // __BFR_RESULTCODE_H__

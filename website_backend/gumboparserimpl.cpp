@@ -27,7 +27,7 @@ void ForumPageParser::printTagsRecursively(QtGumboNodePtr node, int &level)
     if (!node->isElement())
         return;
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     QString levelStr;
     levelStr.fill('-', level);
 
@@ -188,10 +188,10 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
         cityStr = spanNode1->getChildrenInnerText();
     }
 
-#ifdef  RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("post count: {}, reputation: {}, city: {}, all posts url: {}, registration date: {}",
                         postCount, reputation, cityStr, userAllPosts, registrationDate.toString(Qt::SystemLocaleShortDate));
-#endif // RBR_PRINT_DEBUG_OUTPUT
+#endif
 
     result.m_allPostsUrl = QUrl(userAllPosts);
     result.m_postCount = postCount;
@@ -256,7 +256,7 @@ User ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
     QSharedPointer<PostImage> userAvatar = getUserAvatar(userInfoNode);
     //if (!userAvatar || !userAvatar->isValid()) { Q_ASSERT(0); return User(); }
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("User info: id = {}, name = {}, profile url: {}", ubi.m_id, ubi.m_name, ubi.m_profileUrl.toDisplayString());
     if (userAvatar)
         ConsoleLogger->info("User avatar info: url = {}, size = {} x {}", userAvatar->m_url, userAvatar->m_width, userAvatar->m_height);
@@ -343,13 +343,13 @@ Post ForumPageParser::getPostValue(QtGumboNodePtr trNode1)
     lastEditStr = lastEditStr.replace("\n", "<br>");
     lastEditStr = lastEditStr.replace("/profile/", g_bankiRuHost + "/profile/");
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("Post:");
     ConsoleLogger->info("	ID: {}", id);
     if (!userSignatureStr.isEmpty())
         ConsoleLogger->info("   User signature: {}", userSignatureStr);
     ConsoleLogger->info("	Date: {}", postDate);
-#endif //  RBR_PRINT_DEBUG_OUTPUT
+#endif
 
     postInfo.m_id = id;
 //  postInfo.m_postNumber = -1;
@@ -979,7 +979,7 @@ QSharedPointer<PostQuote> ForumPageParser::parseQuote(QtGumboNodePtr tableNode) 
     Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode->getChildElementCount(false));
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
 
- #ifdef RBR_PRINT_DEBUG_OUTPUT
+ #ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("-------------------------------------");
     ConsoleLogger->info("Start index: {}", tbodyTrTdNodeChildIndex);
     for (int i = 0; i < tbodyTrTdChildren.size(); ++i)
@@ -1023,7 +1023,7 @@ QSharedPointer<PostSpoiler> ForumPageParser::parseSpoiler(QtGumboNodePtr tableNo
     // NOTE: spoiler text is HTML too
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
 
- #ifdef RBR_PRINT_DEBUG_OUTPUT
+ #ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("-------------------------------------");
     for (int i = 0; i < tbodyTrTdChildren.size(); ++i)
     {
@@ -1053,7 +1053,7 @@ QByteArray convertHtmlToUft8(QByteArray rawHtmlData)
 
     QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawHtmlData);
     Q_ASSERT(htmlCodec); if (!htmlCodec) return QByteArray();
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
 #endif
     QString resultStr = htmlCodec->toUnicode(rawHtmlData);

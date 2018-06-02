@@ -27,7 +27,7 @@ int downloadFileProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t d
 
     if (dltotal > 0 || dlnow > 0)
     {
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
         ConsoleLogger->info("Download progress: {} of {} bytes", dlnow, dltotal);
 #endif
 
@@ -46,7 +46,7 @@ size_t downloadFileWriteCallback(void *ptr, size_t size, size_t nmemb, QByteArra
 
 QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray& resultData, result_code::Type& resultCode)
 {
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("libcurl version: {}", LIBCURL_VERSION);
 #endif
 
@@ -104,7 +104,7 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
         return QByteArray();
     }
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     char* url;
     long response_code;
     double elapsed;
@@ -212,7 +212,7 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
 {
     data.clear();
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("libcurl version: {}", LIBCURL_VERSION);
 #endif
 
@@ -258,7 +258,7 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
         return false;
     }
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     char* url;
     long response_code;
     double elapsed;

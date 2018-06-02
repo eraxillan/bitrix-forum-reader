@@ -130,18 +130,18 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
+#ifdef BFR_DUMP_GENERATED_QML_IN_FILES
     QDir appRootDir(qApp->applicationDirPath());
     Q_ASSERT(appRootDir.isReadable());
     // Clean the generated QML output directory
-    if (appRootDir.exists(RBR_QML_OUTPUT_DIR))
+    if (appRootDir.exists(BFR_QML_OUTPUT_DIR))
     {
-        Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
+        Q_ASSERT(appRootDir.cd(BFR_QML_OUTPUT_DIR));
         Q_ASSERT(appRootDir.removeRecursively());
         Q_ASSERT(appRootDir.cdUp());
     }
-    Q_ASSERT(appRootDir.mkdir(RBR_QML_OUTPUT_DIR));
-    Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
+    Q_ASSERT(appRootDir.mkdir(BFR_QML_OUTPUT_DIR));
+    Q_ASSERT(appRootDir.cd(BFR_QML_OUTPUT_DIR));
 #endif
 
     int exitCode = -1;

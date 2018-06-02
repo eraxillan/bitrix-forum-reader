@@ -1,5 +1,5 @@
-#ifndef QTGUMBODOCUMENT_H
-#define QTGUMBODOCUMENT_H
+#ifndef __BFR_QTGUMBODOCUMENT_H__
+#define __BFR_QTGUMBODOCUMENT_H__
 
 #include "qtgumbonode.h"
 
@@ -39,4 +39,4 @@ public:
     }
 };
 
-#endif // QTGUMBODOCUMENT_H
+#endif // __BFR_QTGUMBODOCUMENT_H__

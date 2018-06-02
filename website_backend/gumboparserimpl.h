@@ -1,5 +1,5 @@
-#ifndef GUMBOPARSERIMPL_H
-#define GUMBOPARSERIMPL_H
+#ifndef __BFR_GUMBOPARSERIMPL_H__
+#define __BFR_GUMBOPARSERIMPL_H__
 
 #include "websiteinterface.h"
 #include "qtgumbodocument.h"
@@ -60,4 +60,4 @@ public:
 
 }
 
-#endif // GUMBOPARSERIMPL_H
+#endif // __BFR_GUMBOPARSERIMPL_H__

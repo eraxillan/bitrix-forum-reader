@@ -1,5 +1,5 @@
-#ifndef QTGUMBONODE_H
-#define QTGUMBONODE_H
+#ifndef __BFR_QTGUMBONODE_H__
+#define __BFR_QTGUMBONODE_H__
 
 #include <QtCore/QtCore>
 
@@ -151,4 +151,4 @@ public:
     QtGumboNodePtr getNode(GumboNode *node);
 };
 
-#endif // QTGUMBONODE_H
+#endif // __BFR_QTGUMBONODE_H__

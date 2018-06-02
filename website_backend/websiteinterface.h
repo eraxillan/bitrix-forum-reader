@@ -1,21 +1,21 @@
-#ifndef WEBSITEINTERFACE_H
-#define WEBSITEINTERFACE_H
+#ifndef __BFR_WEBSITEINTERFACE_H__
+#define __BFR_WEBSITEINTERFACE_H__
 
 #include <QtCore/QtCore>
 #include <QtWidgets/QApplication>
 
 #include <common/resultcode.h>
 
-//#define RBR_QML_OUTPUT_DIR QString("__temp_qml")
+//#define BFR_QML_OUTPUT_DIR QString("__temp_qml")
 
-#define RBR_SHOW_SPOILER
-#define RBR_SHOW_QUOTE
-#define RBR_SHOW_IMAGE
-#define RBR_SHOW_LINEBREAK
-#define RBR_SHOW_PLAINTEXT
-#define RBR_SHOW_RICHTEXT
-#define RBR_SHOW_VIDEO
-#define RBR_SHOW_HYPERLINK
+#define BFR_SHOW_SPOILER
+#define BFR_SHOW_QUOTE
+#define BFR_SHOW_IMAGE
+#define BFR_SHOW_LINEBREAK
+#define BFR_SHOW_PLAINTEXT
+#define BFR_SHOW_RICHTEXT
+#define BFR_SHOW_VIDEO
+#define BFR_SHOW_HYPERLINK
 
 namespace bfr
 {
@@ -237,4 +237,4 @@ inline uint qHash(const bfr::User& key, uint seed)
     return key.getHash(seed);
 }
 
-#endif // WEBSITEINTERFACE_H
+#endif // __BFR_WEBSITEINTERFACE_H__

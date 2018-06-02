@@ -1,5 +1,5 @@
-#ifndef HTMLTAG_H
-#define HTMLTAG_H
+#ifndef __BFR_HTMLTAG_H__
+#define __BFR_HTMLTAG_H__
 
 #include "gumbo-parser/src/gumbo.h"
 
@@ -163,4 +163,4 @@ static_assert(int(HtmlTag::LAST) == int(GUMBO_TAG_LAST),
               "HtmlTag should be identical with GUMBO_TAG, "
               "may be you use incompatible version of gumbo-parser");
 
-#endif // HTMLTAG_H
+#endif // __BFR_HTMLTAG_H__

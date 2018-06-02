@@ -26,7 +26,7 @@ QtGumboDocument::QtGumboDocument(QString rawData)
 {
     QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
 #endif
 
@@ -134,7 +134,7 @@ static std::string handle_unknown_tag(GumboStringPiece *text)
     gumbo_tag_from_original_text(&gsp);
     tagname = std::string(gsp.data, gsp.length);
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("UNKNOWN TAG: {}", tagname);
 #endif
     return tagname;

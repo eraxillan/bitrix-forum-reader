@@ -8,7 +8,7 @@ namespace {
 template <typename T>
 void dumpFutureObj(QFuture<T> future, QString name)
 {
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("----------------------------------------------------");
     ConsoleLogger->info("Future name: {}", name);
     ConsoleLogger->info("Future is started: {}",  future.isStarted());
@@ -204,7 +204,7 @@ void ForumReader::onForumPageCountParsingCanceled()
 
 void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("{}: {} bytes received, from {} bytes total", Q_FUNC_INFO, bytesReceived, bytesTotal);
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef FILEDOWNLOADER_H
-#define FILEDOWNLOADER_H
+#ifndef __BFR_FILEDOWNLOADER_H__
+#define __BFR_FILEDOWNLOADER_H__
 
 // NOTE: code was copy-pasted from https://wiki.qt.io/Download_Data_from_URL
 //       modifications:
@@ -66,4 +66,4 @@ private:
     QFutureWatcher<QByteArray> m_downloadedDataWatcher;
 };
 
-#endif // FILEDOWNLOADER_H
+#endif // __BFR_FILEDOWNLOADER_H__

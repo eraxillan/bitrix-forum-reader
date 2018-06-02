@@ -1,5 +1,5 @@
-#ifndef __BFR_LOGGER_H_
-#define __BFR_LOGGER_H_
+#ifndef __BFR_LOGGER_H__
+#define __BFR_LOGGER_H__
 
 #include <QByteArray>
 #include <QString>
@@ -28,4 +28,4 @@ inline std::ostream& operator << (std::ostream &os, const QDateTime &c)
     return os << c.toString().toStdString();
 }
 
-#endif // __BFR_LOGGER_H_
+#endif // __BFR_LOGGER_H__

@@ -1,7 +1,7 @@
 #include "websiteinterface.h"
 #include "common/logger.h"
 
-#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
+#ifdef BFR_DUMP_GENERATED_QML_IN_FILES
 namespace {
 static bool WriteTextFile(QString fileName, QString fileContents)
 {
@@ -41,7 +41,7 @@ uint PostSpoiler::getHash(uint seed) const
 
 QString PostSpoiler::getQmlString(int randomSeed) const
 {
-#ifndef RBR_SHOW_SPOILER
+#ifndef BFR_SHOW_SPOILER
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostSpoiler'; }\n");
 #else
@@ -149,7 +149,7 @@ uint PostQuote::getHash(uint seed) const
 
 QString PostQuote::getQmlString(int randomSeed) const
 {
-#ifndef RBR_SHOW_QUOTE
+#ifndef BFR_SHOW_QUOTE
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostQuote'; }\n");
 #else
@@ -255,7 +255,7 @@ uint PostImage::getHash(uint seed) const
 
 QString PostImage::getQmlString(int randomSeed) const
 {
-#ifndef RBR_SHOW_IMAGE
+#ifndef BFR_SHOW_IMAGE
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostImage'; }\n");
 #else
@@ -310,7 +310,7 @@ uint PostLineBreak::getHash(uint seed) const
 
 QString PostLineBreak::getQmlString(int randomSeed) const
 {
-#ifndef RBR_SHOW_LINEBREAK
+#ifndef BFR_SHOW_LINEBREAK
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostLineBreak'; }\n");
 #else
@@ -319,7 +319,7 @@ QString PostLineBreak::getQmlString(int randomSeed) const
             "   id: lineBreak%1\n"
             "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n\n"
             "   height: 1;\n"
-        #ifdef RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+        #ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
             "   Rectangle {\n"
             "       border.width: dp(1);\n"
             "       border.color: \"yellow\";\n"
@@ -357,7 +357,7 @@ uint PostPlainText::getHash(uint seed) const
 
 QString PostPlainText::getQmlString(int randomSeed) const
 {
-#ifndef RBR_SHOW_PLAINTEXT
+#ifndef BFR_SHOW_PLAINTEXT
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostPlainText'; }\n");
 #else
@@ -390,7 +390,7 @@ QString PostPlainText::getQmlString(int randomSeed) const
             "    elide: Text.ElideRight;\n"
             "    wrapMode: Text.WordWrap;\n"
             "\n"
-#ifdef RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+#ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
             "    Rectangle {\n"
             "        border.width: dp(1);\n"
             "        border.color: \"red\";\n"
@@ -430,7 +430,7 @@ uint PostRichText::getHash(uint seed) const
 
 QString PostRichText::getQmlString(int randomSeed) const
 {
-#ifndef RBR_SHOW_RICHTEXT
+#ifndef BFR_SHOW_RICHTEXT
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostRichText'; }\n");
 #else
@@ -453,7 +453,7 @@ QString PostRichText::getQmlString(int randomSeed) const
             "   elide: Text.ElideRight;\n"
             "   wrapMode: Text.WordWrap;\n"
             "\n"
-#ifdef RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+#ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
             "   Rectangle {\n"
             "       border.width: dp(1);\n"
             "       border.color: \"red\";\n"
@@ -529,7 +529,7 @@ static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
             aVideoUrlStr = videoUrlStr;
         }
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
         ConsoleLogger->info("--------------------------------------------------");
         ConsoleLogger->info("Video width: {}", videoWidth);
         ConsoleLogger->info("Video height: {}", videoHeight);
@@ -541,7 +541,7 @@ static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
 #endif
     }
 
-#ifdef RBR_PRINT_DEBUG_OUTPUT
+#ifdef BFR_PRINT_DEBUG_OUTPUT
 //    ConsoleLogger->info("Maximum resolution: {} x {}", maxVideoWidth, maxVideoHeight);
 #endif
 
@@ -602,7 +602,7 @@ uint PostVideo::getHash(uint seed) const
 
 QString PostVideo::getQmlString(int randomSeed) const
 {
-#ifndef RBR_SHOW_VIDEO
+#ifndef BFR_SHOW_VIDEO
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostVideo';}\n");
 #else
@@ -665,7 +665,7 @@ uint PostHyperlink::getHash(uint seed) const
 
 QString PostHyperlink::getQmlString(int randomSeed) const
 {
-#ifndef RBR_SHOW_HYPERLINK
+#ifndef BFR_SHOW_HYPERLINK
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostHyperlink'; }\n");
 #else
@@ -685,7 +685,7 @@ QString PostHyperlink::getQmlString(int randomSeed) const
             "   elide: Text.ElideRight;\n"
             "   wrapMode: Text.WordWrap;\n"
             "\n"
-#ifdef RBR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+#ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
             "   Rectangle {\n"
             "       border.width: dp(1);\n"
             "       border.color: \"red\";\n"
@@ -870,10 +870,10 @@ QString Post::getQmlString(int randomSeed) const
 
     qmlStr += "}\n";    // QML Column end
 
-#ifdef RBR_DUMP_GENERATED_QML_IN_FILES
+#ifdef BFR_DUMP_GENERATED_QML_IN_FILES
     QDir appRootDir(qApp->applicationDirPath());
     Q_ASSERT(appRootDir.isReadable());
-    Q_ASSERT(appRootDir.cd(RBR_QML_OUTPUT_DIR));
+    Q_ASSERT(appRootDir.cd(BFR_QML_OUTPUT_DIR));
 
     QString fullDirPath = appRootDir.path();
     if (!fullDirPath.endsWith("/")) fullDirPath += "/";
