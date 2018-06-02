@@ -72,7 +72,7 @@ int ForumReader::parsePageCount(QString urlStr)
     if (!FileDownloader::downloadUrl(urlStr, htmlRawData)) { Q_ASSERT(0); return 0; }
 
     // 2) Parse the page HTML to get the page number
-    BankiRuForum::ForumPageParser fpp;
+    bfr::ForumPageParser fpp;
     result_code::Type resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
     Q_ASSERT(result_code::succeeded(resultFpp)); if (result_code::failed(resultFpp)) { m_pageCount = 0; return 0; }
     return m_pageCount;
@@ -90,7 +90,7 @@ bool ForumReader::parseForumPage(QString urlStr, int pageNo)
     if (!FileDownloader::downloadUrl(urlStr, htmlRawData)) { Q_ASSERT(0); return false; }
 
     // 2) Parse the page HTML to get the page number
-    BankiRuForum::ForumPageParser fpp;
+    bfr::ForumPageParser fpp;
     result_code::Type resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
     Q_ASSERT(result_code::succeeded(resultFpp)); if (result_code::failed(resultFpp)) { m_pageCount = 0; return false; }
 
@@ -115,7 +115,7 @@ int parsePageCountAsync(QString urlStr)
     }
 
     // 2) Parse the page HTML to get the page number
-    BankiRuForum::ForumPageParser fpp;
+    bfr::ForumPageParser fpp;
     result_code::Type resultFpp = fpp.getPageCount(htmlRawData, result);
     if (result_code::failed(resultFpp))
     {
@@ -143,13 +143,13 @@ void ForumReader::startPageCountAsync(QString urlStr)
 
 namespace {
 // NOTE: QtConcurrent require to return collection; return result code will be much more straightforward to reader
-BankiRuForum::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, result_code::Type& errorCode)
+bfr::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, result_code::Type& errorCode)
 {
-    BankiRuForum::UserPosts result;
+    bfr::UserPosts result;
     errorCode = result_code::Type::Ok;
 
     // 2) Parse the page HTML to get the page number
-    BankiRuForum::ForumPageParser fpp;
+    bfr::ForumPageParser fpp;
     errorCode = fpp.getPageCount(rawHtmlData, pageCount);
     if (errorCode != result_code::Type::Ok)
     {

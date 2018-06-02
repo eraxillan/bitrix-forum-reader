@@ -17,7 +17,7 @@
 #define RBR_SHOW_VIDEO
 #define RBR_SHOW_HYPERLINK
 
-namespace BankiRuForum
+namespace bfr
 {
     const QString QUOTE_WRITE_VERB = "пишет";
 
@@ -215,11 +215,11 @@ namespace BankiRuForum
         virtual result_code::Type getPagePosts(QByteArray rawData, UserPosts &userPosts) = 0;
     };
 
-}   // namespace BankiRuForum
+}   // namespace bfr
 
 //---------------------------------------------------------------------------------------------
 
-inline uint qHash(const BankiRuForum::IPostObjectList& key, uint seed)
+inline uint qHash(const bfr::IPostObjectList& key, uint seed)
 {
     uint dataHash = 0;
     for (auto obj : key)
@@ -227,12 +227,12 @@ inline uint qHash(const BankiRuForum::IPostObjectList& key, uint seed)
     return dataHash;
 }
 
-inline uint qHash(const BankiRuForum::Post& key, uint seed)
+inline uint qHash(const bfr::Post& key, uint seed)
 {
     return key.getHash(seed);
 }
 
-inline uint qHash(const BankiRuForum::User& key, uint seed)
+inline uint qHash(const bfr::User& key, uint seed)
 {
     return key.getHash(seed);
 }

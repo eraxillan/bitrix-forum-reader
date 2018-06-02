@@ -20,7 +20,7 @@ TEST_CASE("Get forum page count", "[FileDownloader][ForumPageParser]") {
 
             SECTION("Parsing forum first page contents to get page count") {
                 int pageCount = -1;
-                BankiRuForum::ForumPageParser fpp;
+                bfr::ForumPageParser fpp;
                 REQUIRE(fpp.getPageCount(htmlRawData, pageCount) == result_code::Type::Ok);
                 REQUIRE(pageCount > 0);
                 INFO("Forum page count: " << pageCount);
@@ -42,7 +42,7 @@ TEST_CASE("Get forum page posts", "[FileDownloader][ForumPageParser]") {
 
         SECTION("Parsing forum first page contents to get page count") {
             int pageCount = -1;
-            BankiRuForum::ForumPageParser fpp;
+            bfr::ForumPageParser fpp;
             REQUIRE(fpp.getPageCount(htmlRawData, pageCount) == result_code::Type::Ok);
             REQUIRE(pageCount > 0);
             INFO("Forum page count: " << pageCount);
@@ -50,7 +50,7 @@ TEST_CASE("Get forum page posts", "[FileDownloader][ForumPageParser]") {
             SECTION("Parsing forum page posts") {
                 for (int i = 1; i <= pageCount; ++i) {
                     INFO("Forum page number: " << i);
-                    BankiRuForum::UserPosts userPosts;
+                    bfr::UserPosts userPosts;
                     REQUIRE(fpp.getPagePosts(htmlRawData, userPosts) == result_code::Type::Ok);
                     REQUIRE(!userPosts.isEmpty());
 

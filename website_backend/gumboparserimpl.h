@@ -4,7 +4,7 @@
 #include "websiteinterface.h"
 #include "qtgumbodocument.h"
 
-namespace BankiRuForum {
+namespace bfr {
 
 class ForumPageParser : public IForumPageReader
 {

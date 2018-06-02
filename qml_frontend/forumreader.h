@@ -9,9 +9,9 @@ class ForumReader : public QObject
 {
     Q_OBJECT
 
-    using UserPosts = BankiRuForum::UserPosts;
+    using UserPosts = bfr::UserPosts;
     using IntFutureWatcher = QFutureWatcher<int>;
-    using ParserFutureWatcher = QFutureWatcher<BankiRuForum::UserPosts>;
+    using ParserFutureWatcher = QFutureWatcher<bfr::UserPosts>;
 
     FileDownloader m_downloader;
 

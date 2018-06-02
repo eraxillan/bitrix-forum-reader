@@ -16,7 +16,7 @@ static bool WriteTextFile(QString fileName, QString fileContents)
 }
 #endif
 
-namespace BankiRuForum
+namespace bfr
 {
 
 IPostObject::~IPostObject()
@@ -976,4 +976,4 @@ QString User::getQmlString(int randomSeed) const
             .arg(m_city);
 }
 
-}   // namespace BankiRuForum
+}   // namespace bfr

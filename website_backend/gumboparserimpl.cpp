@@ -10,7 +10,7 @@
 //		</div>
 // </div>
 
-using namespace BankiRuForum;
+using namespace bfr;
 
 namespace {
 static const QString g_bankiRuHost = "http://www.banki.ru";
