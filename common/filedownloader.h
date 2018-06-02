@@ -9,10 +9,8 @@
 
 // FIXME: implement proxy auth
 
-#include <QtCore/QCoreApplication>
 #include <QtCore/QByteArray>
 #include <QtCore/QUrl>
-
 #include <QtConcurrent/QtConcurrent>
 
 //#define USE_QT_NAM

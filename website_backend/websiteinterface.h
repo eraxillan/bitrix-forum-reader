@@ -2,7 +2,6 @@
 #define __BFR_WEBSITEINTERFACE_H__
 
 #include <QtCore/QtCore>
-#include <QtWidgets/QApplication>
 
 #include <common/resultcode.h>
 
