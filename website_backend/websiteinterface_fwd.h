@@ -39,13 +39,10 @@ using PostHyperlinkPtr = QSharedPointer<PostHyperlink>;
 
 struct Post;
 using PostPtr = QSharedPointer<Post>;
+using PostList = QList<PostPtr>;
 
 struct User;
 using UserPtr = QSharedPointer<User>;
-
-using UserPost = QPair<UserPtr, PostPtr>;
-using UserPosts = QVector<UserPost>;
-using PageUserPosts = QVector<UserPosts>;
 
 }  // namespace bfr
 

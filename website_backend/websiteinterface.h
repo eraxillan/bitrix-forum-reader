@@ -169,8 +169,7 @@ namespace bfr
         QDateTime m_date;
 //		QUrl m_permalink;
 
-        //void addObject(IPostObjectPtr obj);
-        //void removeObject(IPostObjectPtr obj);
+        UserPtr m_author;
 
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
@@ -208,7 +207,7 @@ namespace bfr
         virtual ~IForumPageReader();
 
         virtual result_code::Type getPageCount(QByteArray rawData, int &pageCount) = 0;
-        virtual result_code::Type getPagePosts(QByteArray rawData, UserPosts &userPosts) = 0;
+        virtual result_code::Type getPagePosts(QByteArray rawData, PostList &userPosts) = 0;
     };
 
 }   // namespace bfr

@@ -43,7 +43,7 @@ private:
     IPostObjectList getPostAttachments(QtGumboNodePtr postEntryNode);
     int getLikeCounterValue(QtGumboNodePtr trNode2);
     int getPostId(QtGumboNodePtr msdivNode);
-    void fillPostList(QtGumboNodePtr node, UserPosts &posts);
+    void fillPostList(QtGumboNodePtr node, PostList &posts);
 
     PostHyperlinkPtr parseHyperlink(QtGumboNodePtr aNode) const;
     PostImagePtr parseImage(QtGumboNodePtr imgNode) const;
@@ -55,7 +55,7 @@ private:
 public:
     // IForumPageReader implementation
     result_code::Type getPageCount(QByteArray rawData, int& pageCount) override;
-    result_code::Type getPagePosts(QByteArray rawData, UserPosts& userPosts) override;
+    result_code::Type getPagePosts(QByteArray rawData, PostList &userPosts) override;
 };
 
 }

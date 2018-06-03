@@ -143,9 +143,9 @@ void ForumReader::startPageCountAsync(QString urlStr)
 
 namespace {
 // NOTE: QtConcurrent require to return collection; return result code will be much more straightforward to reader
-bfr::UserPosts parsePageAsync(QByteArray rawHtmlData, int& pageCount, result_code::Type& errorCode)
+bfr::PostList parsePageAsync(QByteArray rawHtmlData, int& pageCount, result_code::Type& errorCode)
 {
-    bfr::UserPosts result;
+    bfr::PostList result;
     errorCode = result_code::Type::Ok;
 
     // 2) Parse the page HTML to get the page number
@@ -265,7 +265,7 @@ QString ForumReader::postAuthorQml(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
 
-    return m_pagePosts[index].first->getQmlString(qrand());
+    return m_pagePosts[index]->m_author->getQmlString(qrand());
 }
 
 int ForumReader::postAvatarMaxWidth() const
@@ -273,8 +273,8 @@ int ForumReader::postAvatarMaxWidth() const
     int maxWidth = 100;
     for(int i = 0; i < m_pagePosts.size(); ++i)
     {
-        if (m_pagePosts[i].first->m_userAvatar.isNull()) continue;
-        int width = m_pagePosts[i].first->m_userAvatar->m_width;
+        if (m_pagePosts[i]->m_author->m_userAvatar.isNull()) continue;
+        int width = m_pagePosts[i]->m_author->m_userAvatar->m_width;
         if(width > maxWidth) maxWidth = width;
     }
     return maxWidth;
@@ -284,34 +284,34 @@ QDateTime ForumReader::postDateTime(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
 
-    return m_pagePosts[index].second->m_date;
+    return m_pagePosts[index]->m_date;
 }
 
 QString ForumReader::postText(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-    if (m_pagePosts[index].second->m_data.empty()) return QString();
+    if (m_pagePosts[index]->m_data.empty()) return QString();
 
-    return m_pagePosts[index].second->getQmlString(qrand());
+    return m_pagePosts[index]->getQmlString(qrand());
 }
 
 QString ForumReader::postLastEdit(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
 
-    return m_pagePosts[index].second->m_lastEdit;
+    return m_pagePosts[index]->m_lastEdit;
 }
 
 int ForumReader::postLikeCount(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
 
-    return m_pagePosts[index].second->m_likeCounter;
+    return m_pagePosts[index]->m_likeCounter;
 }
 
 QString ForumReader::postAuthorSignature(int index) const
 {
     Q_ASSERT(index >= 0 && index < m_pagePosts.size());
 
-    return m_pagePosts[index].second->m_userSignature;
+    return m_pagePosts[index]->m_userSignature;
 }

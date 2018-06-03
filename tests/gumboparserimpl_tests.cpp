@@ -50,7 +50,7 @@ TEST_CASE("Get forum page posts", "[FileDownloader][ForumPageParser]") {
             SECTION("Parsing forum page posts") {
                 for (int i = 1; i <= pageCount; ++i) {
                     INFO("Forum page number: " << i);
-                    bfr::UserPosts userPosts;
+                    bfr::PostList userPosts;
                     REQUIRE(fpp.getPagePosts(htmlRawData, userPosts) == result_code::Type::Ok);
                     REQUIRE(!userPosts.isEmpty());
 
@@ -58,8 +58,8 @@ TEST_CASE("Get forum page posts", "[FileDownloader][ForumPageParser]") {
                     /*SECTION("Validating forum page posts") */{
                         for (int j = 1; j <= userPosts.size(); ++j) {
                             INFO("Forum post number: " << j);
-                            REQUIRE(userPosts[j-1].first->isValid());
-                            REQUIRE(userPosts[j-1].second->isValid());
+                            REQUIRE(userPosts[j-1]->m_author->isValid());
+                            REQUIRE(userPosts[j-1]->isValid());
                         }
                     }
                 }

@@ -9,9 +9,9 @@ class ForumReader : public QObject
 {
     Q_OBJECT
 
-    using UserPosts = bfr::UserPosts;
+    using PostList = bfr::PostList;
     using IntFutureWatcher = QFutureWatcher<int>;
-    using ParserFutureWatcher = QFutureWatcher<bfr::UserPosts>;
+    using ParserFutureWatcher = QFutureWatcher<PostList>;
 
     FileDownloader m_downloader;
 
@@ -19,9 +19,9 @@ class ForumReader : public QObject
     ParserFutureWatcher m_forumPageParserWatcher;
 
     QByteArray m_pageData;
-    UserPosts  m_pagePosts;
-    int        m_pageCount;
-    int        m_pageNo;
+    PostList m_pagePosts;
+    int      m_pageCount;
+    int      m_pageNo;
 
     result_code::Type m_lastError;
 

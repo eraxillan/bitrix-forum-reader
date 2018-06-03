@@ -794,7 +794,7 @@ void ForumPageParser::findPageCount(QString rawData, int &pageCount)
     BFR_RETURN_VOID_IF(!pageCountOk, "Invalid page count string format: not a number");
 }
 
-void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts &posts)
+void ForumPageParser::fillPostList(QtGumboNodePtr node, PostList &posts)
 {
     BFR_RETURN_VOID_IF(!node || !node->isValid(), "Invalid input parameters");
 
@@ -837,9 +837,11 @@ void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts &posts)
         // Read the like counter value from tr2
         forumPost->m_likeCounter = getLikeCounterValue(trNode2);
 
+        forumPost->m_author = forumUser;
+
         // FIXME: fill other post/user info
 
-        posts.append(qMakePair<UserPtr, PostPtr>(forumUser, forumPost));
+        posts << forumPost;
     }
 }
 
@@ -1095,7 +1097,7 @@ result_code::Type ForumPageParser::getPageCount(QByteArray rawData, int &pageCou
     return result_code::Type::Ok;
 }
 
-result_code::Type ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
+result_code::Type ForumPageParser::getPagePosts(QByteArray rawData, PostList &userPosts)
 {
     BFR_DECLARE_RETURN_INVALID_VALUE(result_code::Type, result_code::Type::Fail);
 
