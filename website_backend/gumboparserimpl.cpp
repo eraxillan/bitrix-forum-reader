@@ -20,9 +20,7 @@ static const QString g_bankiRuHost = "http://www.banki.ru";
 
 void ForumPageParser::printTagsRecursively(QtGumboNodePtr node, int &level)
 {
-    Q_UNUSED(level);
-
-    if (!node || !node->isValid()) { Q_ASSERT(0); return; }
+    BFR_RETURN_VOID_IF(!node || !node->isValid(), "invalid node");
 
     if (!node->isElement())
         return;
@@ -48,12 +46,14 @@ void ForumPageParser::printTagsRecursively(QtGumboNodePtr node, int &level)
         printTagsRecursively(*iChild, level);
         level -= 4;
     }
+#else
+    Q_UNUSED(level);
 #endif
 }
 
 void ForumPageParser::findMsdivNodesRecursively(QtGumboNodePtr node, QVector<QtGumboNodePtr> &msdivNodes)
 {
-    if (!node || !node->isValid()) { Q_ASSERT(0); return; }
+    BFR_RETURN_VOID_IF(!node || !node->isValid(), "Invalid input parameters");
 
     if (!node->isElement())
         return;
@@ -69,7 +69,7 @@ void ForumPageParser::findMsdivNodesRecursively(QtGumboNodePtr node, QVector<QtG
             QString msdivNumberStr = idAttrValue.mid(5);
             bool msdivNumberCorrect = false;
             /*int msdivNumber =*/ msdivNumberStr.toInt(&msdivNumberCorrect);
-            if (!msdivNumberCorrect) { Q_ASSERT(0); return; }
+            BFR_RETURN_VOID_IF(!msdivNumberCorrect, "Invalid ID string format: not a number");
             msdivNodes.append(node);
         }
     }
@@ -84,106 +84,101 @@ void ForumPageParser::findMsdivNodesRecursively(QtGumboNodePtr node, QVector<QtG
 namespace {
 int parseUserId(QString userProfileUrl)
 {
+    BFR_DECLARE_RETURN_INVALID_VALUE(int, -1);
+
     // Read the user ID
     QString userIdStr = QUrl(userProfileUrl).query();
     QStringList userIdList = userIdStr.split('=', QString::SkipEmptyParts);
-    if (userIdList.size() != 2) { Q_ASSERT(0); return -1; }
-    if (userIdList[0] != "UID") { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(userIdList.size() != 2, "invalid user id string format");
+    BFR_RETURN_RESULT_IF(userIdList[0] != "UID", "no 'UID' string found");
     QString userIdValueStr = userIdList[1];
     bool userIdOk = false;
     int userId = userIdValueStr.toInt(&userIdOk);
-    if (!userIdOk) { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!userIdOk, "Invalid userId format (not a number)");
     return userId;
 }
 }
 
 ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(QtGumboNodePtr userInfoNode)
 {
-    if (!userInfoNode || !userInfoNode->isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(UserBaseInfo);
 
-    UserBaseInfo result;
+    BFR_RETURN_RESULT_IF(!userInfoNode || !userInfoNode->isValid(), "Invalid input parameters");
 
     QtGumboNodePtr userNameNode = userInfoNode->getElementByClass("forum-user-name", HtmlTag::DIV);
-    if (!userNameNode || !userNameNode->isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
-    if ((userNameNode->getChildElementCount() != 1) && (userNameNode->getChildElementCount() != 2)) { Q_ASSERT(0); return UserBaseInfo(); }
+    BFR_RETURN_RESULT_IF(!userNameNode || !userNameNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF((userNameNode->getChildElementCount() != 1) && (userNameNode->getChildElementCount() != 2), "Invalid node");
 
     PostHyperlinkPtr userProfileRef = parseHyperlink(userNameNode->getElementByTag({HtmlTag::A, 0}));
-    if(userProfileRef.isNull() || !userProfileRef->isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
+    BFR_RETURN_RESULT_IF(userProfileRef.isNull() || !userProfileRef->isValid(), "Invalid node");
 
-    // FIXME: check whether this code required
-    /*
-    Q_ASSERT(userNameNode.getChildren()[0].getTag() == HtmlTag::A || userNameNode.getChildren()[0].getTag() == HtmlTag::SCRIPT);
-    if (userNameNode.getChildElementCount() == 2)
-    {
-        Q_ASSERT(userNameNode.getChildren()[1].getTag() == HtmlTag::A || userNameNode.getChildren()[1].getTag() == HtmlTag::SCRIPT);
-    }
-    */
-
+    UserBaseInfo result;
     result.m_id = parseUserId(userProfileRef->m_urlStr);
     result.m_name = userProfileRef->m_tip;
     result.m_profileUrl = QUrl(userProfileRef->m_urlStr);
-
-    if (result.m_id <= 0) { Q_ASSERT(0); return UserBaseInfo(); }
-    if (result.m_name.isEmpty()) { Q_ASSERT(0); return UserBaseInfo(); }
-    if (!result.m_profileUrl.isValid()) { Q_ASSERT(0); return UserBaseInfo(); }
+    BFR_RETURN_RESULT_IF(result.m_id <= 0, "User ID must be strictly greater than zero");
+    BFR_RETURN_RESULT_IF(result.m_name.isEmpty(), "User name cannot be empty");
+    BFR_RETURN_RESULT_IF(!result.m_profileUrl.isValid(), "User profile URL is invalid");
 
     return result;
 }
 
 ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGumboNodePtr userInfoNode)
 {
-    UserAdditionalInfo result;
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(UserAdditionalInfo);
+
+    BFR_RETURN_RESULT_IF(!userInfoNode || !userInfoNode->isValid(), "Invalid input parameters");
 
     QtGumboNodePtr userAdditionalNode = userInfoNode->getElementByClass("forum-user-additional", HtmlTag::DIV);
-    if (!userAdditionalNode || !userAdditionalNode->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
-//    Q_ASSERT(userAdditionalNode->getChildElementCount() >= 3 && userAdditionalNode->getChildElementCount() <= 6);
+    BFR_RETURN_RESULT_IF(!userAdditionalNode || !userAdditionalNode->isValid(), "Invalid node");
 
     // Read the all message URL and the post count
     QtGumboNodePtr postLinkNode = userAdditionalNode->getElementByTag(
         {{HtmlTag::SPAN, 1}, {HtmlTag::SPAN, 1}, {HtmlTag::UNKNOWN, 0}, {HtmlTag::A, 0}});
-    if (!postLinkNode || !postLinkNode->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!postLinkNode || !postLinkNode->isValid(), "Invalid node");
 
     PostHyperlinkPtr userPostsLinks = parseHyperlink(postLinkNode);
-    if (!userPostsLinks || !userPostsLinks->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!userPostsLinks || !userPostsLinks->isValid(), "Invalid node");
 
     QString userAllPosts = userPostsLinks->m_urlStr;
-    if (!QUrl(userAllPosts).isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!QUrl(userAllPosts).isValid(), "Invalid URL");
 
     bool postCountOk = false;
     int postCount = userPostsLinks->m_title.toInt(&postCountOk);
-    if (!postCountOk) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!postCountOk, "Invalid post count string format: not a number");
 
     // Read the registration date
     QtGumboNodePtr regDateNode = userAdditionalNode->getElementByTag({{HtmlTag::SPAN, 3}, {HtmlTag::SPAN, 1}});
-    if (!regDateNode || !regDateNode->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
-    if (regDateNode->getChildElementCount() != 0) { Q_ASSERT(0); return UserAdditionalInfo(); }
-    if (regDateNode->getTextChildrenCount() != 1) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!regDateNode || !regDateNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(regDateNode->getChildElementCount() != 0, "Invalid node child element count");
+    BFR_RETURN_RESULT_IF(regDateNode->getTextChildrenCount() != 1, "Invalid node child text element count");
+
     QString registrationDateStr = regDateNode->getChildrenInnerText();
     QDate registrationDate = QDate::fromString(registrationDateStr, "dd.MM.yyyy");
-    if (!registrationDate.isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!registrationDate.isValid(), "Invalid registration date string format: not a date");
 
     // Read the reputation value
     QtGumboNodePtr userReputationRefNode = userAdditionalNode->getElementByTag({{HtmlTag::SPAN, 5}, {HtmlTag::SPAN, 1}, {HtmlTag::A, 0}});
-    if (!userReputationRefNode || !userReputationRefNode->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!userReputationRefNode || !userReputationRefNode->isValid(), "Invalid node");
 
     PostHyperlinkPtr userReputationRef = parseHyperlink(userReputationRefNode);
-    if (!userReputationRef || !userReputationRef->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!userReputationRef || !userReputationRef->isValid(), "Invalid node");
 
     bool reputationOk = false;
     int reputation = userReputationRef->m_title.toInt(&reputationOk);
-    if (!reputationOk) { Q_ASSERT(0); return UserAdditionalInfo(); }
+    BFR_RETURN_RESULT_IF(!reputationOk, "Invalid reputation string format: not a number");
 
     // NOTE: city is optional field, instead the rest of others
     QString cityStr;
     QtGumboNodePtr userCityNode = userAdditionalNode->getElementByTag({HtmlTag::SPAN, 3});
     if (userCityNode && userCityNode->isValid())
     {
-        if (userCityNode->getChildElementCount() != 1) { Q_ASSERT(0); return UserAdditionalInfo(); }
+        BFR_RETURN_RESULT_IF(userCityNode->getChildElementCount() != 1, "Invalid node");
 
         QtGumboNodePtr spanNode1 = userCityNode->getElementByTag({HtmlTag::SPAN, 0});
-        if (!spanNode1 || !spanNode1->isValid()) { Q_ASSERT(0); return UserAdditionalInfo(); }
-        if (spanNode1->getChildElementCount() != 0) { Q_ASSERT(0); return UserAdditionalInfo(); }
-        if (spanNode1->getTextChildrenCount() != 1) { Q_ASSERT(0); return UserAdditionalInfo(); }
+        BFR_RETURN_RESULT_IF(!spanNode1 || !spanNode1->isValid(), "Invalid node");
+        BFR_RETURN_RESULT_IF(spanNode1->getChildElementCount() != 0, "Invalid node child element count");
+        BFR_RETURN_RESULT_IF(spanNode1->getTextChildrenCount() != 1, "Invalid node text child element count");
 
         cityStr = spanNode1->getChildrenInnerText();
     }
@@ -193,6 +188,7 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
                         postCount, reputation, cityStr, userAllPosts, registrationDate.toString(Qt::SystemLocaleShortDate));
 #endif
 
+    UserAdditionalInfo result;
     result.m_allPostsUrl = QUrl(userAllPosts);
     result.m_postCount = postCount;
     result.m_registrationDate = registrationDate;
@@ -203,23 +199,23 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
 
 PostImagePtr ForumPageParser::getUserAvatar(QtGumboNodePtr userInfoNode)
 {
-    if (!userInfoNode || !userInfoNode->isValid()) { Q_ASSERT(0); return nullptr; }
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(PostImagePtr);
 
-    PostImagePtr result;
+    BFR_RETURN_RESULT_IF(!userInfoNode || !userInfoNode->isValid(), "Invalid input parameters");
 
     QtGumboNodePtr userAvatarNode = userInfoNode->getElementByClass("forum-user-avatar", HtmlTag::DIV);
     if (!userAvatarNode || !userAvatarNode->isValid())
         userAvatarNode = userInfoNode->getElementByClass("forum-user-register-avatar", HtmlTag::DIV);
 
-    if (!userAvatarNode || !userAvatarNode->isValid()) { Q_ASSERT(0); return nullptr; }
-    if (userAvatarNode->getChildElementCount() != 1) { Q_ASSERT(0); return nullptr; }
-    if ((userAvatarNode->getClassAttribute() != "forum-user-avatar") && (userAvatarNode->getClassAttribute() != "forum-user-register-avatar"))
-    { Q_ASSERT(0); return nullptr; }
+    BFR_RETURN_RESULT_IF(!userAvatarNode || !userAvatarNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(userAvatarNode->getChildElementCount() != 1, "Invalid child element count");
+    BFR_RETURN_RESULT_IF((userAvatarNode->getClassAttribute() != "forum-user-avatar") && (userAvatarNode->getClassAttribute() != "forum-user-register-avatar"), "Invalid node class");
 
+    PostImagePtr result;
     if (userAvatarNode->getClassAttribute() == "forum-user-avatar")
     {
         QtGumboNodePtr imageNode = userAvatarNode->getElementByTag({{HtmlTag::UNKNOWN, 1}, {HtmlTag::A, 1}, {HtmlTag::IMG, 0}});
-        if (!imageNode || !imageNode->isValid()) { Q_ASSERT(0); return nullptr; }
+        BFR_RETURN_RESULT_IF(!imageNode || !imageNode->isValid(), "Invalid node");
 
         result = parseImage(imageNode);
     }
@@ -229,22 +225,20 @@ PostImagePtr ForumPageParser::getUserAvatar(QtGumboNodePtr userInfoNode)
 
 UserPtr ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
 {
-    if (!trNode1 || !trNode1->isValid()) { Q_ASSERT(0); return UserPtr(); }
-
-    UserPtr userInfo(new User);
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(UserPtr);
+    BFR_RETURN_RESULT_IF(!trNode1 || !trNode1->isValid(), "Invalid input parameters");
 
     QtGumboNodePtr userNode = trNode1->getElementByClass("forum-cell-user", HtmlTag::TD);
-    if (!userNode->isValid()) { Q_ASSERT(0); return UserPtr(); }
-    if (userNode->getChildElementCount() != 1) { Q_ASSERT(0); return UserPtr(); }
-    if (userNode->getClassAttribute() != "forum-cell-user") { Q_ASSERT(0); return UserPtr(); }
+    BFR_RETURN_RESULT_IF(!userNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(userNode->getChildElementCount() != 1, "Invalid child element count");
+    BFR_RETURN_RESULT_IF(userNode->getClassAttribute() != "forum-cell-user", "Invalid node class");
 
     QtGumboNodePtr userInfoNode = userNode->getElementByClass("forum-user-info", HtmlTag::DIV);
     if (!userInfoNode || !userInfoNode->isValid())
         userInfoNode = userNode->getElementByClass("forum-user-info w-el-dropDown", HtmlTag::DIV);
-    if (!userInfoNode->isValid()) { Q_ASSERT(0); return UserPtr(); }
-    if (userInfoNode->getChildElementCount() < 4) { Q_ASSERT(0); return UserPtr(); }
-    if ((userInfoNode->getClassAttribute() != "forum-user-info w-el-dropDown") && (userInfoNode->getClassAttribute() != "forum-user-info"))
-    { Q_ASSERT(0); return UserPtr(); }
+    BFR_RETURN_RESULT_IF(!userInfoNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(userInfoNode->getChildElementCount() < 4, "Invalid child element count");
+    BFR_RETURN_RESULT_IF((userInfoNode->getClassAttribute() != "forum-user-info w-el-dropDown") && (userInfoNode->getClassAttribute() != "forum-user-info"), "Invalid node class");
 
     // Get user base info: id, name, profile URL
     UserBaseInfo ubi = getUserBaseInfo(userInfoNode);
@@ -253,8 +247,8 @@ UserPtr ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
     UserAdditionalInfo uai = getUserAdditionalInfo(userInfoNode);
 
     // Get user avatar image
+    // NOTE: it is optional
     PostImagePtr userAvatar = getUserAvatar(userInfoNode);
-    //if (!userAvatar || !userAvatar->isValid()) { Q_ASSERT(0); return User(); }
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("User info: id = {}, name = {}, profile url: {}", ubi.m_id, ubi.m_name, ubi.m_profileUrl.toDisplayString());
@@ -263,6 +257,7 @@ UserPtr ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
 #endif
 
     // Base info
+    UserPtr userInfo(new User);
     userInfo->m_userId = ubi.m_id;
     userInfo->m_userName = ubi.m_name;
     userInfo->m_userProfileUrl = ubi.m_profileUrl;
@@ -282,51 +277,51 @@ UserPtr ForumPageParser::getPostUser(QtGumboNodePtr trNode1)
 
 PostPtr ForumPageParser::getPostValue(QtGumboNodePtr trNode1)
 {
-    if (!trNode1 || !trNode1->isValid()) { Q_ASSERT(0); return PostPtr(); }
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(PostPtr);
 
-    PostPtr postInfo(new Post);
+    BFR_RETURN_RESULT_IF(!trNode1 || !trNode1->isValid(), "Invalid input parameters");
 
     QtGumboNodePtr postNode = trNode1->getElementByClass("forum-cell-post", HtmlTag::TD);
-    if (!postNode || !postNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
-    if (postNode->getChildElementCount() != 2) { Q_ASSERT(0); return PostPtr(); }
-    if (postNode->getClassAttribute() != "forum-cell-post") { Q_ASSERT(0); return PostPtr(); }
+    BFR_RETURN_RESULT_IF(!postNode || !postNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(postNode->getChildElementCount() != 2, "Invalid child element count");
+    BFR_RETURN_RESULT_IF(postNode->getClassAttribute() != "forum-cell-post", "Invalid node class");
 
     // 1) <div class="forum-post-date">
     QtGumboNodePtr postDateNode = postNode->getElementByClass("forum-post-date", HtmlTag::DIV);
-    if (!postDateNode || !postDateNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
-    if (postDateNode->getChildElementCount() > 3) { Q_ASSERT(0); return PostPtr(); }
-    if (postDateNode->getClassAttribute() != "forum-post-date") { Q_ASSERT(0); return PostPtr(); }
+    BFR_RETURN_RESULT_IF(!postDateNode || !postDateNode->isValid(), "Invalid post date string format: not a date");
+    BFR_RETURN_RESULT_IF(postDateNode->getChildElementCount() > 3, "Invalid child element count");
+    BFR_RETURN_RESULT_IF(postDateNode->getClassAttribute() != "forum-post-date", "Invalid node class");
 
     QtGumboNodePtr spanNode = postDateNode->getElementByTag({HtmlTag::SPAN, 0});
-    if (!spanNode || !spanNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
-    if (spanNode->getChildElementCount() != 0) { Q_ASSERT(0); return PostPtr(); }
-    if (spanNode->getTextChildrenCount() != 1) { Q_ASSERT(0); return PostPtr(); }
+    BFR_RETURN_RESULT_IF(!spanNode || !spanNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(spanNode->getChildElementCount() != 0, "Invalid child element count");
+    BFR_RETURN_RESULT_IF(spanNode->getTextChildrenCount() != 1, "Invalid text child element count");
 
     QString postDateStr = spanNode->getChildrenInnerText();
     QDateTime postDate = QDateTime::fromString(postDateStr, "dd.MM.yyyy hh:mm");
-    if (!postDate.isValid()) { Q_ASSERT(0); return PostPtr(); }
+    BFR_RETURN_RESULT_IF(!postDate.isValid(), "Invalid post date string format: not a date");
 
     // 2) <div class="forum-post-entry" style="font-size: 14px;">
     QtGumboNodePtr postEntryNode = postNode->getElementByClass("forum-post-entry", HtmlTag::DIV);
-    if (!postEntryNode || !postEntryNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
-//    Q_ASSERT(postEntryNode->getChildElementCount() <= 4);
-    if (postEntryNode->getClassAttribute() != "forum-post-entry") { Q_ASSERT(0); return PostPtr(); }
+    BFR_RETURN_RESULT_IF(!postEntryNode || !postEntryNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(postEntryNode->getClassAttribute() != "forum-post-entry", "Invalid node class");
 
     QtGumboNodePtr postTextNode = postEntryNode->getElementByClass("forum-post-text", HtmlTag::DIV);
-    if (!postTextNode->isValid()) { Q_ASSERT(0); return PostPtr(); }
-    if ((postTextNode->getChildElementCount() == 0) && (postTextNode->getTextChildrenCount() == 0)) { Q_ASSERT(0); return PostPtr(); }
-    if (postTextNode->getClassAttribute() != "forum-post-text") { Q_ASSERT(0); return PostPtr(); }
+    BFR_RETURN_RESULT_IF(!postTextNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF((postTextNode->getChildElementCount() == 0) && (postTextNode->getTextChildrenCount() == 0), "Invalid child element count");
+    BFR_RETURN_RESULT_IF(postTextNode->getClassAttribute() != "forum-post-text", "Invalid node class");
 
     // Read message id
     QString messageIdStr = postTextNode->getIdAttribute();
-    if (!messageIdStr.startsWith("message_text_", Qt::CaseInsensitive)) { Q_ASSERT(0); return PostPtr(); }
+    BFR_RETURN_RESULT_IF(!messageIdStr.startsWith("message_text_", Qt::CaseInsensitive), "Invalid message ID string format");
     QString idStr = messageIdStr.remove("message_text_", Qt::CaseInsensitive);
     bool idOk = false;
     int id = idStr.toInt(&idOk);
-    if (!idOk) { Q_ASSERT(0); return PostPtr(); }
+    BFR_RETURN_RESULT_IF(!idOk, "Invalid message ID string format: not a number");
 
     // Read message contents (HTML)
     QtGumboNodes postTextNodeChildren = postTextNode->getChildren(false);
+    PostPtr postInfo(new Post);
     parseMessage(postTextNodeChildren, postInfo->m_data);
 
     // Read user signature
@@ -395,7 +390,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             }
             case HtmlTag::FONT:
             {
-                Q_ASSERT(iChildPtr->getAttributeCount() == 1);
+                BFR_RETURN_VOID_IF(iChildPtr->getAttributeCount() != 1, "Invalid attribute count");
 
                 QString textColor = "black";
                 if (iChildPtr->hasAttribute("color"))
@@ -421,7 +416,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                         // FIXME: implement other text formatting tags as above
                         default:
                         {
-                            Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML tag");
+                            BFR_RETURN_VOID_IF(true, "Unsupported HTML tag detected");
                             break;
                         }
                         }
@@ -450,7 +445,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 }
                 else
                 {
-                    Q_ASSERT_X(0, Q_FUNC_INFO, "invalid quote class");
+                    BFR_RETURN_VOID_IF(true, "Invalid quote node class");
                 }
                 break;
             }
@@ -477,13 +472,13 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             {
                 // <div id="bx_flv_player_46357291_div" style="width: 400px; height: 300px;">Загрузка плеера</div>
                 //     <script>
-                Q_ASSERT(iChildPtr->getIdAttribute().startsWith("bx_flv_player_"));
+                BFR_RETURN_VOID_IF(!iChildPtr->getIdAttribute().startsWith("bx_flv_player_"), "Invalid video player node ID");
                 break;
             }
             case HtmlTag::SCRIPT:
             {
                 QString text = iChildPtr->getChildrenInnerText().trimmed();
-                if (!text.startsWith("window.bxPlayerOnloadbx_flv_player")) { Q_ASSERT(0); continue; }
+                BFR_RETURN_VOID_IF(!text.startsWith("window.bxPlayerOnloadbx_flv_player"), "Invalid video player JS text");
 
                 // 'file':'https://www.youtube.com/watch?v=PI9o3v4nttU',
                 const QString VIDEO_URL_START_STR = "'file':'";
@@ -491,10 +486,10 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 const QString VIDEO_URL_TAG_START_STR = "[url]";
                 const QString VIDEO_URL_TAG_END_STR = "[/url]";
                 int videoUrlStartIndex = text.indexOf(VIDEO_URL_START_STR);
-                Q_ASSERT(videoUrlStartIndex >= 0);
+                BFR_RETURN_VOID_IF(videoUrlStartIndex < 0, "No video URL begin found");
 
                 int videoUrlEndIndex = text.indexOf(VIDEO_URL_END_STR, videoUrlStartIndex);
-                Q_ASSERT(videoUrlEndIndex > videoUrlStartIndex);
+                BFR_RETURN_VOID_IF(videoUrlEndIndex <= videoUrlStartIndex, "No video URL end found");
 
                 QString videoUrl = text.mid(videoUrlStartIndex + VIDEO_URL_START_STR.size(),
                                             videoUrlEndIndex - videoUrlStartIndex - VIDEO_URL_START_STR.size());
@@ -504,7 +499,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
                 if (videoUrlTagStartIndex >= 0)
                 {
                     int videoUrlTagEndIndex = videoUrl.indexOf(VIDEO_URL_TAG_END_STR);
-                    Q_ASSERT(videoUrlTagEndIndex > videoUrlTagStartIndex);
+                    BFR_RETURN_VOID_IF(videoUrlTagEndIndex <= videoUrlTagStartIndex, "No video URL end tag found");
 
                     videoUrl = videoUrl.mid(videoUrlTagStartIndex + VIDEO_URL_TAG_START_STR.size(),
                                             videoUrlTagEndIndex - videoUrlTagStartIndex - VIDEO_URL_TAG_START_STR.size());
@@ -520,7 +515,7 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             }
             default:
             {
-                Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML tag");
+                BFR_RETURN_VOID_IF(true, "Unsupported HTML tag");
                 break;
             }
             }
@@ -543,31 +538,36 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
             if (iChildPtr->isWhitespace()) continue;
             if (iChildPtr->isComment()) continue;
 
-            Q_ASSERT_X(0, Q_FUNC_INFO, "unknown HTML item");
+            BFR_RETURN_VOID_IF(true, "Unsupported HTML entity");
         }
     }
 }
 
 QString ForumPageParser::getPostLastEdit(QtGumboNodePtr postEntryNode)
 {
-    // Read post last edit "credentials" (optional)
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(QString);
+
+    BFR_RETURN_RESULT_IF(!postEntryNode || !postEntryNode->isValid(), "Invalid input parameters");
+
+    // Read post last edit info (optional)
     QString lastEditStr;
     QtGumboNodePtr postLastEditNode = postEntryNode->getElementByClass("forum-post-lastedit", HtmlTag::DIV);
-    if (!postLastEditNode || !postLastEditNode->isValid()) return QString();
+    if (!postLastEditNode || !postLastEditNode->isValid())
+        return QString();
 
-    if (postLastEditNode->getChildElementCount() != 1) { Q_ASSERT(0); return QString(); }
-    if (postLastEditNode->getClassAttribute() != "forum-post-lastedit") { Q_ASSERT(0); return QString(); }
+    BFR_RETURN_RESULT_IF(postLastEditNode->getChildElementCount() != 1, "Invalid child element count");
+    BFR_RETURN_RESULT_IF(postLastEditNode->getClassAttribute() != "forum-post-lastedit", "Invalid node class");
 
     QtGumboNodePtr postLastEditSpanNode = postLastEditNode->getElementByClass("forum-post-lastedit", HtmlTag::SPAN);
-    if (!postLastEditSpanNode || !postLastEditSpanNode->isValid()) { Q_ASSERT(0); return QString(); }
-    if (postLastEditSpanNode->getChildElementCount() < 2) { Q_ASSERT(0); return QString(); }
+    BFR_RETURN_RESULT_IF(!postLastEditSpanNode || !postLastEditSpanNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(postLastEditSpanNode->getChildElementCount() < 2, "Invalid child element count");
 
     QtGumboNodePtr postLastEditUserNode = postLastEditSpanNode->getElementByClass("forum-post-lastedit-user", HtmlTag::SPAN);
-    if (!postLastEditUserNode || !postLastEditUserNode->isValid()) { Q_ASSERT(0); return QString(); }
-    if (postLastEditUserNode->getChildElementCount() != 1) { Q_ASSERT(0); return QString(); }
+    BFR_RETURN_RESULT_IF(!postLastEditUserNode || !postLastEditUserNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(postLastEditUserNode->getChildElementCount() != 1, "Invalid child element count");
 
     QtGumboNodePtr posLastEditUserLinkNode = postLastEditUserNode->getElementByTag({{HtmlTag::UNKNOWN, 1}, {HtmlTag::A, 0}});
-    if (!posLastEditUserLinkNode || !posLastEditUserLinkNode->isValid()) { Q_ASSERT(0); return QString(); }
+    BFR_RETURN_RESULT_IF(!posLastEditUserLinkNode || !posLastEditUserLinkNode->isValid(), "Invalid node");
 
     PostHyperlinkPtr postLastEditUserLink = parseHyperlink(posLastEditUserLinkNode);
 
@@ -576,25 +576,26 @@ QString ForumPageParser::getPostLastEdit(QtGumboNodePtr postEntryNode)
     QString userNameStr = postLastEditUserLink->m_title;
 
     QtGumboNodePtr postLastEditDateNode = postLastEditSpanNode->getElementByClass("forum-post-lastedit-date", HtmlTag::SPAN);
-    if (!postLastEditDateNode || !postLastEditDateNode->isValid()) { Q_ASSERT(0); return QString(); }
-    if (postLastEditDateNode->getChildElementCount() != 0) { Q_ASSERT(0); return QString(); }
+    BFR_RETURN_RESULT_IF(!postLastEditDateNode || !postLastEditDateNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(postLastEditDateNode->getChildElementCount() != 0, "Invalid child element count");
     QString lastEditDateStr = postLastEditDateNode->getChildrenInnerText();
 
     QString lastEditReasonStr;
     QtGumboNodePtr postLastEditReasonNode = postLastEditSpanNode->getElementByClass("forum-post-lastedit-reason", HtmlTag::SPAN);
     if (postLastEditReasonNode && postLastEditReasonNode->isValid())
     {
-        if (postLastEditReasonNode->getChildElementCount() != 1) { Q_ASSERT(0); return QString(); }
+        BFR_RETURN_RESULT_IF(postLastEditReasonNode->getChildElementCount() != 1, "Invalid child element count");
 
         lastEditReasonStr = postLastEditReasonNode->getChildrenInnerText();
-        if (lastEditReasonStr != "()") { Q_ASSERT(0); return QString(); }
+        BFR_RETURN_RESULT_IF(lastEditReasonStr != "()", "Invalid last edit reason string format");
         lastEditReasonStr.clear();
 
         QtGumboNodePtr reasonSpanNode = postLastEditReasonNode->getElementByTag({HtmlTag::SPAN, 0});
-        if (!reasonSpanNode || !reasonSpanNode->isValid()) { Q_ASSERT(0); return QString(); }
+        BFR_RETURN_RESULT_IF(!reasonSpanNode || !reasonSpanNode->isValid(), "Invalid node");
         lastEditReasonStr = "(" + reasonSpanNode->getChildrenInnerText() + ")";
     }
 
+    // FIXME: replace HTML with pure QML code
     lastEditStr = "Изменено: <a href=\"" + userNameHrefStr + "\" " + "rel=\"" + userNameRelStr + "\">" + userNameStr + "</a> - " + lastEditDateStr + " " + lastEditReasonStr;
 
     return lastEditStr;
@@ -602,18 +603,21 @@ QString ForumPageParser::getPostLastEdit(QtGumboNodePtr postEntryNode)
 
 QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode)
 {
-    if (!postEntryNode || !postEntryNode->isValid()) { Q_ASSERT(0); return QString(); }
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(QString);
+
+    BFR_RETURN_RESULT_IF(!postEntryNode || !postEntryNode->isValid(), "Invalid input parameters");
 
     // Read user signature
     QString userSignatureStr;
     QtGumboNodePtr postSignatureNode = postEntryNode->getElementByClass("forum-user-signature");
-    if (!postSignatureNode || !postSignatureNode->isValid()) return QString();
+    if (!postSignatureNode || !postSignatureNode->isValid())
+        return QString();
 
-    if (postSignatureNode->getChildElementCount() != 2) { Q_ASSERT(0); return QString(); }
-    if (postSignatureNode->getClassAttribute() != "forum-user-signature") { Q_ASSERT(0); return QString(); }
+    BFR_RETURN_RESULT_IF(postSignatureNode->getChildElementCount() != 2, "Invalid child node count");
+    BFR_RETURN_RESULT_IF(postSignatureNode->getClassAttribute() != "forum-user-signature", "Invalid node class");
 
     QtGumboNodePtr spanNode = postSignatureNode->getElementByTag({HtmlTag::SPAN, 0});
-    if (!spanNode || !spanNode->isValid()) { Q_ASSERT(0); return QString(); }
+    BFR_RETURN_RESULT_IF(!spanNode || !spanNode->isValid(), "Invalid node");
 
     userSignatureStr = spanNode->getChildrenInnerText();
 
@@ -631,7 +635,7 @@ QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode)
         }
         case HtmlTag::A:
         {
-            if (iChildPtr->getAttributeCount() != 3) { Q_ASSERT(0); return QString(); }
+            BFR_RETURN_RESULT_IF(iChildPtr->getAttributeCount() != 3, "Invalid attribute count");
 
             QString hrefAttrValue = iChildPtr->getAttribute("href");
             QString targetAttrValue = iChildPtr->getAttribute("target");
@@ -650,17 +654,16 @@ QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode)
         case HtmlTag::IMG:
         {
             PostImagePtr imageObj = parseImage(iChildPtr);
-            if (!imageObj || !imageObj->isValid()) { Q_ASSERT(0); return QString(); }
+            BFR_RETURN_RESULT_IF(!imageObj || !imageObj->isValid(), "Invalid node");
 
             // FIXME: specify width and height if present
             userSignatureStr += "<img src='" + imageObj->m_url + "'/><br/>";
             break;
         }
-        // FIXME: implement other cases
+        // TODO: implement other cases if discovered
         default:
         {
-            Q_ASSERT(0);
-            return QString();
+            BFR_RETURN_RESULT_IF(true, "Not implemented");
         }
         }
     }
@@ -669,7 +672,9 @@ QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode)
 
 IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode)
 {
-    if (!postEntryNode || !postEntryNode->isValid()) { Q_ASSERT(0); return IPostObjectList(); }
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(IPostObjectList);
+
+    BFR_RETURN_RESULT_IF(!postEntryNode || !postEntryNode->isValid(), "Invalid input parameters");
 
     // Read post file attachments
     IPostObjectList result;
@@ -679,7 +684,7 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode
         return IPostObjectList();
 
     QtGumboNodePtr labelNode = attachmentsNode->getElementByTag({HtmlTag::LABEL, 0});
-    if (!labelNode || !labelNode->isValid()) { Q_ASSERT(0); return IPostObjectList(); }
+    BFR_RETURN_RESULT_IF(!labelNode || !labelNode->isValid(), "Invalid node");
 
     QString attachmentsLabelStr = labelNode->getChildrenInnerText();
 
@@ -691,11 +696,11 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode
     for (auto iChild = children.begin(); iChild != children.end(); ++iChild)
     {
         QtGumboNodePtr attachNode = (*iChild)->getElementByClass("forum-attach",  HtmlTag::DIV);
-        if (!attachNode || !attachNode->isValid()) { Q_ASSERT(0); return IPostObjectList(); }
+        BFR_RETURN_RESULT_IF(!attachNode || !attachNode->isValid(), "Invalid node");
 
         // FIXME: support other attachment types (if exists)
         QtGumboNodePtr imgNode = attachNode->getElementByClass("popup_image", HtmlTag::IMG);
-        if (!imgNode || !imgNode->isValid()) { Q_ASSERT(0); return IPostObjectList(); }
+        BFR_RETURN_RESULT_IF(!imgNode || !imgNode->isValid(), "Invalid node");
 
         result << parseImage(imgNode);
     }
@@ -705,64 +710,68 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode
 
 int ForumPageParser::getLikeCounterValue(QtGumboNodePtr trNode2)
 {
-    if (!trNode2 || !trNode2->isValid()) { Q_ASSERT(0); return -1; }
+    BFR_DECLARE_RETURN_INVALID_VALUE(int, -1);
+
+    BFR_RETURN_RESULT_IF(!trNode2 || !trNode2->isValid(), "Invalid node");
 
     // tr2:
     QtGumboNodePtr contactsNode = trNode2->getElementByClass("forum-cell-contact", HtmlTag::TD);
-    if (!contactsNode || !contactsNode->isValid()) { Q_ASSERT(0); return -1; }
-    if (contactsNode->getClassAttribute() != "forum-cell-contact") { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!contactsNode || !contactsNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(contactsNode->getClassAttribute() != "forum-cell-contact", "Invalid node class");
 
     QtGumboNodePtr actionsNode = trNode2->getElementByClass("forum-cell-actions", HtmlTag::TD);
-    if (!actionsNode || !actionsNode->isValid()) { Q_ASSERT(0); return -1; }
-    if (actionsNode->getChildElementCount() != 1) { Q_ASSERT(0); return -1; }
-    if (actionsNode->getClassAttribute() != "forum-cell-actions") { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!actionsNode || !actionsNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(actionsNode->getChildElementCount() != 1, "Invalid child element node");
+    BFR_RETURN_RESULT_IF(actionsNode->getClassAttribute() != "forum-cell-actions", "Invalid node class");
 
     // Get the "like" count
     // NOTE: it is type on the site, not my own
     QtGumboNodePtr actionLinksNode = actionsNode->getElementByClass("conainer-action-links", HtmlTag::DIV);
-    if (!actionLinksNode || !actionLinksNode->isValid()) { Q_ASSERT(0); return -1; }
-    if (actionLinksNode->getChildElementCount() != 2) { Q_ASSERT(0); return -1; }
-    if (actionLinksNode->getClassAttribute() != "conainer-action-links") { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!actionLinksNode || !actionLinksNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(actionLinksNode->getChildElementCount() != 2, "Invalid child element count");
+    BFR_RETURN_RESULT_IF(actionLinksNode->getClassAttribute() != "conainer-action-links", "Invalid node class");
 
     QtGumboNodePtr floatLeftNode = actionLinksNode->getElementByClass("float-left", HtmlTag::DIV);
-    if (!floatLeftNode || !floatLeftNode->isValid()) { Q_ASSERT(0); return -1; }
-    if (floatLeftNode->getChildElementCount() != 1) { Q_ASSERT(0); return -1; }
-    if (floatLeftNode->getClassAttribute() != "float-left") { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!floatLeftNode || !floatLeftNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(floatLeftNode->getChildElementCount() != 1, "Invalid child element count");
+    BFR_RETURN_RESULT_IF(floatLeftNode->getClassAttribute() != "float-left", "Invalid node class");
 
     QtGumboNodePtr likeNode = floatLeftNode->getElementByClass("like", HtmlTag::DIV);
-    if (!likeNode || !likeNode->isValid()) { Q_ASSERT(0); return -1; }
-    if (likeNode->getChildElementCount() != 1) { Q_ASSERT(0); return -1; }
-    if (likeNode->getClassAttribute() != "like") { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!likeNode || !likeNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(likeNode->getChildElementCount() != 1, "Invalid node child element count");
+    BFR_RETURN_RESULT_IF(likeNode->getClassAttribute() != "like", "Invalid node class");
 
     QtGumboNodePtr likeWidgetNode = likeNode->getElementByClass("like__widget", HtmlTag::DIV);
-    if (!likeWidgetNode || !likeWidgetNode->isValid()) { Q_ASSERT(0); return -1; }
-    if (likeWidgetNode->getChildElementCount() < 2 || likeWidgetNode->getChildElementCount() > 5) { Q_ASSERT(0); return -1; }
-    if (likeWidgetNode->getClassAttribute() != "like__widget") { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!likeWidgetNode || !likeWidgetNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(likeWidgetNode->getChildElementCount() < 2 || likeWidgetNode->getChildElementCount() > 5, "Invalid child element count");
+    BFR_RETURN_RESULT_IF(likeWidgetNode->getClassAttribute() != "like__widget", "Invalid node class");
 
     QtGumboNodePtr likeCounterNode = likeWidgetNode->getElementByClass("like__counter", HtmlTag::SPAN);
-    if (!likeCounterNode || !likeCounterNode->isValid()) { Q_ASSERT(0); return -1; }
-    if (likeCounterNode->getChildElementCount() != 0) { Q_ASSERT(0); return -1; }
-    if (likeCounterNode->getClassAttribute() != "like__counter") { Q_ASSERT(0); return -1; }
-    if (likeCounterNode->getTextChildrenCount() != 1) { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!likeCounterNode || !likeCounterNode->isValid(), "Invalid node");
+    BFR_RETURN_RESULT_IF(likeCounterNode->getChildElementCount() != 0, "Invalid child element class");
+    BFR_RETURN_RESULT_IF(likeCounterNode->getClassAttribute() != "like__counter", "Invalid node class");
+    BFR_RETURN_RESULT_IF(likeCounterNode->getTextChildrenCount() != 1, "Invalid text child element count");
 
     QString likeCounterStr = likeCounterNode->getChildrenInnerText();
     bool likeNumberOk = false;
     int likeCount = likeCounterStr.toInt(&likeNumberOk);
-    if (!likeNumberOk) { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!likeNumberOk, "Invalid like counter string format: not a number");
     return likeCount;
 }
 
 int ForumPageParser::getPostId(QtGumboNodePtr msdivNode)
 {
-    if (!msdivNode || !msdivNode->isValid()) { Q_ASSERT(0); return -1; }
+    BFR_DECLARE_RETURN_INVALID_VALUE(int, -1);
+
+    BFR_RETURN_RESULT_IF(!msdivNode || !msdivNode->isValid(), "Invalid input parameters");
 
     QString messageIdStr = msdivNode->getIdAttribute();
     int msdivIndex = messageIdStr.indexOf("msdiv");
-    if (msdivIndex == -1) { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(msdivIndex == -1, "Invalid message ID string format");
     QString msdivNumberStr = messageIdStr.mid(5);
     bool messageIdOk = false;
     int messageId = msdivNumberStr.toInt(&messageIdOk);
-    if (!messageIdOk) { Q_ASSERT(0); return -1; }
+    BFR_RETURN_RESULT_IF(!messageIdOk, "Invalid message ID string format: not a number");
     return messageId;
 }
 
@@ -774,19 +783,20 @@ void ForumPageParser::findPageCount(QString rawData, int &pageCount)
     const QString PAGES_STR = "pages: ";
     int pagesIdxBegin = rawData.indexOf(PAGES_STR);
     int pagesIdxEnd   = rawData.indexOf(",", pagesIdxBegin);
-    Q_ASSERT(pagesIdxBegin >= 0); if (pagesIdxBegin < 0) return;
-    Q_ASSERT(pagesIdxEnd > pagesIdxBegin); if (pagesIdxEnd <= pagesIdxBegin) return;
+    BFR_RETURN_VOID_IF(pagesIdxBegin < 0, "No page count expession found");
+    BFR_RETURN_VOID_IF(pagesIdxEnd <= pagesIdxBegin, "Invalid page count expression");
     int pageCountStrSize = pagesIdxEnd - pagesIdxBegin - PAGES_STR.size();
-    Q_ASSERT(pageCountStrSize > 0); if (pageCountStrSize <= 0) return;
+    BFR_RETURN_VOID_IF(pageCountStrSize <= 0, "Negative page count");
     QString pageCountStr = rawData.mid(pagesIdxBegin + PAGES_STR.size(), pageCountStrSize);
     bool pageCountOk = false;
     pageCount = pageCountStr.toInt(&pageCountOk);
-    Q_ASSERT(pageCountOk); if (!pageCountOk) pageCount = 0;
+    if (!pageCountOk) pageCount = 0;
+    BFR_RETURN_VOID_IF(!pageCountOk, "Invalid page count string format: not a number");
 }
 
-void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts& posts)
+void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts &posts)
 {
-    if (!node || !node->isValid()) { Q_ASSERT(0); return; }
+    BFR_RETURN_VOID_IF(!node || !node->isValid(), "Invalid input parameters");
 
     // XPath: *[@id="msdiv4453758"]
 
@@ -798,25 +808,25 @@ void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts& posts)
     for (int i = 0; i < msdivNodes.size(); ++i)
     {
         QtGumboNodePtr msdivNode = msdivNodes[i];
-        if (!msdivNode || !msdivNode->isValid()) { Q_ASSERT(0); return; }
-        if (msdivNode->getChildElementCount() != 1) { Q_ASSERT(0); return; }
+        BFR_RETURN_VOID_IF(!msdivNode || !msdivNode->isValid(), "Invalid node");
+        BFR_RETURN_VOID_IF(msdivNode->getChildElementCount() != 1, "Invalid child element count");
 
         QtGumboNodePtr tbodyNode = msdivNode->getElementByTag({{HtmlTag::TABLE, 1}, {HtmlTag::TBODY, 1}});
-        if (!tbodyNode || !tbodyNode->isValid()) { Q_ASSERT(0); return; }
+        BFR_RETURN_VOID_IF(!tbodyNode || !tbodyNode->isValid(), "Invalid node");
 
         // two tr tags
         int idxTr1 = 0;
         QtGumboNodePtr trNode1 = tbodyNode->getElementByTag({HtmlTag::TR, idxTr1}, &idxTr1);
-        if (!trNode1 || !trNode1->isValid()) { Q_ASSERT(0); return; }
+        BFR_RETURN_VOID_IF(!trNode1 || !trNode1->isValid(), "Invalid node");
 
         int idxTr2 = idxTr1 + 1;
         QtGumboNodePtr trNode2 = tbodyNode->getElementByTag({HtmlTag::TR, idxTr2}, &idxTr2);
-        if (!trNode2 || !trNode1->isValid()) { Q_ASSERT(0); return; }
+        BFR_RETURN_VOID_IF(!trNode2 || !trNode1->isValid(), "Invalid node");
 
-        if (trNode1->getChildElementCount() != 2) { Q_ASSERT(0); return; }
-        if (trNode2->getChildElementCount() != 2) { Q_ASSERT(0); return; }
-        if (idxTr1 != 0) { Q_ASSERT(0); return; }
-        if (idxTr2 != 1) { Q_ASSERT(0); return; }
+        BFR_RETURN_VOID_IF(trNode1->getChildElementCount() != 2, "Invalid child element count");
+        BFR_RETURN_VOID_IF(trNode2->getChildElementCount() != 2, "Invalid child element count");
+        BFR_RETURN_VOID_IF(idxTr1 != 0, "Invalid node index");
+        BFR_RETURN_VOID_IF(idxTr2 != 1, "Invalid node index");
 
         // each tr tag has two child td tags
         // tr1:
@@ -835,12 +845,14 @@ void ForumPageParser::fillPostList(QtGumboNodePtr node, UserPosts& posts)
 
 PostHyperlinkPtr ForumPageParser::parseHyperlink(QtGumboNodePtr aNode) const
 {
-    if (!aNode || !aNode->isValid() || !aNode->isElement()) { Q_ASSERT(0); return nullptr; }
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(PostHyperlinkPtr);
+    BFR_RETURN_RESULT_IF(!aNode || !aNode->isValid() || !aNode->isElement(), "Invalid input parameters");
 
     // Read hyperlink target
     QString urlStr = aNode->getAttribute("href");
-    if (!urlStr.startsWith(g_bankiRuHost) && !urlStr.startsWith("http")) urlStr.prepend(g_bankiRuHost);
-    if (!QUrl(urlStr).isValid()) { Q_ASSERT(0); return nullptr; }
+    if (!urlStr.startsWith(g_bankiRuHost) && !urlStr.startsWith("http"))
+        urlStr.prepend(g_bankiRuHost);
+    BFR_RETURN_RESULT_IF(!QUrl(urlStr).isValid(), "Invalid hyperlink URL");
 
     // Read hyperlink balloon tip
     QString tipStr = aNode->getAttribute("title");
@@ -855,19 +867,21 @@ PostHyperlinkPtr ForumPageParser::parseHyperlink(QtGumboNodePtr aNode) const
 
 PostImagePtr ForumPageParser::parseImage(QtGumboNodePtr imgNode) const
 {
-    if (!imgNode || !imgNode->isValid() || !imgNode->isElement()) { Q_ASSERT(0); return nullptr; }
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(PostImagePtr);
+    BFR_RETURN_RESULT_IF(!imgNode || !imgNode->isValid() || !imgNode->isElement(), "Invalid input parameters");
 
     PostImagePtr result(new PostImage);
 
     // Get image URL
     QString imageSrcStr = imgNode->getAttribute("src");
-    if (imageSrcStr.isEmpty()) { Q_ASSERT(0); return nullptr; }
-    if (imageSrcStr.startsWith("//")) imageSrcStr.prepend("http:");
+    BFR_RETURN_RESULT_IF(imageSrcStr.isEmpty(), "Image source attribute is empty or absent");
+    if (imageSrcStr.startsWith("//"))
+        imageSrcStr.prepend("http:");
     else if (!imageSrcStr.startsWith(g_bankiRuHost) && !imageSrcStr.startsWith("http:") && !imageSrcStr.startsWith("https:"))
     {
         imageSrcStr.prepend(g_bankiRuHost);
     }
-    if (!QUrl(imageSrcStr).isValid()) { Q_ASSERT(0); return nullptr; }
+    BFR_RETURN_RESULT_IF(!QUrl(imageSrcStr).isValid(), "Invalid image URL");
     result->m_url = imageSrcStr;
 
     // Get image width
@@ -876,7 +890,7 @@ PostImagePtr ForumPageParser::parseImage(QtGumboNodePtr imgNode) const
     {
         bool imageWidthOk = false;
         result->m_width = imageWidthStr.toInt(&imageWidthOk);
-        if (!imageWidthOk) { Q_ASSERT(0); return nullptr; }
+        BFR_RETURN_RESULT_IF(!imageWidthOk, "Invalid image width string format: not a number");
     }
 
     // Get image height
@@ -885,7 +899,7 @@ PostImagePtr ForumPageParser::parseImage(QtGumboNodePtr imgNode) const
     {
         bool imageHeightOk = false;
         result->m_height = imageHeightStr.toInt(&imageHeightOk);
-        if (!imageHeightOk) { Q_ASSERT(0); return nullptr; }
+        BFR_RETURN_RESULT_IF(!imageHeightOk, "Invalid image height string format: not a number");
     }
 
     // Get image border size
@@ -894,7 +908,7 @@ PostImagePtr ForumPageParser::parseImage(QtGumboNodePtr imgNode) const
     {
         bool imageBorderOk = false;
         result->m_border = imageBorderStr.toInt(&imageBorderOk);
-        if (!imageBorderOk) { Q_ASSERT(0); return nullptr; }
+        BFR_RETURN_RESULT_IF(!imageBorderOk, "Invalid image border string format: not a number");
     }
 
     // Get image alternative name
@@ -911,17 +925,19 @@ PostImagePtr ForumPageParser::parseImage(QtGumboNodePtr imgNode) const
 
 PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const
 {
-    if (!tableNode || !tableNode->isValid()) { Q_ASSERT(0); return nullptr; }
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(PostQuotePtr);
+
+    BFR_RETURN_RESULT_IF(!tableNode || !tableNode->isValid(), "Invalid input parameters");
 
     PostQuotePtr result(new PostQuote);
 
     // Read the quote title
     QtGumboNodePtr theadTrThNode = tableNode->getElementByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}});
-    if (!theadTrThNode || !theadTrThNode->isValid()) { Q_ASSERT(0); return nullptr; }
+    BFR_RETURN_RESULT_IF(!theadTrThNode || !theadTrThNode->isValid(), "Invalid node");
     result->m_title = theadTrThNode->getChildrenInnerText();
 
     QtGumboNodePtr tbodyTrTdNode = tableNode->getElementByTag({{HtmlTag::TBODY, 1}, {HtmlTag::TR, 0}, {HtmlTag::TD, 0}});
-    if (!tbodyTrTdNode || !tbodyTrTdNode->isValid()) { Q_ASSERT(0); return nullptr; }
+    BFR_RETURN_RESULT_IF(!tbodyTrTdNode || !tbodyTrTdNode->isValid(), "Invalid node");
 
     // Read the quote author and source: e.g.
     // <b>QWASQ</b> <a href="/forum/?PAGE_NAME=message&FID=22&TID=74420&MID=4453640#message4453640" target="_blank" rel="nofollow">пишет</a>:<br />
@@ -942,17 +958,17 @@ PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const
 
         // <a>
         tbodyTrTdNodeChildIndex++;
-        if (!tbodyTrTdANode || !tbodyTrTdANode->isValid()) { Q_ASSERT(0); return nullptr; }
+        BFR_RETURN_RESULT_IF(!tbodyTrTdANode || !tbodyTrTdANode->isValid(), "Invalid node");
         QString quoteSourceUrl = tbodyTrTdANode->getAttribute("href");
         if (!quoteSourceUrl.startsWith(g_bankiRuHost))
         {
             quoteSourceUrl.replace("/forum/?", g_bankiRuHost + "/forum/?");
         }
         result->m_url = QUrl(quoteSourceUrl);
-        if (!result->m_url.isValid()) { Q_ASSERT(0); return nullptr; }
+        BFR_RETURN_RESULT_IF(!result->m_url.isValid(), "Invalid quote source URL");
 
         // Find the quote body start
-        Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode->getChildElementCount(false));
+        BFR_RETURN_RESULT_IF(tbodyTrTdNodeChildIndex >= tbodyTrTdNode->getChildElementCount(false), "Invalid node index");
         QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
         for (int i = tbodyTrTdNodeChildIndex; i < tbodyTrTdChildren.size(); ++i)
         {
@@ -976,7 +992,7 @@ PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const
 
     // Read the quote body
     // NOTE: quote text is HTML too
-    Q_ASSERT(tbodyTrTdNodeChildIndex < tbodyTrTdNode->getChildElementCount(false));
+    BFR_RETURN_RESULT_IF(tbodyTrTdNodeChildIndex >= tbodyTrTdNode->getChildElementCount(false), "Invalid node index");
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
 
  #ifdef BFR_PRINT_DEBUG_OUTPUT
@@ -1003,21 +1019,23 @@ PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const
 
 PostSpoilerPtr ForumPageParser::parseSpoiler(QtGumboNodePtr tableNode) const
 {
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(PostSpoilerPtr);
+
+    BFR_RETURN_RESULT_IF(!tableNode || !tableNode->isValid(), "Invalid input parameters");
+
     PostSpoilerPtr result(new PostSpoiler);
 
     // Read the quote title
     QtGumboNodePtr theadTrThNode = tableNode->getElementByTag({{HtmlTag::THEAD, 0}, {HtmlTag::TR, 0}, {HtmlTag::TH, 0}, {HtmlTag::DIV, 0}});
-    Q_ASSERT(theadTrThNode->isValid()); if (!theadTrThNode->isValid()) return PostSpoilerPtr();
+    BFR_RETURN_RESULT_IF(!theadTrThNode || !theadTrThNode->isValid(), "Invalid node");
     result->m_title = theadTrThNode->getChildrenInnerText();
-    Q_ASSERT(result->m_title[result->m_title.size()-1] == QChar(9650).unicode()
-          || result->m_title[result->m_title.size()-1] == QChar(9660).unicode());
-    if ((result->m_title[result->m_title.size()-1] != QChar(9650).unicode())
-     && (result->m_title[result->m_title.size()-1] != QChar(9660).unicode())) return PostSpoilerPtr();
+    BFR_RETURN_RESULT_IF((result->m_title.back() != QChar(9650).unicode()) && (result->m_title.back() != QChar(9660).unicode()), "Invalid spoiler title char");
+
     result->m_title = result->m_title.remove(result->m_title.size()-1, 1);
     result->m_title = result->m_title.trimmed();
 
     QtGumboNodePtr tbodyTrTdNode = tableNode->getElementByTag({{HtmlTag::TBODY, 0}, {HtmlTag::TR, 0}, {HtmlTag::TD, 0}});
-    Q_ASSERT(tbodyTrTdNode->isValid());
+    BFR_RETURN_RESULT_IF(!tbodyTrTdNode->isValid(), "Invalid node");
 
     // Read the spoiler body
     // NOTE: spoiler text is HTML too
@@ -1049,10 +1067,12 @@ namespace
 {
 QByteArray convertHtmlToUft8(QByteArray rawHtmlData)
 {
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(QByteArray);
+
     QByteArray result;
 
-    QTextCodec* htmlCodec = QTextCodec::codecForHtml(rawHtmlData);
-    Q_ASSERT(htmlCodec); if (!htmlCodec) return QByteArray();
+    QTextCodec *htmlCodec = QTextCodec::codecForHtml(rawHtmlData);
+    BFR_RETURN_RESULT_IF(!htmlCodec, "No HTML codec found");
 #ifdef BFR_PRINT_DEBUG_OUTPUT
     ConsoleLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
 #endif
@@ -1064,8 +1084,10 @@ QByteArray convertHtmlToUft8(QByteArray rawHtmlData)
 
 result_code::Type ForumPageParser::getPageCount(QByteArray rawData, int &pageCount)
 {
+    BFR_DECLARE_RETURN_INVALID_VALUE(result_code::Type, result_code::Type::Fail);
+
     QByteArray utfData = convertHtmlToUft8(rawData);
-    if (utfData.isEmpty()) { Q_ASSERT(0); return result_code::Type::Fail; }
+    BFR_RETURN_RESULT_IF(utfData.isEmpty(), "Unable to convert HTML page contents to UTF-8");
 
     findPageCount(rawData, pageCount);
 
@@ -1075,8 +1097,10 @@ result_code::Type ForumPageParser::getPageCount(QByteArray rawData, int &pageCou
 
 result_code::Type ForumPageParser::getPagePosts(QByteArray rawData, UserPosts &userPosts)
 {
+    BFR_DECLARE_RETURN_INVALID_VALUE(result_code::Type, result_code::Type::Fail);
+
     QByteArray utfData = convertHtmlToUft8(rawData);
-    if (utfData.isEmpty()) { Q_ASSERT(0); return result_code::Type::Fail; }
+    BFR_RETURN_RESULT_IF(utfData.isEmpty(), "Unable to convert HTML page contents to UTF-8");
 
     m_htmlDocument.reset(new QtGumboDocument(utfData));
 

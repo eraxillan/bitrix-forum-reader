@@ -24,7 +24,7 @@ enum class Type
 
 inline bool succeeded(Type rc)
 {
-    return (rc == Type::Ok || rc == Type::OkFalse);
+    return ((rc == Type::Ok) || (rc == Type::OkFalse));
 }
 
 inline bool failed(Type rc)
@@ -33,5 +33,11 @@ inline bool failed(Type rc)
 }
 
 }  // namespace result_code
+
+
+#define BFR_DECLARE_RETURN_INVALID_VALUE(Type, value) static Type __invalid_return_value__ = value;
+#define BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(Type) static Type __invalid_return_value__;
+#define BFR_RETURN_VOID_IF(cond, msg) { if (cond) { Q_ASSERT_X(0, Q_FUNC_INFO, msg); ConsoleLogger->error("{}: assert failure with message '{}'", Q_FUNC_INFO, msg); return; } }
+#define BFR_RETURN_RESULT_IF(cond, msg) { if (cond) { Q_ASSERT_X(0, Q_FUNC_INFO, msg); ConsoleLogger->error("{}: assert failure with message '{}'", Q_FUNC_INFO, msg); return __invalid_return_value__; } }
 
 #endif // __BFR_RESULTCODE_H__
