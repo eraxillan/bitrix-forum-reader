@@ -35,9 +35,9 @@ private:
     void findPageCount(QString rawData, int &pageCount);
     UserBaseInfo getUserBaseInfo(QtGumboNodePtr userInfoNode);
     UserAdditionalInfo getUserAdditionalInfo(QtGumboNodePtr userInfoNode);
-    QSharedPointer<PostImage> getUserAvatar(QtGumboNodePtr userInfoNode);
-    User getPostUser(QtGumboNodePtr trNode1);
-    Post getPostValue(QtGumboNodePtr trNode1);
+    PostImagePtr getUserAvatar(QtGumboNodePtr userInfoNode);
+    UserPtr getPostUser(QtGumboNodePtr trNode1);
+    PostPtr getPostValue(QtGumboNodePtr trNode1);
     QString getPostLastEdit(QtGumboNodePtr postEntryNode);
     QString getPostUserSignature(QtGumboNodePtr postEntryNode);
     IPostObjectList getPostAttachments(QtGumboNodePtr postEntryNode);
@@ -45,10 +45,10 @@ private:
     int getPostId(QtGumboNodePtr msdivNode);
     void fillPostList(QtGumboNodePtr node, UserPosts &posts);
 
-    QSharedPointer<PostHyperlink> parseHyperlink(QtGumboNodePtr aNode) const;
-    QSharedPointer<PostImage> parseImage(QtGumboNodePtr imgNode) const;
-    QSharedPointer<PostQuote> parseQuote(QtGumboNodePtr tableNode) const;
-    QSharedPointer<PostSpoiler> parseSpoiler(QtGumboNodePtr tableNode) const;
+    PostHyperlinkPtr parseHyperlink(QtGumboNodePtr aNode) const;
+    PostImagePtr parseImage(QtGumboNodePtr imgNode) const;
+    PostQuotePtr parseQuote(QtGumboNodePtr tableNode) const;
+    PostSpoilerPtr parseSpoiler(QtGumboNodePtr tableNode) const;
 
     void parseMessage(QtGumboNodes nodes, IPostObjectList& postObjects) const;
 

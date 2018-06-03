@@ -128,7 +128,8 @@ HEADERS += \
     website_backend/websiteinterface.h      \
     website_backend/gumboparserimpl.h       \
     qml_frontend/forumreader.h \
-    common/logger.h
+    common/logger.h \
+    website_backend/websiteinterface_fwd.h
 
 RESOURCES += qml_frontend/qml.qrc
 

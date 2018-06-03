@@ -5,6 +5,8 @@
 
 #include <common/resultcode.h>
 
+#include <website_backend/websiteinterface_fwd.h>
+
 //#define BFR_QML_OUTPUT_DIR QString("__temp_qml")
 
 #define BFR_SHOW_SPOILER
@@ -28,7 +30,6 @@ namespace bfr
         virtual uint    getHash(uint seed) const = 0;
         virtual QString getQmlString(int randomSeed) const = 0;
     };
-    using IPostObjectList = QList<QSharedPointer<IPostObject>>;
 
     // NOTE: spoiler text is HTML
     struct PostSpoiler : IPostObject
@@ -168,8 +169,8 @@ namespace bfr
         QDateTime m_date;
 //		QUrl m_permalink;
 
-        //void addObject(QSharedPointer<IPostObject> obj);
-        //void removeObject(QSharedPointer<IPostObject> obj);
+        //void addObject(IPostObjectPtr obj);
+        //void removeObject(IPostObjectPtr obj);
 
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
@@ -184,7 +185,7 @@ namespace bfr
         QUrl m_userProfileUrl;
 
         // Avatar info
-        QSharedPointer<PostImage> m_userAvatar;
+        PostImagePtr m_userAvatar;
 
         // Additional info
         QUrl m_allPostsUrl;
@@ -197,10 +198,6 @@ namespace bfr
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
     };
-
-    using UserPost = QPair<User, Post>;
-    using UserPosts = QVector<UserPost>;
-    using PageUserPosts = QVector<UserPosts>;
 
     //---------------------------------------------------------------------------------------------
     // Interfaces

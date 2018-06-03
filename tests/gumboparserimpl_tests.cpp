@@ -58,8 +58,8 @@ TEST_CASE("Get forum page posts", "[FileDownloader][ForumPageParser]") {
                     /*SECTION("Validating forum page posts") */{
                         for (int j = 1; j <= userPosts.size(); ++j) {
                             INFO("Forum post number: " << j);
-                            REQUIRE(userPosts[j-1].first.isValid());
-                            REQUIRE(userPosts[j-1].second.isValid());
+                            REQUIRE(userPosts[j-1].first->isValid());
+                            REQUIRE(userPosts[j-1].second->isValid());
                         }
                     }
                 }

@@ -704,7 +704,7 @@ QString PostHyperlink::getQmlString(int randomSeed) const
 
 IForumPageReader::~IForumPageReader() {}
 
-//void Post::addObject(QSharedPointer<IPostObject> obj)
+//void Post::addObject(IPostObjectPtr obj)
 //{
 //    m_data.append(obj);
 //}
