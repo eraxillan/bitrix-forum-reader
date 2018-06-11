@@ -15,9 +15,15 @@ enum class Type
     CurlError,
     // System
     NetworkError,
+    InputOutputError,
     // Forum parser
     ForumPageParserError,
     ForumParserError,
+    // Serialization
+#ifdef BFR_SERIALIZATION_ENABLED
+    InvalidFileFormat,
+    InvalidFileVersion,
+#endif  // #ifdef BFR_SERIALIZATION_ENABLED
     // TODO: others
     Count
 };

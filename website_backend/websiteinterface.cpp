@@ -1,6 +1,518 @@
 #include "websiteinterface.h"
 #include "common/logger.h"
 
+#ifdef BFR_SERIALIZATION_ENABLED
+
+namespace {
+static const quint32 BFR_SERIALIZATION_MAGIC = 0xBF6EADE6;
+static const quint32 BFR_SERIALIZATION_VERSION = 0x00000001;
+}
+
+QDataStream &operator << (QDataStream &stream, const bfr::IPostObject &obj)
+{
+    return obj.serialize(stream);
+}
+QDataStream &operator >> (QDataStream &stream, bfr::IPostObject &obj)
+{
+    return obj.deserialize(stream);
+}
+
+QDataStream &operator << (QDataStream &stream, const bfr::IPostObjectList &postList)
+{
+    stream << postList.size();
+    foreach (const auto &postObj, postList)
+        postObj->serialize(stream);
+
+    return stream;
+}
+QDataStream &operator >> (QDataStream &stream, bfr::IPostObjectList &postList)
+{
+    int size = 0;
+    stream >> size;
+    Q_ASSERT(size >= 0);
+    for (int i = 0; i < size; ++i)
+    {
+        static_assert(bfr::PostObjectTypeCount == 10, "FIXME: implement new PostObject types first");
+        int postObjectType = bfr::InvalidType;
+        stream >> postObjectType;
+        switch (postObjectType)
+        {
+        case bfr::SpoilerType:
+        {
+            bfr::PostSpoilerPtr spoiler(new bfr::PostSpoiler);
+            spoiler->deserialize(stream);
+            postList.push_back(spoiler);
+            break;
+        }
+        case bfr::QuoteType:
+        {
+            bfr::PostQuotePtr quote(new bfr::PostQuote);
+            quote->deserialize(stream);
+            postList.push_back(quote);
+            break;
+        }
+        case bfr::ImageType:
+        {
+            bfr::PostImagePtr image(new bfr::PostImage);
+            image->deserialize(stream);
+            postList.push_back(image);
+            break;
+        }
+        case bfr::LineBreakType:
+        {
+            bfr::PostLineBreakPtr linebreak(new bfr::PostLineBreak);
+            linebreak->deserialize(stream);
+            postList.push_back(linebreak);
+            break;
+        }
+        case bfr::PlainTextType:
+        {
+            bfr::PostPlainTextPtr plaintext(new bfr::PostPlainText);
+            plaintext->deserialize(stream);
+            postList.push_back(plaintext);
+            break;
+        }
+        case bfr::RichTextType:
+        {
+            bfr::PostRichTextPtr richtext(new bfr::PostRichText);
+            richtext->deserialize(stream);
+            postList.push_back(richtext);
+            break;
+        }
+        case bfr::VideoType:
+        {
+            bfr::PostVideoPtr video(new bfr::PostVideo);
+            video->deserialize(stream);
+            postList.push_back(video);
+            break;
+        }
+        case bfr::HyperlinkType:
+        {
+            bfr::PostHyperlinkPtr hyperlink(new bfr::PostHyperlink);
+            hyperlink->deserialize(stream);
+            postList.push_back(hyperlink);
+            break;
+        }
+        case bfr::PostType:
+        {
+            bfr::PostPtr post(new bfr::Post);
+            post->deserialize(stream);
+            postList.push_back(post);
+            break;
+        }
+        case bfr::UserType:
+        {
+            bfr::UserPtr user(new bfr::User);
+            user->deserialize(stream);
+            postList.push_back(user);
+            break;
+        }
+        default: Q_ASSERT(0);
+        }
+    }
+
+    return stream;
+}
+
+QDataStream& operator << (QDataStream &stream, const bfr::PostList &obj)
+{
+    stream << obj.size();
+    foreach (const auto &post, obj)
+        post->serialize(stream);
+
+    return stream;
+}
+QDataStream& operator >> (QDataStream &stream, bfr::PostList &obj)
+{
+    int size = 0;
+    stream >> size;
+    for (int i = 0; i < size; i++)
+    {
+        int type = bfr::InvalidType;
+        stream >> type;
+        Q_ASSERT(type == bfr::PostType);
+
+        bfr::PostPtr postObj(new bfr::Post);
+        postObj->deserialize(stream);
+        obj.push_back(postObj);
+    }
+
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::PostSpoiler &obj)
+QDataStream &bfr::PostSpoiler::serialize(QDataStream &stream) const
+{
+    // QString m_title;
+    // IPostObjectList m_data;
+    //
+    stream << SpoilerType;
+    stream << m_title;
+    stream << m_data;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::PostSpoiler &obj)
+QDataStream &bfr::PostSpoiler::deserialize(QDataStream &stream)
+{
+    stream >> m_title;
+    stream >> m_data;
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::PostQuote &obj)
+QDataStream &bfr::PostQuote::serialize(QDataStream &stream) const
+{
+    // QString m_title;
+    // QString m_userName;
+    // QUrl m_url;
+    // IPostObjectList m_data;
+    //
+    stream << QuoteType;
+    stream << m_title;
+    stream << m_userName;
+    stream << m_url;
+    stream << m_data;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::PostQuote &obj)
+QDataStream &bfr::PostQuote::deserialize(QDataStream &stream)
+{
+    stream >> m_title;
+    stream >> m_userName;
+    stream >> m_url;
+    stream >> m_data;
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::PostImage &obj)
+QDataStream &bfr::PostImage::serialize(QDataStream &stream) const
+{
+    // QString m_url;
+    // int m_width = -1;
+    // int m_height = -1;
+    // int m_border = -1;
+    // QString m_altName;
+    // QString m_id;
+    // QString m_className;
+    //
+    stream << ImageType;
+    stream << m_url;
+    stream << m_width;
+    stream << m_height;
+    stream << m_border;
+    stream << m_altName;
+    stream << m_id;
+    stream << m_className;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::PostImage &obj)
+QDataStream &bfr::PostImage::deserialize(QDataStream &stream)
+{
+    stream >> m_url;
+    stream >> m_width;
+    stream >> m_height;
+    stream >> m_border;
+    stream >> m_altName;
+    stream >> m_id;
+    stream >> m_className;
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::PostLineBreak &obj)
+QDataStream &bfr::PostLineBreak::serialize(QDataStream &stream) const
+{
+    stream << LineBreakType;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::PostLineBreak &obj)
+QDataStream &bfr::PostLineBreak::deserialize(QDataStream &stream)
+{
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::PostPlainText &obj)
+QDataStream &bfr::PostPlainText::serialize(QDataStream &stream) const
+{
+    // QString m_text;
+    //
+    stream << PlainTextType;
+    stream << m_text;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::PostPlainText &obj)
+QDataStream &bfr::PostPlainText::deserialize(QDataStream &stream)
+{
+    stream >> m_text;
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::PostRichText &obj)
+QDataStream &bfr::PostRichText::serialize(QDataStream &stream) const
+{
+    // QString m_text;
+    // QString m_color = "black";
+    // bool m_isBold = false;
+    // bool m_isItalic = false;
+    // bool m_isUnderlined = false;
+    // bool m_isStrikedOut = false;
+    //
+    stream << RichTextType;
+    stream << m_text;
+    stream << m_color;
+    stream << m_isBold;
+    stream << m_isItalic;
+    stream << m_isUnderlined;
+    stream << m_isStrikedOut;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::PostRichText &obj)
+QDataStream &bfr::PostRichText::deserialize(QDataStream &stream)
+{
+    stream >> m_text;
+    stream >> m_color;
+    stream >> m_isBold;
+    stream >> m_isItalic;
+    stream >> m_isUnderlined;
+    stream >> m_isStrikedOut;
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::PostVideo &obj)
+QDataStream &bfr::PostVideo::serialize(QDataStream &stream) const
+{
+    // QString m_urlStr;
+    // QUrl m_url;
+    //
+    stream << VideoType;
+    stream << m_urlStr;
+    stream << m_url;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::PostVideo &obj)
+QDataStream &bfr::PostVideo::deserialize(QDataStream &stream)
+{
+    stream >> m_urlStr;
+    stream >> m_url;
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::PostHyperlink &obj)
+QDataStream &bfr::PostHyperlink::serialize(QDataStream &stream) const
+{
+    // QString m_urlStr;
+    // QUrl m_url;
+    // QString m_title;
+    // QString m_tip;
+    // QString m_rel;
+    //
+    stream << HyperlinkType;
+    stream << m_urlStr;
+    stream << m_url;
+    stream << m_title;
+    stream << m_tip;
+    stream << m_rel;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::PostHyperlink &obj)
+QDataStream &bfr::PostHyperlink::deserialize(QDataStream &stream)
+{
+    stream >> m_urlStr;
+    stream >> m_url;
+    stream >> m_title;
+    stream >> m_tip;
+    stream >> m_rel;
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::Post &obj)
+QDataStream &bfr::Post::serialize(QDataStream &stream) const
+{
+    // int m_id = -1;
+    // int m_likeCounter = -1;
+    // IPostObjectList m_data;
+    // QString m_lastEdit;
+    // QString m_userSignature;
+    // QDateTime m_date;
+    // UserPtr m_author;
+    //
+    stream << PostType;
+    stream << m_id;
+    stream << m_likeCounter;
+    stream << m_data;
+    stream << m_lastEdit;
+    stream << m_userSignature;
+    stream << m_date;
+    stream << (*m_author);
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::Post &obj)
+QDataStream &bfr::Post::deserialize(QDataStream &stream)
+{
+    stream >> m_id;
+    stream >> m_likeCounter;
+    stream >> m_data;
+    stream >> m_lastEdit;
+    stream >> m_userSignature;
+    stream >> m_date;
+    m_author.reset(new User);
+    int authorType = InvalidType;
+    stream >> authorType;
+    Q_ASSERT(authorType == UserType);
+    stream >> (*m_author);
+    return stream;
+}
+
+// QDataStream &operator<<(QDataStream &stream, const bfr::User &obj)
+QDataStream &bfr::User::serialize(QDataStream &stream) const
+{
+    // int m_userId = -1;
+    // QString m_userName;
+    // QUrl m_userProfileUrl;
+    // PostImagePtr m_userAvatar;
+    // QUrl m_allPostsUrl;
+    // int m_postCount = -1;
+    // QDate m_registrationDate;
+    // int m_reputation = -1;
+    // QString m_city;
+    //
+    stream << UserType;
+    stream << m_userId;
+    stream << m_userName;
+    stream << m_userProfileUrl;
+
+    stream << (m_userAvatar ? true : false);
+    if (m_userAvatar)
+        stream << (*m_userAvatar);
+
+    stream << m_allPostsUrl;
+    stream << m_postCount;
+    stream << m_registrationDate;
+    stream << m_reputation;
+    stream << m_city;
+    return stream;
+}
+// QDataStream &operator>>(QDataStream &stream, bfr::User &obj)
+QDataStream &bfr::User::deserialize(QDataStream &stream)
+{
+    stream >> m_userId;
+    stream >> m_userName;
+    stream >> m_userProfileUrl;
+
+    bool haveAvatar = false;
+    stream >> haveAvatar;
+    if (haveAvatar)
+    {
+        int imageType = InvalidType;
+        stream >> imageType;
+        Q_ASSERT(imageType == ImageType);
+        m_userAvatar.reset(new PostImage);
+        stream >> (*m_userAvatar);
+    }
+
+    stream >> m_allPostsUrl;
+    stream >> m_postCount;
+    stream >> m_registrationDate;
+    stream >> m_reputation;
+    stream >> m_city;
+    return stream;
+}
+
+namespace bfr {
+
+result_code::Type serializePosts(const bfr::PostList &posts)
+{
+    QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (!localDataDir.endsWith(QDir::separator()))
+        localDataDir += QDir::separator();
+    QDir localDataDirObj(localDataDir);
+    if (!localDataDirObj.exists())
+    {
+        ConsoleLogger->warn("Local data directory not exists, trying to create it...");
+        if (!localDataDirObj.mkpath(localDataDir))
+        {
+            ConsoleLogger->error("Unable to create local data directory");
+            return result_code::Type::InputOutputError;
+        }
+
+        ConsoleLogger->info("Local data directory was successfully created");
+    }
+
+    QString filePath = localDataDir + "bfr.dat";
+    ConsoleLogger->info("Forum posts database file path: {}", filePath.toStdString());
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        ConsoleLogger->error("Unable to create file '{}'", filePath);
+        return result_code::Type::InputOutputError;
+    }
+
+    QDataStream out(&file);
+
+    // Write a header with a "magic number" and a version
+    out << (quint32)BFR_SERIALIZATION_MAGIC;
+    out << (quint32)BFR_SERIALIZATION_VERSION;
+
+    out.setVersion(QDataStream::Qt_5_10);
+
+    // Write the data
+    out << posts;
+
+    return result_code::Type::Ok;
+}
+
+result_code::Type deserializePosts(bfr::PostList &posts)
+{
+    QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (!localDataDir.endsWith(QDir::separator()))
+        localDataDir += QDir::separator();
+    QDir localDataDirObj(localDataDir);
+    if (!localDataDirObj.exists())
+    {
+        ConsoleLogger->error("Local data directory not exists");
+        return result_code::Type::InputOutputError;
+    }
+
+    QString filePath = localDataDir + "bfr.dat";
+    ConsoleLogger->info("Forum posts database file path: {}", filePath.toStdString());
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        ConsoleLogger->error("Unable to open file '{}'", filePath);
+        return result_code::Type::InputOutputError;
+    }
+
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_5_10);
+
+    // Write a header with a "magic number" and a version
+    quint32 magicNumber = 0;
+    out >> magicNumber;
+    if (magicNumber != BFR_SERIALIZATION_MAGIC)
+    {
+        ConsoleLogger->error("Invalid file format");
+        return result_code::Type::InvalidFileFormat;
+    }
+
+    quint32 versionNumber = 0;
+    out >> versionNumber;
+    if (versionNumber != BFR_SERIALIZATION_VERSION)
+    {
+        ConsoleLogger->error("Invalid file version");
+        return result_code::Type::InvalidFileVersion;
+    }
+
+    // Read the data
+    out >> posts;
+    return result_code::Type::Ok;
+}
+
+} // namespace bfr
+
+#endif // #ifdef BFR_SERIALIZATION_ENABLED
+
+
 #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
 namespace {
 static bool WriteTextFile(QString fileName, QString fileContents)
@@ -14,7 +526,7 @@ static bool WriteTextFile(QString fileName, QString fileContents)
     return true;
 }
 }
-#endif
+#endif  // #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
 
 namespace bfr
 {
@@ -717,7 +1229,8 @@ bool Post::isValid() const
 uint Post::getHash(uint seed) const
 {
     uint dataHash = 0;
-    for (auto obj : m_data) dataHash ^= obj->getHash(seed);
+    for (auto obj : m_data)
+        dataHash ^= obj->getHash(seed);
 
     return qHash(m_id, seed) ^ qHash(m_likeCounter, seed) ^ dataHash
         ^ qHash(m_lastEdit, seed) ^ qHash(m_userSignature, seed) ^ qHash(m_date, seed);

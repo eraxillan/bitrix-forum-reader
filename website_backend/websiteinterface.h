@@ -9,6 +9,7 @@
 
 //#define BFR_QML_OUTPUT_DIR QString("__temp_qml")
 
+// FIXME: move those defines to project files
 #define BFR_SHOW_SPOILER
 #define BFR_SHOW_QUOTE
 #define BFR_SHOW_IMAGE
@@ -22,6 +23,13 @@ namespace bfr
 {
     const QString QUOTE_WRITE_VERB = "пишет";
 
+#ifdef BFR_SERIALIZATION_ENABLED
+    enum PostObjectType { InvalidType = -1, SpoilerType = 0, QuoteType, ImageType, LineBreakType, PlainTextType, RichTextType, VideoType, HyperlinkType, PostType, UserType, PostObjectTypeCount };
+
+    result_code::Type serializePosts(const bfr::PostList &posts);
+    result_code::Type deserializePosts(bfr::PostList &posts);
+#endif  // #ifdef BFR_SERIALIZATION_ENABLED
+
     struct IPostObject
     {
         virtual ~IPostObject();
@@ -29,6 +37,11 @@ namespace bfr
         virtual bool    isValid() const = 0;
         virtual uint    getHash(uint seed) const = 0;
         virtual QString getQmlString(int randomSeed) const = 0;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        virtual QDataStream &serialize(QDataStream &stream) const = 0;
+        virtual QDataStream &deserialize(QDataStream &stream) = 0;
+#endif
     };
 
     // NOTE: spoiler text is HTML
@@ -42,6 +55,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     // NOTE: quote text is HTML
@@ -57,6 +75,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     struct PostImage : IPostObject
@@ -75,6 +98,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     struct PostLineBreak : IPostObject
@@ -84,6 +112,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     struct PostPlainText : IPostObject
@@ -96,6 +129,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     struct PostRichText : IPostObject
@@ -113,6 +151,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     struct PostVideo : IPostObject
@@ -127,6 +170,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     // FIXME: implement hyperlink using Qt/QML power only, without Qt primitive HTML-mode of Text item
@@ -150,6 +198,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -174,6 +227,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     struct User : IPostObject
@@ -196,6 +254,11 @@ namespace bfr
         bool isValid() const Q_DECL_OVERRIDE;
         uint getHash(uint seed) const Q_DECL_OVERRIDE;
         QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+
+#ifdef BFR_SERIALIZATION_ENABLED
+        QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
+        QDataStream &deserialize(QDataStream &stream) Q_DECL_OVERRIDE;
+#endif
     };
 
     //---------------------------------------------------------------------------------------------
@@ -231,5 +294,146 @@ inline uint qHash(const bfr::User& key, uint seed)
 {
     return key.getHash(seed);
 }
+
+//---------------------------------------------------------------------------------------------
+
+inline bool operator == (const bfr::IPostObject &a, const bfr::IPostObject &b)
+{
+    return a.getHash(0) == b.getHash(0);
+}
+
+inline bool operator != (const bfr::IPostObject &a, const bfr::IPostObject &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::PostSpoiler &a, const bfr::PostSpoiler &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::PostSpoiler &a, const bfr::PostSpoiler &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::PostQuote &a, const bfr::PostQuote &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::PostQuote &a, const bfr::PostQuote &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::PostImage &a, const bfr::PostImage &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::PostImage &a, const bfr::PostImage &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::PostLineBreak &a, const bfr::PostLineBreak &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::PostLineBreak &a, const bfr::PostLineBreak &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::PostPlainText &a, const bfr::PostPlainText &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::PostPlainText &a, const bfr::PostPlainText &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::PostRichText &a, const bfr::PostRichText &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::PostRichText &a, const bfr::PostRichText &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::PostVideo &a, const bfr::PostVideo &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::PostVideo &a, const bfr::PostVideo &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::PostHyperlink &a, const bfr::PostHyperlink &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::PostHyperlink &a, const bfr::PostHyperlink &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::User &a, const bfr::User &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::User &a, const bfr::User &b)
+{
+    return !(a == b);
+}
+
+inline bool operator == (const bfr::Post &a, const bfr::Post &b)
+{
+    return (a.getHash(0) == b.getHash(0));
+}
+
+inline bool operator != (const bfr::Post &a, const bfr::Post &b)
+{
+    return !(a == b);
+}
+
+inline bool comparePostLists (const bfr::PostList &a, const bfr::PostList &b)
+{
+    if (a.size() != b.size())
+        return false;
+
+    for (int i = 0; i < a.size(); i++)
+    {
+        if ((*a[i]) != (*b[i]))
+            return false;
+    }
+
+    return true;
+}
+
+//---------------------------------------------------------------------------------------------
+
+#ifdef BFR_SERIALIZATION_ENABLED
+
+QDataStream &operator << (QDataStream &stream, const bfr::IPostObject &obj);
+QDataStream &operator >> (QDataStream &stream, bfr::IPostObject &obj);
+
+QDataStream &operator << (QDataStream &stream, const bfr::IPostObjectList &obj);
+QDataStream &operator >> (QDataStream &stream, bfr::IPostObjectList &obj);
+
+QDataStream &operator << (QDataStream &stream, const bfr::PostList &obj);
+QDataStream &operator >> (QDataStream &stream, bfr::PostList &obj);
+
+#endif // #ifdef BFR_SERIALIZATION_ENABLED
 
 #endif // __BFR_WEBSITEINTERFACE_H__

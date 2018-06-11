@@ -106,6 +106,7 @@ INCLUDEPATH += "."
 # BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
 # BFR_PRINT_DEBUG_OUTPUT
 # BFR_DUMP_GENERATED_QML_IN_FILES
+DEFINES += BFR_SERIALIZATION_ENABLED
 
 #######################################################################################################################
 
