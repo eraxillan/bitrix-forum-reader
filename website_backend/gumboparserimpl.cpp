@@ -1036,8 +1036,8 @@ PostSpoilerPtr ForumPageParser::parseSpoiler(QtGumboNodePtr tableNode) const
     result->m_title = result->m_title.remove(result->m_title.size()-1, 1);
     result->m_title = result->m_title.trimmed();
 
-    QtGumboNodePtr tbodyTrTdNode = tableNode->getElementByTag({{HtmlTag::TBODY, 0}, {HtmlTag::TR, 0}, {HtmlTag::TD, 0}});
-    BFR_RETURN_RESULT_IF(!tbodyTrTdNode->isValid(), "Invalid node");
+    QtGumboNodePtr tbodyTrTdNode = tableNode->getElementByTag({{HtmlTag::TBODY, 1}, {HtmlTag::TR, 0}, {HtmlTag::TD, 0}});
+    BFR_RETURN_RESULT_IF(!tbodyTrTdNode || !tbodyTrTdNode->isValid(), "Invalid node");
 
     // Read the spoiler body
     // NOTE: spoiler text is HTML too
