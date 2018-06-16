@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
         engine.rootContext()->setContextProperty("textScaleFactor", textScaleFactor);
         */
 
-        engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+        engine.load("://qml/main.qml");
         if (engine.rootObjects().isEmpty())
             throw 1;
 
