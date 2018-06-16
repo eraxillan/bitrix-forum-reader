@@ -1,5 +1,16 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file>qml/Post.qml</file>
+        <file>qml/PostAnimatedImage.qml</file>
+        <file>qml/PostHyperlink.qml</file>
+        <file>qml/PostImage.qml</file>
+        <file>qml/PostLineBreak.qml</file>
+        <file>qml/PostPlainText.qml</file>
+        <file>qml/PostQuote.qml</file>
+        <file>qml/PostRichText.qml</file>
+        <file>qml/PostSpoiler.qml</file>
+        <file>qml/PostVideo.qml</file>
+        <file>qml/User.qml</file>
     </qresource>
 </RCC>

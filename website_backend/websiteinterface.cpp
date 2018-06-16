@@ -536,7 +536,17 @@ IPostObject::~IPostObject()
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
-// PostSpoiler
+namespace {
+QString readQmlFile(QString fileName)
+{
+    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(QString);
+
+    QFile f(fileName);
+    BFR_RETURN_RESULT_IF(!f.open(QIODevice::ReadOnly | QIODevice::Text), "Unable to open QML file");
+    return f.readAll();
+}
+}
+
 PostSpoiler::PostSpoiler()
 {
 }
@@ -557,89 +567,12 @@ QString PostSpoiler::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostSpoiler'; }\n");
 #else
-    const QString qmlStr =
-            "Rectangle {\n"
-            "   id: rctSpoiler%1;\n"
-            "   color: \"white\";\n"
-            "   width: rctItem.width - parent.rightPadding - parent.leftPadding - dp(20);\n"
-            "   height: rctQuoteTitle%1.height + txtSpoilerBody%1.height + 2*dp(5);\n"
-            "\n"
-            "   border.width: dp(2);\n"
-            "   border.color: \"silver\";\n"
-            "\n"
-            "   Rectangle {\n"
-            "       id: rctQuoteTitle%1;\n"
-            "       color: \"silver\";\n"
-            "       width: parent.width;\n"
-            "       height: txtQuoteTitle%1.height;\n"
-            "\n"
-            "       property int txtSpoilerBodyHeight: 0;\n"
-            "\n"
-            "       Component.onCompleted: {\n"
-            "           rctQuoteTitle%1MA.onClicked(null);\n"
-            "           rctQuoteTitle%1MA.onClicked(null);\n"
-            "           rctQuoteTitle%1MA.onClicked(null);\n"
-            "       }\n"
-            "\n"
-            "       MouseArea {\n"
-            "           id: rctQuoteTitle%1MA;\n"
-            "\n"
-            "           anchors.fill: parent;\n"
-            "           onClicked: {\n"
-            "               txtSpoilerBody%1.visible = !txtSpoilerBody%1.visible;\n"
-            "\n"
-            "               if (txtSpoilerBody%1.height > 0) {\n"
-            "                   rctQuoteTitle%1.txtSpoilerBodyHeight = txtSpoilerBody%1.height;\n"
-            "                   txtSpoilerBody%1.height = 0;\n"
-            "                   txtQuoteTitle%1.text = '%2 \u25BC';\n"
-            "                   rctSpoiler%1.height = Qt.binding(function() { return rctQuoteTitle%1.height + txtSpoilerBody%1.height - 2*dp(5); });\n"
-            "               } else {\n"
-            "                   txtSpoilerBody%1.height = rctQuoteTitle%1.txtSpoilerBodyHeight;\n"
-            "                   txtQuoteTitle%1.text = '%2 \u25B2';\n"
-            "                   rctSpoiler%1.height = Qt.binding(function() { return rctQuoteTitle%1.height + txtSpoilerBody%1.height + 2*dp(5); });\n"
-            "               }\n"
-            "           }\n"
-            "       }\n"
-            "\n"
-            "       Column {\n"
-            "           width: parent.width;\n"
-            "           height: parent.height;\n"
-            "           spacing: dp(5);\n"
-            "\n"
-            "           Text {\n"
-            "               id: txtQuoteTitle%1;\n"
-            "\n"
-            "               leftPadding: dp(10);\n"
-            "               horizontalAlignment: Text.AlignHCenter;\n"
-            "               verticalAlignment: Text.AlignVCenter;\n"
-            "\n"
-            "               width: parent.width;\n"
-            "\n"
-            "               font.pointSize: 14;\n"
-            "               font.bold: true;\n"
-            "               text: '%2';\n"
-            "           }\n"
-            "\n"
-            "           Flow {\n"
-            "               id: txtSpoilerBody%1;\n"
-            "\n"
-            "               leftPadding: dp(10);\n"
-            "\n"
-            "               width: parent.width;\n"
-            "\n"
-            "               %3\n"
-            "           }\n"
-            "       }\n"
-            "   }\n"
-            "}\n";
+    QString spoilerQml;
+    for (const auto &iObj : m_data)
+        spoilerQml += iObj->getQmlString(qrand());
 
-    QString quoteQml;
-    IPostObjectList::const_iterator iObj = m_data.begin();
-    for (; iObj != m_data.end(); ++iObj)
-    {
-        quoteQml += (*iObj)->getQmlString(qrand());
-    }
-    return qmlStr.arg(QString::number(randomSeed), m_title /*+ " \u25B2"*/, quoteQml);
+    const QString qmlStr = readQmlFile("://qml/PostSpoiler.qml");
+    return qmlStr.arg(QString::number(randomSeed)).arg(m_title /*+ " \u25B2"*/).arg(spoilerQml);
 #endif
 }
 
@@ -665,78 +598,21 @@ QString PostQuote::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostQuote'; }\n");
 #else
-    const QString qmlStr =
-            "Rectangle {\n"
-            "   id: rctQuote%1;\n"
-            "   color: \"white\";\n"
-            "   width: rctItem.width - parent.rightPadding - parent.leftPadding - dp(20);\n"
-            "   height: rctQuoteTitle%1.height + txtQuoteBody%1.height + txtQuoteSourceRef%1.height + 2*dp(5);\n"
-            "\n"
-            "   border.width: dp(2);\n"
-            "   border.color: \"silver\";\n"
-            "\n"
-            "   Rectangle {\n"
-            "       id: rctQuoteTitle%1;\n"
-            "       color: \"silver\";\n"
-            "       width: parent.width;\n"
-            "       height: txtQuoteTitle%1.height;\n"
-            "\n"
-            "       Column {\n"
-            "           width: parent.width;\n"
-            "           height: parent.height;\n"
-            "           spacing: dp(5);\n"
-            "\n"
-            "           Text {\n"
-            "               id: txtQuoteTitle%1;\n"
-            "\n"
-            "               leftPadding: dp(10);\n"
-            "               verticalAlignment: Text.AlignVCenter;\n"
-            "\n"
-            "               width: parent.width;\n"
-            "\n"
-            "               font.pointSize: 14;\n"
-            "               text: '%2';\n"
-            "           }\n"
-            "\n"
-            "           Row {\n"
-            "               id: txtQuoteSourceRef%1;\n"
-            "\n"
-            "               leftPadding: dp(10);\n"
-            "\n"
-            "               Text { font.pointSize: 14; font.bold: true; text: '%3  '; }\n"
-            "               %4\n"
-            "               Text { visible: %6; font.pointSize: 14; text: ':'; }\n"
-            "           }\n"
-            "           Flow {\n"
-            "               id: txtQuoteBody%1;\n\n"
-            "\n"
-            "               leftPadding: dp(10);\n"
-            "\n"
-            "               %5\n"
-            "               width: parent.width;\n"
-            "           }\n"
-            "       }\n"
-            "   }\n"
-            "}\n";
-
     QString quoteQml;
-    IPostObjectList::const_iterator iObj = m_data.begin();
-    for (; iObj != m_data.end(); ++iObj)
-    {
-        quoteQml += (*iObj)->getQmlString(qrand());
-    }
+    for (const auto &iObj : m_data)
+        quoteQml += iObj->getQmlString(qrand());
 
     QString titleEsc = QString(m_title).replace("'", "\\'");
     QString userNameEsc = QString(m_userName).replace("'", "\\'");
     QString urlText = m_url.isValid() ? PostHyperlink(m_url.toString(), QUOTE_WRITE_VERB).getQmlString(randomSeed) : QString();
 
-    return qmlStr.arg(
-                QString::number(randomSeed),
-                titleEsc,
-                userNameEsc,
-                urlText,
-                quoteQml,
-                !userNameEsc.isEmpty() ? "true" : "false");
+    const QString qmlStr = readQmlFile("://qml/PostQuote.qml");
+    return qmlStr.arg(QString::number(randomSeed))
+                .arg(titleEsc)
+                .arg(userNameEsc)
+                .arg(urlText)
+                .arg(quoteQml)
+                .arg(!userNameEsc.isEmpty() ? "true" : "false");
 #endif
 }
 
@@ -772,33 +648,17 @@ QString PostImage::getQmlString(int randomSeed) const
     return QString("        Text { font.pointSize: 14; text: 'PostImage'; }\n");
 #else
     QString qmlStr;
-
     if (!m_url.endsWith(".gif"))
     {
-        qmlStr =
-                "        Image {\n"
-                "            id: img%1;\n"
-                "            source: '%2';\n"
-                // FIXME: test on mobile devices
-                // FIXME: investigate sourceSize behaviour
-                //"            sourceSize.width: dp(200);\n"
-                //"            sourceSize.height: dp(200);\n"
-                "            width: (sourceSize.width > dp(200)) ? dp(200) : sourceSize.width;\n"
-                "            height: (sourceSize.height > dp(200)) ? dp(200) : sourceSize.height;\n"
-                "        }\n";
+        qmlStr = readQmlFile("://qml/PostImage.qml");
     }
     else
     {
-        // NOTE: implement other fields usage if they will be implemented on the forum side
+        // NOTE: implement other fields usage if they will be implemented on the backend side
         Q_ASSERT(m_width == -1);
         Q_ASSERT(m_height == -1);
-        qmlStr =
-                "        AnimatedImage {\n"
-                "            id: imgSmile%1;\n"
-                "            source: '%2';\n"
-                "            width: (sourceSize.width > dp(200)) ? dp(200) : sourceSize.width;\n"
-                "            height: (sourceSize.height > dp(200)) ? dp(200) : sourceSize.height;\n"
-                "        }\n";
+
+        qmlStr = readQmlFile("://qml/PostAnimatedImage.qml");
     }
     return qmlStr.arg(randomSeed).arg(m_url);
 #endif
@@ -826,22 +686,8 @@ QString PostLineBreak::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostLineBreak'; }\n");
 #else
-    const QString qmlStr =
-            "Text {\n"
-            "   id: lineBreak%1\n"
-            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n\n"
-            "   height: 1;\n"
-        #ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
-            "   Rectangle {\n"
-            "       border.width: dp(1);\n"
-            "       border.color: \"yellow\";\n"
-            "       color: \"transparent\";\n"
-            "       width: parent.width;\n"
-            "       height: parent.height;\n"
-            "   }\n"
-        #endif
-            "}\n";
-    return qmlStr.arg(randomSeed);
+    const QString qmlStr = readQmlFile("://qml/PostLineBreak.qml");
+    return qmlStr.arg(randomSeed).arg(BFR_DEBUG_FRAME_VISIBLE);
 #endif
 }
 
@@ -873,47 +719,9 @@ QString PostPlainText::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostPlainText'; }\n");
 #else
-    const QString qmlStr =
-            "Text {\n"
-            "    id: dynTxtPost%1;\n"
-            "\n"
-            // NOTE: of course Text has contentWidth property, but we cannot bind Text.width to Text.contentWidth:
-            //       this will cause binding loop; currently i've found just one workaround - measure text width using another way
-            "    TextMetrics {\n"
-            "        id: textMetrics%1;\n"
-            "\n"
-            "        font: dynTxtPost%1.font;\n"
-            "        text: dynTxtPost%1.text;\n"
-            "    }\n"
-            "\n"
-            "    Component.onCompleted: {\n"
-            "        this.width = Qt.binding(function() {\n"
-            "            var postWidth = parent.width - 2*parent.rightPadding - 2*parent.leftPadding;\n"
-            "            return ((textMetrics%1.width < postWidth) ? textMetrics%1.width + dp(20) : postWidth);\n"   // tightBoundingRect.width
-            "            }\n"
-            "        );\n"
-            "    }\n"
-            "\n"
-            "    font.pointSize: 14;\n"
-            "\n"
-            "    text: '%2';\n"
-            "    textFormat: Text.PlainText;\n"
-            "\n"
-            "    elide: Text.ElideRight;\n"
-            "    wrapMode: Text.WordWrap;\n"
-            "\n"
-#ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
-            "    Rectangle {\n"
-            "        border.width: dp(1);\n"
-            "        border.color: \"red\";\n"
-            "        color: \"transparent\";\n"
-            "        width: parent.width;\n"
-            "        height: parent.height;\n"
-            "    }\n"
-#endif
-            "}\n";
+    const QString qmlStr = readQmlFile("://qml/PostPlainText.qml");
     QString textEsc = QString(m_text).replace("'", "\\'");
-    return qmlStr.arg(randomSeed).arg(textEsc);
+    return qmlStr.arg(randomSeed).arg(textEsc).arg(BFR_DEBUG_FRAME_VISIBLE);
 #endif
 }
 
@@ -946,45 +754,17 @@ QString PostRichText::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostRichText'; }\n");
 #else
-    const QString qmlStr =
-            "Text {\n"
-            "   id: dynTxtPost%1;\n"
-//            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "\n"
-            "   color: '%2';\n"
-            "\n"
-            "   font.bold: %3;\n"
-            "   font.italic: %4;\n"
-            "   font.underline: %5;\n"
-            "   font.strikeout: %6;\n"
-            "   font.pointSize: 14;\n"
-            "\n"
-            "   text: '%7';\n"
-            "   textFormat: Text.PlainText;\n"
-            "\n"
-            "   elide: Text.ElideRight;\n"
-            "   wrapMode: Text.WordWrap;\n"
-            "\n"
-#ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
-            "   Rectangle {\n"
-            "       border.width: dp(1);\n"
-            "       border.color: \"red\";\n"
-            "       color: \"transparent\";\n"
-            "       width: parent.width;\n"
-            "       height: parent.height;\n"
-            "   }\n"
-#endif
-            "}\n";
-
+    const QString qmlStr = readQmlFile("://qml/PostRichText.qml");
     QString textEsc = QString(m_text).replace("'", "\\'");
-    return  qmlStr.arg(
-                QString::number(randomSeed),
-                m_color,
-                m_isBold ? "true" : "false",
-                m_isItalic ? "true" : "false",
-                m_isUnderlined ? "true" : "false",
-                m_isStrikedOut ? "true" : "false",
-                textEsc);
+    return  qmlStr
+            .arg(QString::number(randomSeed))
+            .arg(m_color)
+            .arg(m_isBold ? "true" : "false")
+            .arg(m_isItalic ? "true" : "false")
+            .arg(m_isUnderlined ? "true" : "false")
+            .arg(m_isStrikedOut ? "true" : "false")
+            .arg(textEsc)
+            .arg(BFR_DEBUG_FRAME_VISIBLE);
 #endif
 }
 
@@ -995,6 +775,7 @@ PostVideo::PostVideo()
 {
 }
 
+/*
 namespace {
 #ifndef Q_OS_IOS
 static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
@@ -1061,6 +842,7 @@ static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
 }
 #endif
 }
+*/
 
 PostVideo::PostVideo(QString urlStr)
     : m_urlStr(urlStr), m_url(urlStr)
@@ -1068,7 +850,7 @@ PostVideo::PostVideo(QString urlStr)
     Q_ASSERT(m_url.isValid());
 
     // Example of YouTube URL: https://www.youtube.com/watch?v=PI9o3v4nttU
-    QUrlQuery urlQuery(m_url);
+   /* QUrlQuery urlQuery(m_url);
     QString videoId = urlQuery.queryItemValue("v");
 
     // FIXME: replace this ugly hardcoded path with e.g. environment varible
@@ -1099,7 +881,7 @@ PostVideo::PostVideo(QString urlStr)
 #pragma message("iOS do not support QProcess")
     m_url.clear();
     m_urlStr.clear();
-#endif
+#endif*/
 }
 
 bool PostVideo::isValid() const
@@ -1118,35 +900,10 @@ QString PostVideo::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostVideo';}\n");
 #else
-	const QString qmlStr =
-            "Video {\n"
-            "   id: video%1;\n"
-            "   width : dp(400);\n"
-            "   height : dp(400);\n"
-            "   source: '%2';\n"
-            "\n"
-            "   Rectangle {\n"
-            "       id: rctVideo%1;\n"
-            "       anchors.fill: parent;\n"
-            "       color: \"black\";\n"
-            // FIXME: draw circle button with inner triangle (i.e. play button)
-            //"       Rectangle { id: rctPlayButton%1; width: parent.width/2; height: parent.height/2; anchors.centerIn: parent; color:\"white\"; radius: parent.width/2; }"
-            "\n"
-            "       MouseArea {\n"
-            "           anchors.fill: parent;\n"
-            "           onClicked: {\n"
-            "               rctVideo%1.visible = false;\n"
-            "               video%1.play();\n"
-            "           }\n"
-            "       }\n"
-            "   }\n"
-            "\n"
-            "   focus: true;\n"
-            "   Keys.onSpacePressed: video%1.playbackState == MediaPlayer.PlayingState ? video%1.pause() : video%1.play();\n"
-            "   Keys.onLeftPressed: video%1.seek(video%1.position - 5000);\n"
-            "   Keys.onRightPressed: video%1.seek(video%1.position + 5000);\n"
-            "}\n";
-    return qmlStr.arg(QString::number(randomSeed), m_urlStr);
+    const QString qmlStr = readQmlFile("://qml/PostVideo.qml");
+    return  qmlStr
+            .arg(QString::number(randomSeed))
+            .arg(m_urlStr);
 #endif
 }
 
@@ -1181,33 +938,13 @@ QString PostHyperlink::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostHyperlink'; }\n");
 #else
-    const QString qmlStr =
-            "Text {\n"
-            "   id: dynTxtHyperlink%1;\n"
-//            "   width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "\n"
-            "   font.pointSize: 14;\n"
-            "   renderType: Text.NativeRendering\n"
-            "\n"
-            "   text: '%2';\n"
-            "   textFormat: Text.RichText;\n"
-            "   onLinkActivated: Qt.openUrlExternally(link);\n"
-            "\n"
-            "   clip: false;\n"
-            "   elide: Text.ElideRight;\n"
-            "   wrapMode: Text.WordWrap;\n"
-            "\n"
-#ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
-            "   Rectangle {\n"
-            "       border.width: dp(1);\n"
-            "       border.color: \"red\";\n"
-            "       color: \"transparent\";\n"
-            "       width: parent.width;\n"
-            "       height: parent.height;\n"
-            "   }\n"
-#endif
-            "}\n";
-    return qmlStr.arg(QString::number(randomSeed), "<a href=\"" + m_urlStr + "\">" + m_title + "</a>");
+    const QString qmlStr = readQmlFile("://qml/PostHyperlink.qml");
+    return  qmlStr
+            .arg(QString::number(randomSeed))
+            .arg(m_title)
+            .arg(m_urlStr)
+            .arg(BFR_DEBUG_FRAME_VISIBLE);
+
 #endif
 }
 
@@ -1238,43 +975,7 @@ uint Post::getHash(uint seed) const
 
 QString Post::getQmlString(int randomSeed) const
 {
-    QString qmlStr =
-            "import QtMultimedia 5.8;\n"
-            "import QtQuick 2.10;\n"
-            "import QtQuick.Layouts 1.3;\n"
-            "import QtQuick.Window 2.2;\n"
-            "import QtQuick.Controls 2.3;\n"
-            "import QtQuick.Controls.Material 2.3;\n"
-            "import QtQuick.Controls.Universal 2.3;\n"
-            "\n"
-            "Column {\n"
-            "    id: clmnPost;\n"
-            "\n"
-            "    spacing: dp(10);\n"
-            "    leftPadding: dp(10);\n"
-            "    rightPadding: dp(10);\n"
-            "\n"
-            "    Text {\n"
-//            "       id: txtPostDateTime;\n"
-            "        width: rctItem.width;\n"
-            "\n"
-            "        topPadding: dp(5);\n"
-            "        padding: dp(0);\n"
-            "        horizontalAlignment: Text.AlignLeft;\n"
-            "        verticalAlignment: Text.AlignVCenter;\n"
-            "        clip: false;\n"
-            "\n"
-            "        font.pointSize: 14;\n"
-            "        text: Qt.formatDateTime(model.postDateTime);\n"
-            "    }\n"
-            "\n"
-            "    Rectangle {\n"
-            "        width: rctItem.width;\n"
-            "        height: dp(2);\n"
-            "\n"
-            "        border.width: dp(0);\n"
-            "        color: \"lightslategrey\";\n"
-            "    }\n\n";
+    QString qmlStr = readQmlFile("://qml/Post.qml");
 
     int validItemsCount = 0;
     for (auto iObj = m_data.begin(); iObj != m_data.end(); ++iObj)
@@ -1287,101 +988,23 @@ QString Post::getQmlString(int randomSeed) const
         validItemsCount++;
     }
 
+    QString internalQml;
     if (validItemsCount == 0)
         return QString();
     if (validItemsCount == 1)
     {
         randomSeed = qrand();
-        qmlStr += m_data[0]->getQmlString(randomSeed);
+        internalQml += m_data[0]->getQmlString(randomSeed);
     }
     else
     {
-        qmlStr += "    Flow {\n";
-        qmlStr += "        width: rctItem.width;\n";
-        qmlStr += "\n";
-        qmlStr += "        padding: dp(10);\n";
-        qmlStr += "        spacing: dp(10);\n";
-        qmlStr += "\n";
         for (auto iObj = m_data.begin(); iObj != m_data.end(); ++iObj)
         {
             randomSeed = qrand();
-            qmlStr += (*iObj)->getQmlString(randomSeed);
-//            qmlStr = qmlStr.trimmed();
+            internalQml += (*iObj)->getQmlString(randomSeed);
+//            internalQml = internalQml.trimmed();
         }
-        qmlStr += "    }\n";    // QML Flow end
     }
-
-    // Post footer
-    qmlStr +=
-            "   Text {\n"
-            "       id: txtLastEdit%1;\n"
-            "       visible: model.lastEdit !== \"\";\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "\n"
-            "       color: \"lightslategrey\";\n"
-            "       font.italic: true;\n"
-            "       font.pointSize: 14;\n"
-            "\n"
-            "       renderType: Text.NativeRendering;\n"
-            "\n"
-            "       text: model.postLastEdit;\n"
-            "       textFormat: Text.RichText;\n"
-            "       onLinkActivated: Qt.openUrlExternally(link);\n"
-            "\n"
-            "       clip: false;\n"
-            "       elide: Text.ElideRight;\n"
-            "       wrapMode: Text.WordWrap;\n"
-            "   }\n"
-            "\n"
-            "   Rectangle {\n"
-            "       visible: model.authorSignature !== \"\";\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "       height: dp(1);\n"
-            "       border.width: dp(0);\n"
-            "       color: \"lightslategrey\";\n"
-            "   }\n"
-            "\n"
-            "   Text {\n"
-            "       id: txtPostAuthorSignature%1;\n"
-            "       visible: model.authorSignature !== \"\";\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "\n"
-            "       color: \"lightslategrey\";\n"
-            "       font.italic: true;\n"
-            "       font.pointSize: 14;\n"
-            "\n"
-            "       renderType: Text.NativeRendering;\n"
-            "\n"
-            "       text: model.authorSignature;\n"
-            "       textFormat: Text.RichText;\n"
-            "       onLinkActivated: Qt.openUrlExternally(link);\n"
-            "\n"
-            "       clip: false;\n"
-            "       elide: Text.ElideRight;\n"
-            "       wrapMode: Text.WordWrap;\n"
-            "   }\n"
-            "\n"
-            "   Rectangle {\n"
-            "       visible: model.postLikeCount > 0;\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "       height: dp(1);\n"
-            "       border.width: dp(0);\n"
-            "       color: \"lightslategrey\";\n"
-            "   }\n"
-            "\n"
-            "   Text {\n"
-            "       id: txtPostLikeCounter%1;\n"
-            "\n"
-            "       visible: model.postLikeCount > 0;\n"
-            "       width: rctItem.width - parent.rightPadding - parent.leftPadding;\n"
-            "       color: \"lightslategrey\";\n"
-            "\n"
-            "       font.bold: true;\n"
-            "       font.pointSize: 14;\n"
-            "       text: model.postLikeCount + \" like(s)\";\n"
-            "   }\n";
-
-    qmlStr += "}\n";    // QML Column end
 
 #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
     QDir appRootDir(qApp->applicationDirPath());
@@ -1399,7 +1022,7 @@ QString Post::getQmlString(int randomSeed) const
     index++;
 #endif
 
-    return qmlStr.arg(randomSeed);
+    return qmlStr.arg(randomSeed).arg(internalQml);
 }
 
 bool User::isValid() const
@@ -1417,67 +1040,7 @@ uint User::getHash(uint seed) const
 
 QString User::getQmlString(int randomSeed) const
 {
-    const QString qmlStr =
-        "import QtQuick 2.10;\n"
-        "import QtQuick.Layouts 1.3;\n"
-        "import QtQuick.Controls 2.3;\n"
-        "import QtQuick.Controls.Material 2.3;\n"
-        "import QtQuick.Controls.Universal 2.3;\n"
-        "import QtQuick.Window 2.2;\n"
-        "\n"
-        "   Column {\n"
-        "       id: clmnUserInfo%1;\n"
-        "       spacing: dp(2);\n"
-        "       padding: dp(5);\n"
-        "       // NOTE: width and height will be calculated automatically\n"
-        "\n"
-        "       Text {\n"
-        "           id: txtUserName%1;\n"
-        "           text: \"<b>\" + '%2' + \"</b>\";\n"
-        "           color: \"blue\";\n"
-        "\n"
-        "           font.pointSize: 14;\n"
-        "       }\n"
-        "\n"
-        "       AnimatedImage {\n"
-        "           id: imgUserAvatar%1;\n"
-        "           source: reader.convertToUrl('%3');\n"
-        "           visible: '%3' !== \"\";\n"
-        "\n"
-        "           width:  %4 === -1 ? dp(100) : dp(%4);\n"
-        "           height: %5 === -1 ? dp(100) : dp(%5);\n"
-        "       }\n"
-        "\n"
-        "       Text {\n"
-        "           id: txtAuthorPostCount%1;\n"
-        "           text: \"Posts: \" + %6;\n"
-        "\n"
-        "           font.pointSize: 14;\n"
-        "       }\n"
-        "\n"
-        "       Text {\n"
-        "           id: txtAuthorRegistrationDate%1;\n"
-        "           text: \"Registered:\n\" + '%7';\n"
-        "\n"
-        "           font.pointSize: 14;\n"
-        "       }\n"
-        "\n"
-        "       Text {\n"
-        "           id: txtAuthorReputation%1;\n"
-        "           text: \"Reputation: \" + %8;\n"
-        "\n"
-        "           font.pointSize: 14;\n"
-        "       }\n"
-        "\n"
-        "       Text {\n"
-        "           id: txtAuthorCity%1;\n"
-        "           visible: '%9' !== \"\";\n"
-        "           text: \"City: \" + '%9';\n"
-        "\n"
-        "           font.pointSize: 14;\n"
-        "       }\n"
-        "   }\n";
-
+    QString qmlStr = readQmlFile("://qml/User.qml");
     return qmlStr.arg(randomSeed)
             .arg(m_userName)
             .arg(m_userAvatar ? m_userAvatar->m_url : "")

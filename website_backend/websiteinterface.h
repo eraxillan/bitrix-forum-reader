@@ -19,6 +19,12 @@
 #define BFR_SHOW_VIDEO
 #define BFR_SHOW_HYPERLINK
 
+#ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+#define BFR_DEBUG_FRAME_VISIBLE "true"
+#else
+#define BFR_DEBUG_FRAME_VISIBLE "false"
+#endif
+
 namespace bfr
 {
     const QString QUOTE_WRITE_VERB = "пишет";
@@ -177,7 +183,6 @@ namespace bfr
 #endif
     };
 
-    // FIXME: implement hyperlink using Qt/QML power only, without Qt primitive HTML-mode of Text item
     struct PostHyperlink : IPostObject
     {
         // URL
