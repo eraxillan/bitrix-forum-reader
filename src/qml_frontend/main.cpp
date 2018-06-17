@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QSettings>
 #include <QQuickStyle>
+#include <QQmlFileSelector>
 #include <QScreen>
 
 #ifdef Q_OS_ANDROID
@@ -149,12 +150,39 @@ int main(int argc, char *argv[])
     {
         QQmlApplicationEngine engine;
 
+        QString projectRootDir = QDir(QCoreApplication::applicationDirPath()
+                                      + QDir::separator() + QLatin1String("..")
+                                      + QDir::separator() + QLatin1String("..")
+                                      + QDir::separator() + QLatin1String("..")
+                                      + QDir::separator() + QLatin1String("..")
+                                      ).canonicalPath() + QDir::separator();
+        engine.addImportPath(projectRootDir + QLatin1String("fluid") + QDir::separator() + QLatin1String("qml"));
+        engine.addImportPath(projectRootDir + QLatin1String("src") + QDir::separator() + QLatin1String("qml_frontend") + QDir::separator() + QLatin1String("qml"));
+
         /*
         float textScaleFactor = 0.0f;
         float displayDpi = getDpi(textScaleFactor);
         engine.rootContext()->setContextProperty("displayDpi", displayDpi);
         engine.rootContext()->setContextProperty("textScaleFactor", textScaleFactor);
         */
+
+        QStringList selectors;
+    #ifdef QT_EXTRA_FILE_SELECTOR
+        selectors += QT_EXTRA_FILE_SELECTOR;
+    #else
+        if (app.arguments().contains("--android"))
+        {
+            qputenv("QT_QUICK_CONTROLS_CONF", "://qml/+android/qtquickcontrols2.conf");
+            selectors += "android";
+        }
+        else if (app.arguments().contains("--ios"))
+        {
+            qputenv("QT_QUICK_CONTROLS_CONF", "://qml/+ios/qtquickcontrols2.conf");
+            selectors += "ios";
+        }
+    #endif
+
+        QQmlFileSelector::get(&engine)->setExtraSelectors(selectors);
 
         engine.load("://qml/main.qml");
         if (engine.rootObjects().isEmpty())
