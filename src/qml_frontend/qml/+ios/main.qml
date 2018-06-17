@@ -14,7 +14,7 @@ ApplicationWindow {
     visible: true
     width:   Screen.width
     height:  Screen.height
-    title:   qsTr("Bitrix Forum Reader")
+    title:   qsTr("Bitrix Forum Reader: iOS/tvOS/watchOS version")
     color:   "white"
 
     function dp(x) { return x; }
