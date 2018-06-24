@@ -939,12 +939,8 @@ QString PostHyperlink::getQmlString(int randomSeed) const
     return QString("        Text { font.pointSize: 14; text: 'PostHyperlink'; }\n");
 #else
     const QString qmlStr = readQmlFile("://qml/PostHyperlink.qml");
-    return  qmlStr
-            .arg(QString::number(randomSeed))
-            .arg(m_title)
-            .arg(m_urlStr)
-            .arg(BFR_DEBUG_FRAME_VISIBLE);
-
+    return qmlStr
+        .arg(QString::number(randomSeed), m_title, m_urlStr, BFR_DEBUG_FRAME_VISIBLE);
 #endif
 }
 
@@ -1006,6 +1002,7 @@ QString Post::getQmlString(int randomSeed) const
         }
     }
 
+    QString qmlStrFinal = qmlStr.arg(randomSeed).arg(internalQml);
 #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
     QDir appRootDir(qApp->applicationDirPath());
     Q_ASSERT(appRootDir.isReadable());
@@ -1018,11 +1015,11 @@ QString Post::getQmlString(int randomSeed) const
     //        as an option - implement "Property" interface in "Post" object and set page number and post index as properties
     static int pageNo = 130;
     static int index = 1;
-    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
+    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml", qmlStrFinal));
     index++;
 #endif
 
-    return qmlStr.arg(randomSeed).arg(internalQml);
+    return qmlStrFinal;
 }
 
 bool User::isValid() const
