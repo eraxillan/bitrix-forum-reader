@@ -1,17 +1,19 @@
+import QtQuick 2.10;
+
 Rectangle {
-    id: rctQuote%1;
+    id: rctQuote_d965b5e7c48a416aaeea7772888d02e4;
     color: "white";
     width: rctItem.width - parent.rightPadding - parent.leftPadding - dp(20);
-    height: rctQuoteTitle%1.height + txtQuoteBody%1.height + txtQuoteSourceRef%1.height + 2*dp(5);
+    height: rctQuoteTitle_d965b5e7c48a416aaeea7772888d02e4.height + txtQuoteBody_d965b5e7c48a416aaeea7772888d02e4.height + txtQuoteSourceRef_d965b5e7c48a416aaeea7772888d02e4.height + 2*dp(5);
 
     border.width: dp(2);
     border.color: "silver";
 
     Rectangle {
-        id: rctQuoteTitle%1;
+        id: rctQuoteTitle_d965b5e7c48a416aaeea7772888d02e4;
         color: "silver";
         width: parent.width;
-        height: txtQuoteTitle%1.height;
+        height: txtQuoteTitle_d965b5e7c48a416aaeea7772888d02e4.height;
 
         Column {
             width: parent.width;
@@ -19,7 +21,7 @@ Rectangle {
             spacing: dp(5);
 
             Text {
-                id: txtQuoteTitle%1;
+                id: txtQuoteTitle_d965b5e7c48a416aaeea7772888d02e4;
 
                 leftPadding: dp(10);
                 verticalAlignment: Text.AlignVCenter;
@@ -27,24 +29,24 @@ Rectangle {
                 width: parent.width;
 
                 font.pointSize: 14;
-                text: '%2';
+                text: '_2ca6e4441d074fbebef439a882585113';
             }
 
             Row {
-                id: txtQuoteSourceRef%1;
+                id: txtQuoteSourceRef_d965b5e7c48a416aaeea7772888d02e4;
 
                 leftPadding: dp(10);
 
-                Text { font.pointSize: 14; font.bold: true; text: '%3  '; }
-                %4
-                Text { visible: %6; font.pointSize: 14; text: ':'; }
+                Text { font.pointSize: 14; font.bold: true; text: '_81318a4c46474759b9ebd6b0e94873aa  '; }
+                state: _e265fb5cb7544ee88130089cc4d0353f;
+                Text { visible: _af0014871b304e238b0d6e37d90eb5c5; font.pointSize: 14; text: ':'; }
             }
             Flow {
-                id: txtQuoteBody%1;
+                id: txtQuoteBody_d965b5e7c48a416aaeea7772888d02e4;
 
                 leftPadding: dp(10);
 
-                %5
+                state: _c8f7635c38ed49168187d56654807c9c;
                 width: parent.width;
             }
         }

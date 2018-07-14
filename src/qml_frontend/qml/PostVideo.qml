@@ -1,3 +1,5 @@
+import QtQuick 2.10;
+
 /*Video {
    id: video%1;
    width : dp(400);
@@ -29,12 +31,15 @@
 */
 
 Rectangle {
-   id: video%1;
+   id: video_2f0a985471e44cd69925f80d37de946a;
+
    width: dp(400);
    height: dp(400);
+
    color: "black";
+
    MouseArea {
        anchors.fill: parent;
-       onClicked: { console.log("Opening video URL ", '%2'); Qt.openUrlExternally('%2'); }
+       onClicked: { console.log("Opening video URL ", '_c66d930f7e324345ba9ae5741f3d4142'); Qt.openUrlExternally('_c66d930f7e324345ba9ae5741f3d4142'); }
    }
 }

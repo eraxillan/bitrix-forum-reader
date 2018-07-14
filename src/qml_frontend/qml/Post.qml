@@ -41,11 +41,11 @@ Column {
         padding: dp(10);
         spacing: dp(10);
 
-        %2
+        state: _a130f037750e40c69eb7d4ffc572822a;
     }
 
     Text {
-        id: txtLastEdit%1;
+        id: txtLastEdit_05ea9fa84e5148fdaa80754067b2ddad;
         visible: model.lastEdit !== "";
         width: rctItem.width - parent.rightPadding - parent.leftPadding;
 
@@ -73,7 +73,7 @@ Column {
     }
 
     Text {
-        id: txtPostAuthorSignature%1;
+        id: txtPostAuthorSignature_05ea9fa84e5148fdaa80754067b2ddad;
         visible: model.authorSignature !== "";
         width: rctItem.width - parent.rightPadding - parent.leftPadding;
 
@@ -101,7 +101,7 @@ Column {
     }
 
     Text {
-        id: txtPostLikeCounter%1;
+        id: txtPostLikeCounter_05ea9fa84e5148fdaa80754067b2ddad;
 
         visible: model.postLikeCount > 0;
         width: rctItem.width - parent.rightPadding - parent.leftPadding;

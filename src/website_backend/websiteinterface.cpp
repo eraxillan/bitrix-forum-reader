@@ -583,8 +583,14 @@ QString PostSpoiler::getQmlString(int randomSeed) const
     for (const auto &iObj : m_data)
         spoilerQml += iObj->getQmlString(qrand());
 
-    const QString qmlStr = readQmlFile("://qml/PostSpoiler.qml");
-    return qmlStr.arg(QString::number(randomSeed)).arg(m_title /*+ " \u25B2"*/).arg(spoilerQml);
+    QString qmlStr = readQmlFile("://qml/PostSpoiler.qml");
+
+    qmlStr.replace("import QtQuick 2.10;", "");
+    qmlStr.replace("_fcdde97089594b218fbc925097a2f982", QString::number(randomSeed));
+    qmlStr.replace("_4d4282062caf43929173ac37159d230f", m_title);
+    qmlStr.replace("state: _d664d2ca198c40819fb4850253db6886;", spoilerQml);
+
+    return qmlStr;
 #endif
 }
 
@@ -618,13 +624,17 @@ QString PostQuote::getQmlString(int randomSeed) const
     QString userNameEsc = QString(m_userName).replace("'", "\\'");
     QString urlText = m_url.isValid() ? PostHyperlink(m_url.toString(), QUOTE_WRITE_VERB).getQmlString(randomSeed) : QString();
 
-    const QString qmlStr = readQmlFile("://qml/PostQuote.qml");
-    return qmlStr.arg(QString::number(randomSeed))
-                .arg(titleEsc)
-                .arg(userNameEsc)
-                .arg(urlText)
-                .arg(quoteQml)
-                .arg(!userNameEsc.isEmpty() ? "true" : "false");
+    QString qmlStr = readQmlFile("://qml/PostQuote.qml");
+
+    qmlStr.replace("import QtQuick 2.10;", "");
+    qmlStr.replace("_d965b5e7c48a416aaeea7772888d02e4", QString::number(randomSeed));
+    qmlStr.replace("_2ca6e4441d074fbebef439a882585113", titleEsc);
+    qmlStr.replace("_81318a4c46474759b9ebd6b0e94873aa", userNameEsc);
+    qmlStr.replace("state: _e265fb5cb7544ee88130089cc4d0353f;", urlText);
+    qmlStr.replace("state: _c8f7635c38ed49168187d56654807c9c;", quoteQml);
+    qmlStr.replace("_af0014871b304e238b0d6e37d90eb5c5", !userNameEsc.isEmpty() ? "true" : "false");
+
+    return qmlStr;
 #endif
 }
 
@@ -672,7 +682,11 @@ QString PostImage::getQmlString(int randomSeed) const
 
         qmlStr = readQmlFile("://qml/PostAnimatedImage.qml");
     }
-    return qmlStr.arg(randomSeed).arg(m_url);
+
+    qmlStr.replace("import QtQuick 2.10;", "");
+    qmlStr.replace("_6d63cf96fdc747d591311cfa352b26e4", QString::number(randomSeed));
+    qmlStr.replace("_5b4898dbfff046a7ad6474e9b9155808", m_url);
+    return qmlStr;
 #endif
 }
 
@@ -698,8 +712,12 @@ QString PostLineBreak::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostLineBreak'; }\n");
 #else
-    const QString qmlStr = readQmlFile("://qml/PostLineBreak.qml");
-    return qmlStr.arg(randomSeed).arg(BFR_DEBUG_FRAME_VISIBLE);
+    QString qmlStr = readQmlFile("://qml/PostLineBreak.qml");
+
+    qmlStr.replace("import QtQuick 2.10;", "");
+    qmlStr.replace("_0b2f8da4a11c4b9a8ba2e642cc9e113e", QString::number(randomSeed));
+    qmlStr.replace("_51d55029cb9f49aabdb30ae957929ebc", BFR_DEBUG_FRAME_VISIBLE);
+    return qmlStr;
 #endif
 }
 
@@ -731,9 +749,16 @@ QString PostPlainText::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostPlainText'; }\n");
 #else
-    const QString qmlStr = readQmlFile("://qml/PostPlainText.qml");
+    QString qmlStr = readQmlFile("://qml/PostPlainText.qml");
     QString textEsc = QString(m_text).replace("'", "\\'");
-    return qmlStr.arg(randomSeed).arg(textEsc).arg(BFR_DEBUG_FRAME_VISIBLE);
+
+    // NOTE: Qt Creator editor requires this import statement, but Qt.createQmlObject() call will fail on it
+    qmlStr.replace("import QtQuick 2.10;", "");
+
+    qmlStr.replace("_63f18ed6e6c84c7c803ca7bd2b7c8a43", QString::number(randomSeed));
+    qmlStr.replace("_da5eb852c7b64ceca937ddb810b0bcdc", textEsc);
+    qmlStr.replace("_7fc091fe66ce4db193a4267004716245", BFR_DEBUG_FRAME_VISIBLE);
+    return qmlStr;
 #endif
 }
 
@@ -766,17 +791,20 @@ QString PostRichText::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostRichText'; }\n");
 #else
-    const QString qmlStr = readQmlFile("://qml/PostRichText.qml");
+    QString qmlStr = readQmlFile("://qml/PostRichText.qml");
     QString textEsc = QString(m_text).replace("'", "\\'");
-    return  qmlStr
-            .arg(QString::number(randomSeed))
-            .arg(m_color)
-            .arg(m_isBold ? "true" : "false")
-            .arg(m_isItalic ? "true" : "false")
-            .arg(m_isUnderlined ? "true" : "false")
-            .arg(m_isStrikedOut ? "true" : "false")
-            .arg(textEsc)
-            .arg(BFR_DEBUG_FRAME_VISIBLE);
+
+    qmlStr.replace("import QtQuick 2.10;", "");
+    qmlStr.replace("_b48bb9229e2545d28a3024bffdbae97f", QString::number(randomSeed));
+    qmlStr.replace("#FF00FF00", m_color);
+    qmlStr.replace("_e0b18a71c2ea460c8229a2b8019490d7", m_isBold ? "true" : "false");
+    qmlStr.replace("_8d2ac045ee8543dc8d4733fee0b852cb", m_isItalic ? "true" : "false");
+    qmlStr.replace("_e24880192af74e8f9fa513b818bef3b8", m_isUnderlined ? "true" : "false");
+    qmlStr.replace("_018c6d2a97cf494783da76292f1c932d", m_isStrikedOut ? "true" : "false");
+    qmlStr.replace("_4a58cd3f7bf24fa38933fc7538be1d82", textEsc);
+    qmlStr.replace("_2d8f971fbbf1456385834828253e21de", BFR_DEBUG_FRAME_VISIBLE);
+
+    return  qmlStr;
 #endif
 }
 
@@ -912,10 +940,12 @@ QString PostVideo::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostVideo';}\n");
 #else
-    const QString qmlStr = readQmlFile("://qml/PostVideo.qml");
-    return  qmlStr
-            .arg(QString::number(randomSeed))
-            .arg(m_urlStr);
+    QString qmlStr = readQmlFile("://qml/PostVideo.qml");
+
+    qmlStr.replace("import QtQuick 2.10;", "");
+    qmlStr.replace("_2f0a985471e44cd69925f80d37de946a", QString::number(randomSeed));
+    qmlStr.replace("_c66d930f7e324345ba9ae5741f3d4142", m_urlStr);
+    return qmlStr;
 #endif
 }
 
@@ -950,9 +980,14 @@ QString PostHyperlink::getQmlString(int randomSeed) const
     Q_UNUSED(randomSeed);
     return QString("        Text { font.pointSize: 14; text: 'PostHyperlink'; }\n");
 #else
-    const QString qmlStr = readQmlFile("://qml/PostHyperlink.qml");
-    return qmlStr
-        .arg(QString::number(randomSeed), m_title, m_urlStr, BFR_DEBUG_FRAME_VISIBLE);
+    QString qmlStr = readQmlFile("://qml/PostHyperlink.qml");
+
+    qmlStr.replace("import QtQuick 2.10;", "");
+    qmlStr.replace("_0947683f69d64f0b9e37d78a2e2a9925", QString::number(randomSeed));
+    qmlStr.replace("_8f07025844744bbc84bf2c1868f58abd", m_title);
+    qmlStr.replace("_b93596dcbae045a18be44f67d45f22a8", m_urlStr);
+    qmlStr.replace("_63a25cb5bf444bc19d127626ca9a9b3f", BFR_DEBUG_FRAME_VISIBLE);
+    return qmlStr;
 #endif
 }
 
@@ -1014,7 +1049,9 @@ QString Post::getQmlString(int randomSeed) const
         }
     }
 
-    QString qmlStrFinal = qmlStr.arg(randomSeed).arg(internalQml);
+    qmlStr.replace("_05ea9fa84e5148fdaa80754067b2ddad", QString::number(randomSeed));
+    qmlStr.replace("state: _a130f037750e40c69eb7d4ffc572822a;", internalQml);
+
 #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
     QDir appRootDir(qApp->applicationDirPath());
     Q_ASSERT(appRootDir.isReadable());
@@ -1027,11 +1064,11 @@ QString Post::getQmlString(int randomSeed) const
     //        as an option - implement "Property" interface in "Post" object and set page number and post index as properties
     static int pageNo = 130;
     static int index = 1;
-    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml", qmlStrFinal));
+    Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
     index++;
 #endif
 
-    return qmlStrFinal;
+    return qmlStr;
 }
 
 bool User::isValid() const
@@ -1050,15 +1087,17 @@ uint User::getHash(uint seed) const
 QString User::getQmlString(int randomSeed) const
 {
     QString qmlStr = readQmlFile("://qml/User.qml");
-    return qmlStr.arg(randomSeed)
-            .arg(m_userName)
-            .arg(m_userAvatar ? m_userAvatar->m_url : "")
-            .arg(m_userAvatar ? m_userAvatar->m_width : 0)
-            .arg(m_userAvatar ? m_userAvatar->m_height : 0)
-            .arg(m_postCount)
-            .arg(m_registrationDate.toString( /*Qt::SystemLocaleShortDate*/ "yyyy"))
-            .arg(m_reputation)
-            .arg(m_city);
+
+    qmlStr.replace("_6afb4d56214b4bb69281bf9bbf60396b", QString::number(randomSeed));
+    qmlStr.replace("_14c1808e13d44b64accf01b6b8a6be25", m_userName);
+    qmlStr.replace("_c75e18958b0f43fa9e7881315afccc54", m_userAvatar ? m_userAvatar->m_url : "");
+    qmlStr.replace("_1e4e440acb92478197b992539899e5de", m_userAvatar ? QString::number(m_userAvatar->m_width) : QString::number(0));
+    qmlStr.replace("_3860f825cb2a426f82730cc2ca35e6ac", m_userAvatar ? QString::number(m_userAvatar->m_height) : QString::number(0));
+    qmlStr.replace("_fcfaa58e3305486e872ae962537bdc8e", QString::number(m_postCount));
+    qmlStr.replace("_e0aefa26825e44b58c74a54b5bad32b8", m_registrationDate.toString("yyyy"));
+    qmlStr.replace("_875abbe700a0408891e5c6f73b7e27be", QString::number(m_reputation));
+    qmlStr.replace("_3cf1b6db9ccf4404b672f7c9d6c78211", m_city);
+    return qmlStr;
 }
 
 }   // namespace bfr
