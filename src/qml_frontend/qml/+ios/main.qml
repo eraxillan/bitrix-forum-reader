@@ -26,6 +26,13 @@ ApplicationWindow {
     property int currentPageIndex: 1
     property int postIndex: 1;
 
+    ForumThreadUrl {
+        id: testThreadUrl;
+
+        sectionId: 22;
+        threadId: 74420;
+    }
+
     ForumReader {
         id: reader
 
@@ -40,15 +47,15 @@ ApplicationWindow {
         }
 
         onPageCountParsed: {
-            console.log("Page count: ", pageCount)
-            totalPageCount = pageCount
+            console.log("Page count: ", pageCount);
+            totalPageCount = pageCount;
 
             // Cleanup
             pageLoaded = false;
             dataModel.clear();
 
             // Parse the page HTML data
-            reader.startPageParseAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=" + pageCount.toString() + "#forum-message-list", pageCount)
+            reader.startPageParseAsync(testThreadUrl.pageUrl(pageCount), pageCount);
         }
 
         onPageContentParsed: {
@@ -262,6 +269,6 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        reader.startPageCountAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list" )
+        reader.startPageCountAsync(testThreadUrl.firstPageUrl());
     }
 }

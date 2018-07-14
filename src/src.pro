@@ -121,6 +121,7 @@ DEFINES += BFR_SERIALIZATION_ENABLED
 
 SOURCES += \
     common/filedownloader.cpp               \
+    common/forumthreadurl.cpp               \
     website_backend/gumboparserimpl.cpp     \
     website_backend/qtgumbodocument.cpp     \
     website_backend/qtgumbonode.cpp         \
@@ -131,15 +132,16 @@ SOURCES += \
 
 HEADERS += \
     common/filedownloader.h                 \
+    common/forumthreadurl.h                 \
+    common/logger.h                         \
     common/resultcode.h                     \
     website_backend/html_tag.h              \
     website_backend/qtgumbodocument.h       \
     website_backend/qtgumbonode.h           \
+    website_backend/websiteinterface_fwd.h  \
     website_backend/websiteinterface.h      \
     website_backend/gumboparserimpl.h       \
-    qml_frontend/forumreader.h \
-    common/logger.h \
-    website_backend/websiteinterface_fwd.h
+    qml_frontend/forumreader.h
 
 RESOURCES += qml_frontend/qml.qrc
 
