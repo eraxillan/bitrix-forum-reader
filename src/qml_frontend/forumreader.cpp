@@ -256,7 +256,7 @@ int ForumReader::pageCount() const
     return m_pageCount;
 }
 
-int ForumReader::postCount() const
+int ForumReader::pagePostCount() const
 {
     return m_pagePosts.size();
 }

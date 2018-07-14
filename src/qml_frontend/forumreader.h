@@ -45,7 +45,7 @@ public:
 
     // The number of pages and posts
     Q_INVOKABLE int       pageCount() const;
-    Q_INVOKABLE int       postCount() const;
+    Q_INVOKABLE int       pagePostCount() const;
 
     // Page posts properties getters
     Q_INVOKABLE QString   postAuthorQml(int index) const;

@@ -57,7 +57,7 @@ ApplicationWindow {
             currentPageIndex = pageNo;
 
             // Fill the post list
-            for (var i = 0; i < reader.postCount(); i++)
+            for (var i = 0; i < reader.pagePostCount(); i++)
             {
                 dataModel.append( {  "color"                  : "lightgrey",
                                      "postAuthorQml"          : reader.postAuthorQml(i),
