@@ -11,7 +11,7 @@ import Fluid.Core 1.0 as FluidCore
 import Fluid.Controls 1.0 as FluidControls
 
 import ru.banki.reader 1.0
-import "../qml" as BFR
+import "../../qml" as BFR
 
 FluidControls.ApplicationWindow {
     id:      wndMain
