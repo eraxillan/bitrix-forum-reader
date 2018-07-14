@@ -74,10 +74,6 @@ ApplicationWindow {
         }
     }
 
-    Component.onCompleted: {
-        reader.startPageCountAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list" )
-    }
-
     ProgressBar {
         id: pbPage
 
@@ -263,5 +259,9 @@ ApplicationWindow {
                 text: "Footer"
             }
         }
+    }
+
+    Component.onCompleted: {
+        reader.startPageCountAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list" )
     }
 }

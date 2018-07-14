@@ -30,19 +30,6 @@ FluidControls.ApplicationWindow {
     property int currentPageIndex: 1
     property int postIndex: 1;
 
-    onCurrentPageIndexChanged: {
-        console.log("Loading page number ", currentPageIndex)
-
-        // Parse the page HTML data
-        if (qmlInit) {
-            pageLoaded = false;
-            dataModel.clear();
-
-            reader.startPageParseAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1="
-                                       + currentPageIndex.toString() + "#forum-message-list", currentPageIndex)
-        }
-    }
-
     FluidControls.SnackBar {
          id: snbrMain
          //onClicked: console.log("Snack bar button clicked")
@@ -101,10 +88,6 @@ FluidControls.ApplicationWindow {
 
             snbrMain.open(qsTr("Page has been loaded"));
         }
-    }
-
-    Component.onCompleted: {
-        reader.startPageCountAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list");
     }
 
     ProgressBar {
@@ -208,5 +191,22 @@ FluidControls.ApplicationWindow {
         ]
 
         BFR.PostList {}
+    }
+
+    onCurrentPageIndexChanged: {
+        console.log("Loading page number ", currentPageIndex)
+
+        // Parse the page HTML data
+        if (qmlInit) {
+            pageLoaded = false;
+            dataModel.clear();
+
+            reader.startPageParseAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1="
+                                       + currentPageIndex.toString() + "#forum-message-list", currentPageIndex)
+        }
+    }
+
+    Component.onCompleted: {
+        reader.startPageCountAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list");
     }
 }
