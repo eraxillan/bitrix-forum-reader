@@ -994,7 +994,8 @@ PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const
 
     // Read the quote body
     // NOTE: quote text is HTML too
-    BFR_RETURN_RESULT_IF(tbodyTrTdNodeChildIndex >= tbodyTrTdNode->getChildElementCount(false), "Invalid node index");
+    // FIXME: temponary workaround! i will investigate the problem in future 
+//    BFR_RETURN_RESULT_IF(tbodyTrTdNodeChildIndex >= tbodyTrTdNode->getChildElementCount(false), "Invalid node index");
     QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
 
  #ifdef BFR_PRINT_DEBUG_OUTPUT
