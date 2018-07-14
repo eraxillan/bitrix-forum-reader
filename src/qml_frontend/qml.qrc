@@ -17,5 +17,6 @@
         <file>qml/+android/qtquickcontrols2.conf</file>
         <file>qml/+ios/main.qml</file>
         <file>qml/+android/PostList.qml</file>
+        <file>qml/+android/NavigationPanel.qml</file>
     </qresource>
 </RCC>

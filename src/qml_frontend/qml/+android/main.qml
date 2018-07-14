@@ -43,54 +43,13 @@ FluidControls.ApplicationWindow {
         }
     }
 
-
     FluidControls.SnackBar {
          id: snbrMain
          //onClicked: console.log("Snack bar button clicked")
-     }
-
-    // -------------------------------------------------
-    FluidControls.NavigationListView {
-        id: navDrawer
-
-        topContent: Image {
-            source: ""
-
-            Layout.fillWidth: true
-            Layout.preferredHeight: 200 /*window.header.height */
-        }
-
-        actions: [
-            FluidControls.Action {
-                text: qsTr("Action 1")
-                icon.source: FluidControls.Utils.iconUrl("action/info")
-                onTriggered: console.log("action1 triggered")
-            },
-            FluidControls.Action {
-                text: qsTr("Action 2")
-                icon.source: FluidControls.Utils.iconUrl("action/info")
-                hasDividerAfter: true
-                onTriggered: console.log("action2 triggered")
-            },
-            FluidControls.Action {
-                text: qsTr("Action 3")
-                icon.source: FluidControls.Utils.iconUrl("action/info")
-                onTriggered: console.log("action3 triggered")
-            },
-            FluidControls.Action {
-                text: qsTr("Action 4")
-                icon.source: FluidControls.Utils.iconUrl("action/info")
-                onTriggered: console.log("action4 triggered")
-            },
-            FluidControls.Action {
-                text: qsTr("Action 5")
-                icon.source: FluidControls.Utils.iconUrl("action/info")
-                visible: false
-                onTriggered: console.log("action5 triggered")
-            }
-        ]
     }
-    // -------------------------------------------------
+
+    // Application navigation panel sliding from the left side
+    BFR.NavigationPanel { id: navPanel; }
 
     ForumReader {
         id: reader
@@ -172,7 +131,7 @@ FluidControls.ApplicationWindow {
 
         leftAction: FluidControls.Action {
             icon.source: FluidControls.Utils.iconUrl("navigation/menu");
-            onTriggered: navDrawer.open();
+            onTriggered: navPanel.open();
         }
 
         FluidControls.InputDialog {
