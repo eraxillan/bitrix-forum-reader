@@ -250,10 +250,16 @@ namespace bfr
         PostImagePtr m_userAvatar;
 
         // Additional info
+        // TODO: extend thread-bound variables to collection,
+        //       to store user ratio etc. for several forum threads
         QUrl m_allPostsUrl;
         int m_postCount = -1;
+        int m_threadPostCount = 0;
         QDate m_registrationDate;
         int m_reputation = -1;
+        int m_threadReputation = 0;
+        double m_ratio = 0.0;
+        double m_threadRatio = 0.0;
         QString m_city;
 
         bool isValid() const Q_DECL_OVERRIDE;

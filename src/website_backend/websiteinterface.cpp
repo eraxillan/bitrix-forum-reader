@@ -371,8 +371,12 @@ QDataStream &bfr::User::serialize(QDataStream &stream) const
     // PostImagePtr m_userAvatar;
     // QUrl m_allPostsUrl;
     // int m_postCount = -1;
+    // int m_threadPostCount = 0;
     // QDate m_registrationDate;
     // int m_reputation = -1;
+    // int m_threadReputation = 0;
+    // double m_ratio = 0.0;
+    // double m_threadRatio = 0.0;
     // QString m_city;
     //
     stream << UserType;
@@ -386,8 +390,12 @@ QDataStream &bfr::User::serialize(QDataStream &stream) const
 
     stream << m_allPostsUrl;
     stream << m_postCount;
+    stream << m_threadPostCount;
     stream << m_registrationDate;
     stream << m_reputation;
+    stream << m_threadReputation;
+    stream << m_ratio;
+    stream << m_threadRatio;
     stream << m_city;
     return stream;
 }
@@ -411,8 +419,12 @@ QDataStream &bfr::User::deserialize(QDataStream &stream)
 
     stream >> m_allPostsUrl;
     stream >> m_postCount;
+    stream >> m_threadPostCount;
     stream >> m_registrationDate;
     stream >> m_reputation;
+    stream >> m_threadReputation;
+    stream >> m_ratio;
+    stream >> m_threadRatio;
     stream >> m_city;
     return stream;
 }
