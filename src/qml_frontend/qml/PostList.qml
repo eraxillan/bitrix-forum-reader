@@ -12,6 +12,8 @@ ListView {
 
     clip: true
 
+    ScrollIndicator.vertical: ScrollIndicator {}
+
     // Current item highlighting setup
     highlight: Rectangle {
         color: "skyblue"
