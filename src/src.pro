@@ -257,7 +257,10 @@ windows {
 #######################################################################################################################
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH = $$OUT_PWD/../fluid/qml
+QML_IMPORT_PATH += $$OUT_PWD/../fluid/qml
+QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml
+QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+android
+#QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+ios
 
 # Default rules for deployment
 include(deployment.pri)
