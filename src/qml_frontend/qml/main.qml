@@ -8,7 +8,8 @@ import QtQuick.Window 2.2
 import Qt.labs.settings 1.0
 
 import ru.banki.reader 1.0
-import "../qml" as BFR
+import "../qml" as GenericUi
+
 
 ApplicationWindow {
     id:      wndMain
@@ -94,7 +95,7 @@ ApplicationWindow {
         id: dataModel
     }
 
-    BFR.PostList {}
+    GenericUi.PostList {}
 
     Component.onCompleted: {
         reader.startPageCountAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list" )
