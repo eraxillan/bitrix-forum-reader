@@ -211,7 +211,7 @@ FluidControls.ApplicationWindow {
             pageLoaded = false;
             dataModel.clear();
 
-            reader.startPageParseAsync(testThreadUrl.pageUrl(currentPageIndex));
+            reader.startPageParseAsync(testThreadUrl.pageUrl(currentPageIndex), currentPageIndex);
         }
     }
 

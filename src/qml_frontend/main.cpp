@@ -21,10 +21,12 @@
 #include "catch.hpp"
 
 #include <common/logger.h>
+#include <common/forumthreadurl.h>
 
 #include "website_backend/gumboparserimpl.h"
 #include "qml_frontend/forumreader.h"
 
+// FIXME: add copyright and license info in source files
 // FIXME: add user whitelist
 // FIXME: add sorting by user/post reputation option
 // FIXME: add full error stack storage code like PCode do
@@ -77,6 +79,7 @@ bool initLogLibrary()
 
         // Customize msg format for all messages
         spdlog::set_pattern("[%^%L%$][%D %H:%M:%S.%e][%P:%t] %v");
+        spdlog::set_level(spdlog::level::trace);
 
         ConsoleLogger->info("spdlog was successfully initialized");
     }
@@ -106,6 +109,7 @@ int main(int argc, char *argv[])
         return 1;
 
     qsrand(1);
+    qmlRegisterType<ForumThreadUrl>("ru.banki.reader", 1, 0, "ForumThreadUrl");
     qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
 
     QGuiApplication::setApplicationName("Bitrix Forum Reader");
@@ -158,6 +162,8 @@ int main(int argc, char *argv[])
                                       ).canonicalPath() + QDir::separator();
         engine.addImportPath(projectRootDir + QLatin1String("fluid") + QDir::separator() + QLatin1String("qml"));
         engine.addImportPath(projectRootDir + QLatin1String("src") + QDir::separator() + QLatin1String("qml_frontend") + QDir::separator() + QLatin1String("qml"));
+        engine.addImportPath(projectRootDir + QLatin1String("src") + QDir::separator() + QLatin1String("qml_frontend") + QDir::separator() + QLatin1String("qml") + QDir::separator() + QLatin1String("+android"));
+        engine.addImportPath(projectRootDir + QLatin1String("src") + QDir::separator() + QLatin1String("qml_frontend") + QDir::separator() + QLatin1String("qml") + QDir::separator() + QLatin1String("+ios"));
 
         /*
         float textScaleFactor = 0.0f;
