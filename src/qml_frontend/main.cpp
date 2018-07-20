@@ -27,6 +27,8 @@
 #include "qml_frontend/forumreader.h"
 
 // FIXME: add copyright and license info in source files
+// FIXME: move raw strings (error messages etc.) to separate file and get them thru new LocalizationManager class
+//
 // FIXME: add user whitelist
 // FIXME: add sorting by user/post reputation option
 // FIXME: add full error stack storage code like PCode do

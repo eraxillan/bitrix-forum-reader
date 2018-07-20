@@ -3,6 +3,7 @@
 #include "common/logger.h"
 #include "common/filedownloader.h"
 #include "website_backend/gumboparserimpl.h"
+#include "parser_frontend/forumthreadpool.h"
 
 namespace {
 template <typename T>
@@ -33,15 +34,13 @@ ForumReader::ForumReader() :
     m_pageNo(0),
     m_lastError(result_code::Type::Ok)
 {
-    connect(&m_downloader, &FileDownloader::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
-    connect(&m_downloader, &FileDownloader::downloadFinished, this, &ForumReader::onForumPageDownloaded);
-    connect(&m_downloader, &FileDownloader::downloadFailed,   this, &ForumReader::onForumPageDownloadFailed);
+    connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
 
-    connect(&m_forumPageCountWatcher, &IntFutureWatcher::finished, this, &ForumReader::onForumPageCountParsed);
-    connect(&m_forumPageCountWatcher, &IntFutureWatcher::canceled, this, &ForumReader::onForumPageCountParsingCanceled);
+    connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumPageCountParsed);
+    connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageCountParsingCanceled);
 
-    connect(&m_forumPageParserWatcher, &ParserFutureWatcher::finished, this, &ForumReader::onForumPageParsed);
-    connect(&m_forumPageParserWatcher, &ParserFutureWatcher::canceled, this, &ForumReader::onForumPageParsingCanceled);
+    connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumPageParsed);
+    connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageParsingCanceled);
 }
 
 ForumReader::~ForumReader()
@@ -60,74 +59,6 @@ QUrl ForumReader::convertToUrl(QString urlStr) const
     return QUrl(urlStr);
 }
 
-#ifdef BITRIX_FORUM_READER_SYNC_API
-int ForumReader::parsePageCount(QString urlStr)
-{
-    // Cleanup
-    m_pagePosts.clear();
-    m_pageCount = 0;
-
-    // 1) Download the first forum web page
-    QByteArray htmlRawData;
-    if (!FileDownloader::downloadUrl(urlStr, htmlRawData)) { Q_ASSERT(0); return 0; }
-
-    // 2) Parse the page HTML to get the page number
-    bfr::ForumPageParser fpp;
-    result_code::Type resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
-    Q_ASSERT(result_code::succeeded(resultFpp)); if (result_code::failed(resultFpp)) { m_pageCount = 0; return 0; }
-    return m_pageCount;
-}
-
-bool ForumReader::parseForumPage(QString urlStr, int pageNo)
-{
-    // Cleanup
-    m_pagePosts.clear();
-    m_pageCount = 0;
-    m_pageNo = pageNo;
-
-    // 1) Download the first forum web page
-    QByteArray htmlRawData;
-    if (!FileDownloader::downloadUrl(urlStr, htmlRawData)) { Q_ASSERT(0); return false; }
-
-    // 2) Parse the page HTML to get the page number
-    bfr::ForumPageParser fpp;
-    result_code::Type resultFpp = fpp.getPageCount(htmlRawData, m_pageCount);
-    Q_ASSERT(result_code::succeeded(resultFpp)); if (result_code::failed(resultFpp)) { m_pageCount = 0; return false; }
-
-    // 3) Parse the page HTML to get the page user posts
-    resultFpp = fpp.getPagePosts(htmlRawData, m_pagePosts);
-    Q_ASSERT(result_code::succeeded(resultFpp)); if (result_code::failed(resultFpp)) { m_pagePosts.clear(); return false; }
-    return true;
-}
-#endif
-
-namespace {
-int parsePageCountAsync(QString urlStr)
-{
-    int result = 0;
-
-    // 1) Download the first forum web page
-    QByteArray htmlRawData;
-    if (!FileDownloader::downloadUrl(urlStr, htmlRawData))
-    {
-        Q_ASSERT(0);
-        return result;
-    }
-
-    // 2) Parse the page HTML to get the page number
-    bfr::ForumPageParser fpp;
-    result_code::Type resultFpp = fpp.getPageCount(htmlRawData, result);
-    if (result_code::failed(resultFpp))
-    {
-        Q_ASSERT(0);
-        result = 0;
-        return result;
-    }
-
-    return result;
-}
-}
-
 void ForumReader::startPageCountAsync(QString urlStr)
 {
     dumpFutureObj(m_forumPageCountWatcher.future(), "m_forumPageCountWatcher");
@@ -137,36 +68,15 @@ void ForumReader::startPageCountAsync(QString urlStr)
     //m_forumPageCountWatcher.cancel();
     m_forumPageCountWatcher.waitForFinished();
 
-    auto forumPageCountFuture = QtConcurrent::run(std::bind(parsePageCountAsync, urlStr));
-    m_forumPageCountWatcher.setFuture(forumPageCountFuture);
-}
+    // FIXME: replace input param with ForumThreadUrlData
+    ForumThreadUrlData urlData;
+    urlData.m_sectionId = 22;
+    urlData.m_threadId = 74420;
 
-namespace {
-// NOTE: QtConcurrent require to return collection; return result code will be much more straightforward to reader
-bfr::PostList parsePageAsync(QByteArray rawHtmlData, int& pageCount, result_code::Type& errorCode)
-{
-    bfr::PostList result;
-    errorCode = result_code::Type::Ok;
-
-    // 2) Parse the page HTML to get the page number
-    bfr::ForumPageParser fpp;
-    errorCode = fpp.getPageCount(rawHtmlData, pageCount);
-    if (errorCode != result_code::Type::Ok)
-    {
-        Q_ASSERT(0);
-        return result;
-    }
-
-    // 3) Parse the page HTML to get the page user posts
-    errorCode = fpp.getPagePosts(rawHtmlData, result);
-    if (errorCode != result_code::Type::Ok)
-    {
-        Q_ASSERT(0);
-        return result;
-    }
-
-    return result;
-}
+    auto countFuture = QtConcurrent::run(
+                std::bind(&ForumThreadPool::getForumThreadPageCount, &ForumThreadPool::globalInstance(),
+                          urlData, std::ref(m_pageCount)));
+    m_forumPageCountWatcher.setFuture(countFuture);
 }
 
 void ForumReader::startPageParseAsync(QString urlStr, int pageNo)
@@ -179,7 +89,15 @@ void ForumReader::startPageParseAsync(QString urlStr, int pageNo)
 //    m_pageCount = 0;
     m_pageNo = pageNo;
 
-    m_downloader.startDownloadAsync(urlStr);
+    // FIXME: replace input param with ForumThreadUrlData
+    ForumThreadUrlData urlData;
+    urlData.m_sectionId = 22;
+    urlData.m_threadId = 74420;
+
+    auto parseFuture = QtConcurrent::run(
+                std::bind(&ForumThreadPool::getForumPagePosts, &ForumThreadPool::globalInstance(),
+                          urlData, pageNo, std::ref(m_pagePosts)));
+    m_forumPageParserWatcher.setFuture(parseFuture);
 
     // FIXME: a better way? server don't return Content-Length header;
     //        a HTML page size is unknown, and the only way to get it - download the entire page;
@@ -187,14 +105,18 @@ void ForumReader::startPageParseAsync(QString urlStr, int pageNo)
     emit pageContentParseProgressRange(0, 400000);
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+
+// FIXME: use m_lastError here
+
 void ForumReader::onForumPageCountParsed()
 {
     dumpFutureObj(m_forumPageCountWatcher.future(), "m_forumPageCountWatcher");
 
-    int pageCount = m_forumPageCountWatcher.result();
-    Q_ASSERT(pageCount > 0);
-    m_pageCount = pageCount;
-    emit pageCountParsed(pageCount);
+    Q_ASSERT(result_code::succeeded(m_forumPageCountWatcher.result()));
+    Q_ASSERT(m_pageCount > 0);
+
+    emit pageCountParsed(m_pageCount);
 }
 
 void ForumReader::onForumPageCountParsingCanceled()
@@ -215,32 +137,12 @@ void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytes
     emit pageContentParseProgress((int)bytesReceived);
 }
 
-void ForumReader::onForumPageDownloaded()
-{
-    m_pageData = m_downloader.downloadedData();
-    Q_ASSERT(!m_pageData.isEmpty());
-
-    // Wait for previous operation finish (if any)
-    // NOTE: QtConcurrent::run() return future that cannot be canceled
-    //m_forumPageParserWatcher.cancel();
-    m_forumPageParserWatcher.waitForFinished();
-
-    auto forumPageParseFuture = QtConcurrent::run(
-                std::bind(parsePageAsync, m_pageData, std::ref(m_pageCount), std::ref(m_lastError)));
-    m_forumPageParserWatcher.setFuture(forumPageParseFuture);
-}
-
-void ForumReader::onForumPageDownloadFailed(result_code::Type code)
-{
-    // FIXME: implement
-    Q_UNUSED(code);
-}
-
 void ForumReader::onForumPageParsed()
 {
     dumpFutureObj(m_forumPageParserWatcher.future(), "m_forumPageParserWatcher");
 
-    m_pagePosts = m_forumPageParserWatcher.result();
+    Q_ASSERT(result_code::succeeded(m_forumPageParserWatcher.result()));
+
     emit pageContentParsed(m_pageNo);
 }
 
@@ -250,6 +152,8 @@ void ForumReader::onForumPageParsingCanceled()
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
+
+// FIXME: add state checks, e.g. whether the page loaded
 
 int ForumReader::pageCount() const
 {

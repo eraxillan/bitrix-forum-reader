@@ -3,6 +3,7 @@
 
 #include "common/resultcode.h"
 #include "common/filedownloader.h"
+#include "common/forumthreadurl.h"
 #include "website_backend/websiteinterface.h"
 
 class ForumReader : public QObject
@@ -10,15 +11,11 @@ class ForumReader : public QObject
     Q_OBJECT
 
     using PostList = bfr::PostList;
-    using IntFutureWatcher = QFutureWatcher<int>;
-    using ParserFutureWatcher = QFutureWatcher<PostList>;
+    using ResultCodeFutureWatcher = QFutureWatcher<result_code::Type>;
 
-    FileDownloader m_downloader;
+    ResultCodeFutureWatcher m_forumPageCountWatcher;
+    ResultCodeFutureWatcher m_forumPageParserWatcher;
 
-    IntFutureWatcher    m_forumPageCountWatcher;
-    ParserFutureWatcher m_forumPageParserWatcher;
-
-    QByteArray m_pageData;
     PostList m_pagePosts;
     int      m_pageCount;
     int      m_pageNo;
@@ -32,12 +29,6 @@ public:
     // Helper functions
     Q_INVOKABLE QString   applicationDirPath() const;
     Q_INVOKABLE QUrl      convertToUrl(QString urlStr) const;
-
-    // Forum HTML page parser sync API (e.g. for testing purposes)
-#ifdef BITRIX_FORUM_READER_SYNC_API
-    Q_INVOKABLE int       parsePageCount(QString urlStr);
-    Q_INVOKABLE bool      parseForumPage(QString urlStr, int pageNo);
-#endif
 
     // Forum HTML page parser async API (use Qt signal-slots system)
     Q_INVOKABLE void      startPageCountAsync(QString urlStr);
@@ -74,8 +65,6 @@ private slots:
 
     // Forum page downloader slots
     void onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void onForumPageDownloaded();
-    void onForumPageDownloadFailed(result_code::Type code);
 
     // Forum page user posts parser slots
     void onForumPageParsed();

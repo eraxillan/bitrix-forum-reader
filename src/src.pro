@@ -128,6 +128,7 @@ SOURCES += \
     website_backend/websiteinterface.cpp    \
     qml_frontend/forumreader.cpp            \
     qml_frontend/main.cpp                   \
+    parser_frontend/forumthreadpool.cpp \
     tests/gumboparserimpl_tests.cpp
 
 HEADERS += \
@@ -141,7 +142,8 @@ HEADERS += \
     website_backend/websiteinterface_fwd.h  \
     website_backend/websiteinterface.h      \
     website_backend/gumboparserimpl.h       \
-    qml_frontend/forumreader.h
+    qml_frontend/forumreader.h              \
+    parser_frontend/forumthreadpool.h
 
 RESOURCES += qml_frontend/qml.qrc
 
