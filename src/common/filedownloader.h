@@ -37,7 +37,9 @@ public:
     result_code::Type lastError() const;
 
     // Sync API
-    static bool downloadUrl(QString urlStr, QByteArray& data);
+    //using ProgressCallback = void (*)(qint64 /*bytesReceived*/, qint64 /*bytesTotal*/);
+    using ProgressCallback = std::function<void(qint64, qint64)>;
+    static bool downloadUrl(QString urlStr, QByteArray& data, ProgressCallback progressCb = nullptr);
 
 signals:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);

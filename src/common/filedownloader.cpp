@@ -36,6 +36,27 @@ int downloadFileProgressCallback(void *clientp, curl_off_t dltotal, curl_off_t d
     return CURLE_OK;
 }
 
+int downloadFileProgressCallback_2(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
+{
+    Q_UNUSED(ultotal);
+    Q_UNUSED(ulnow);
+
+    if (dltotal > 0 || dlnow > 0)
+    {
+#ifdef BFR_PRINT_DEBUG_OUTPUT
+        ConsoleLogger->info("Download progress: {} of {} bytes", dlnow, dltotal);
+#endif
+
+        if (clientp)
+        {
+            FileDownloader::ProgressCallback *progressCb = reinterpret_cast<FileDownloader::ProgressCallback*>(clientp);
+            if (*progressCb)
+                (*progressCb)(dlnow, dltotal);
+        }
+    }
+    return CURLE_OK;
+}
+
 size_t downloadFileWriteCallback(void *ptr, size_t size, size_t nmemb, QByteArray* data)
 {
     QCoreApplication::processEvents();
@@ -208,7 +229,7 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
     return result_code::succeeded(fd.lastError());
 }
 #else
-bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
+bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallback progressCb)
 {
     data.clear();
 
@@ -236,7 +257,10 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data)
     }
 
     curl_easy_setopt(curl, CURLOPT_URL, urlStr.toLocal8Bit().constData());
-    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, downloadFileProgressCallback_2);
+    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &progressCb);
 
 //    curl_easy_setopt(curl, CURLOPT_USERPWD, "user:pass");
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.51.0");
