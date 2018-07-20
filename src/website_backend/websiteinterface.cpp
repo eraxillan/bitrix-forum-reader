@@ -551,10 +551,10 @@ IPostObject::~IPostObject()
 namespace {
 QString readQmlFile(QString fileName)
 {
-    BFR_DECLARE_RETURN_INVALID_DEFAULT_VALUE(QString);
+    BFR_DECLARE_DEFAULT_RETURN_TYPE(QString);
 
     QFile f(fileName);
-    BFR_RETURN_RESULT_IF(!f.open(QIODevice::ReadOnly | QIODevice::Text), "Unable to open QML file");
+    BFR_RETURN_DEFAULT_IF(!f.open(QIODevice::ReadOnly | QIODevice::Text), "Unable to open QML file");
     return f.readAll();
 }
 }
