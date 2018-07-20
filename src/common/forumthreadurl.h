@@ -3,6 +3,14 @@
 
 #include <QtCore/QtCore>
 
+struct ForumThreadUrlData
+{
+    int m_sectionId;
+    int m_threadId;
+
+    ForumThreadUrlData();
+    ForumThreadUrlData(int sectionId, int threadId);
+};
 
 class ForumThreadUrl : public QObject
 {
@@ -11,8 +19,7 @@ class ForumThreadUrl : public QObject
     Q_PROPERTY(int sectionId READ sectionId WRITE setSectionId NOTIFY sectionIdChanged)
     Q_PROPERTY(int threadId READ threadId WRITE setThreadId NOTIFY threadIdChanged)
 
-    int m_sectionId;
-    int m_threadId;
+    ForumThreadUrlData m_data;
 
 public:
     explicit ForumThreadUrl(QObject *parent = nullptr);
@@ -34,5 +41,12 @@ signals:
     void sectionIdChanged();
     void threadIdChanged();
 };
+
+inline bool operator < (const ForumThreadUrlData &url1, const ForumThreadUrlData &url2)
+{
+    if (url1.m_sectionId != url2.m_sectionId)
+        return url1.m_sectionId < url2.m_sectionId;
+    return url1.m_threadId < url2.m_threadId;
+}
 
 #endif // __BFR_FORUMTHREADURL_H__
