@@ -56,6 +56,8 @@ signals:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 //    void downloadFinished();
 //    void downloadFailed(result_code::Type code);
+
+    void threadParseProgress(int pageNo, int pageCount);
 };
 
 #endif // FORUMTHREADPOOL_H

@@ -15,7 +15,9 @@ class ForumReader : public QObject
 
     ResultCodeFutureWatcher m_forumPageCountWatcher;
     ResultCodeFutureWatcher m_forumPageParserWatcher;
+    ResultCodeFutureWatcher m_forumThreadParserWatcher;
 
+    PostList m_threadPosts;
     PostList m_pagePosts;
     int      m_pageCount;
     int      m_pageNo;
@@ -33,6 +35,7 @@ public:
     // Forum HTML page parser async API (use Qt signal-slots system)
     Q_INVOKABLE void      startPageCountAsync(ForumThreadUrl *url);
     Q_INVOKABLE void      startPageParseAsync(ForumThreadUrl *url, int pageNo);
+    Q_INVOKABLE void      startThreadParseAsync(ForumThreadUrl *url);
 
     // The number of pages and posts
     Q_INVOKABLE int       pageCount() const;
@@ -54,9 +57,13 @@ signals:
     // Forum parser signals
     void pageCountParsed(int pageCount);
     void pageContentParsed(int pageNo);
+    void threadContentParsed(ForumThreadUrl *url);
 
     void pageContentParseProgressRange(int minimum, int maximum);
     void pageContentParseProgress(int value);
+
+    void threadContentParseProgressRange(int minimum, int maximum);
+    void threadContentParseProgress(int value);
 
 private slots:
     // Forum page count parser slots
@@ -69,6 +76,10 @@ private slots:
     // Forum page user posts parser slots
     void onForumPageParsed();
     void onForumPageParsingCancelled();
+
+    // Forum thread user posts parser slots
+    void onForumThreadParsed();
+    void onForumThreadParsingCancelled();
 };
 
 #endif // __BFR_FORUMREADER_H__

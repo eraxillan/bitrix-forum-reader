@@ -31,7 +31,8 @@ result_code::Type ForumThreadPool::getForumThreadPageCount(ForumThreadUrlData ur
     ConsoleLogger->debug("Forum thread '{}' was not parsed yet, no page count in the pagecount-cache", url->firstPageUrl());
     ConsoleLogger->debug("Downloading first page of forum thread '{}'...", url->firstPageUrl());
     QByteArray htmlRawData;
-    BFR_RETURN_VALUE_IF(!FileDownloader::downloadUrl(url->firstPageUrl(), htmlRawData),
+    BFR_RETURN_VALUE_IF(!FileDownloader::downloadUrl(url->firstPageUrl(), htmlRawData,
+                                                     std::bind(&ForumThreadPool::onDownloadProgress, this, std::placeholders::_1, std::placeholders::_2)),
                         result_code::Type::NetworkError,
                         "Unable to download first forum thread page");
     ConsoleLogger->debug("Forum thread '{}' first page has been downloaded", url->firstPageUrl());
@@ -129,6 +130,8 @@ result_code::Type ForumThreadPool::getForumThreadPosts(ForumThreadUrlData urlDat
 
         posts << postsTemp;
         postsTemp.clear();
+
+        emit threadParseProgress(i, pageCount);
     }
 
     ConsoleLogger->debug("Forum thread '{}' posts has been parsed", url->firstPageUrl());

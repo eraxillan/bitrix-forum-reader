@@ -29,18 +29,23 @@ void dumpFutureObj(QFuture<T> future, QString name)
 ForumReader::ForumReader() :
     m_forumPageCountWatcher(),
     m_forumPageParserWatcher(),
+    m_forumThreadParserWatcher(),
     m_pagePosts(),
     m_pageCount(0),
     m_pageNo(0),
     m_lastError(result_code::Type::Ok)
 {
     connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
+    connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::threadParseProgress, this, &ForumReader::threadContentParseProgress);
 
     connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumPageCountParsed);
     connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageCountParsingCancelled);
 
     connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumPageParsed);
     connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageParsingCancelled);
+
+    connect(&m_forumThreadParserWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumThreadParsed);
+    connect(&m_forumThreadParserWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumThreadParsingCancelled);
 }
 
 ForumReader::~ForumReader()
@@ -95,6 +100,22 @@ void ForumReader::startPageParseAsync(ForumThreadUrl *url, int pageNo)
     emit pageContentParseProgressRange(0, 400000);
 }
 
+void ForumReader::startThreadParseAsync(ForumThreadUrl *url)
+{
+    // FIXME: ensure pageCount is already determined
+    Q_ASSERT(m_pageCount > 0);
+
+    dumpFutureObj(m_forumThreadParserWatcher.future(), "m_forumThreadParserWatcher");
+
+    m_pagePosts.clear();
+
+    auto parseFuture = QtConcurrent::run(
+                std::bind(&ForumThreadPool::getForumThreadPosts, &ForumThreadPool::globalInstance(), url->data(), std::ref(m_threadPosts)));
+    m_forumThreadParserWatcher.setFuture(parseFuture);
+
+    emit threadContentParseProgressRange(0, m_pageCount);
+}
+
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 
 // FIXME: use m_lastError here
@@ -137,6 +158,21 @@ void ForumReader::onForumPageParsed()
 }
 
 void ForumReader::onForumPageParsingCancelled()
+{
+    Q_ASSERT_X(0, Q_FUNC_INFO, "QFuture returned by QtConcurrent::run() cannot be canceled");
+}
+
+void ForumReader::onForumThreadParsed()
+{
+    dumpFutureObj(m_forumThreadParserWatcher.future(), "m_forumThreadParserWatcher");
+
+    Q_ASSERT(result_code::succeeded(m_forumThreadParserWatcher.result()));
+
+    // NOTE: ForumThreadUrl object will be destroyed in ForumReader dtor
+    emit threadContentParsed(new ForumThreadUrl(this));
+}
+
+void ForumReader::onForumThreadParsingCancelled()
 {
     Q_ASSERT_X(0, Q_FUNC_INFO, "QFuture returned by QtConcurrent::run() cannot be canceled");
 }
