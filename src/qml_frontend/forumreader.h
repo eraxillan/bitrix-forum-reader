@@ -31,8 +31,8 @@ public:
     Q_INVOKABLE QUrl      convertToUrl(QString urlStr) const;
 
     // Forum HTML page parser async API (use Qt signal-slots system)
-    Q_INVOKABLE void      startPageCountAsync(QString urlStr);
-    Q_INVOKABLE void      startPageParseAsync(QString urlStr, int pageNo);
+    Q_INVOKABLE void      startPageCountAsync(ForumThreadUrl *url);
+    Q_INVOKABLE void      startPageParseAsync(ForumThreadUrl *url, int pageNo);
 
     // The number of pages and posts
     Q_INVOKABLE int       pageCount() const;
@@ -61,14 +61,14 @@ signals:
 private slots:
     // Forum page count parser slots
     void onForumPageCountParsed();
-    void onForumPageCountParsingCanceled();
+    void onForumPageCountParsingCancelled();
 
     // Forum page downloader slots
     void onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
     // Forum page user posts parser slots
     void onForumPageParsed();
-    void onForumPageParsingCanceled();
+    void onForumPageParsingCancelled();
 };
 
 #endif // __BFR_FORUMREADER_H__

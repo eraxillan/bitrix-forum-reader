@@ -72,7 +72,7 @@ FluidControls.ApplicationWindow {
             dataModel.clear();
 
             // Parse the last page HTML data
-            reader.startPageParseAsync(testThreadUrl.pageUrl(pageCount), pageCount);
+            reader.startPageParseAsync(testThreadUrl, pageCount);
         }
 
         onPageContentParsed: {
@@ -211,11 +211,11 @@ FluidControls.ApplicationWindow {
             pageLoaded = false;
             dataModel.clear();
 
-            reader.startPageParseAsync(testThreadUrl.pageUrl(currentPageIndex), currentPageIndex);
+            reader.startPageParseAsync(testThreadUrl, currentPageIndex);
         }
     }
 
     Component.onCompleted: {
-        reader.startPageCountAsync(testThreadUrl.firstPageUrl());
+        reader.startPageCountAsync(testThreadUrl);
     }
 }

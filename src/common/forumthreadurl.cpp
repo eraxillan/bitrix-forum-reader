@@ -22,6 +22,15 @@ ForumThreadUrl::ForumThreadUrl(int sectionId, int threadId)
     setThreadId(threadId);
 }
 
+ForumThreadUrl::~ForumThreadUrl()
+{
+}
+
+ForumThreadUrlData ForumThreadUrl::data() const
+{
+    return m_data;
+}
+
 int ForumThreadUrl::sectionId() const
 {
     return m_data.m_sectionId;

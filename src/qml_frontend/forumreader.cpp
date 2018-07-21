@@ -37,10 +37,10 @@ ForumReader::ForumReader() :
     connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
 
     connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumPageCountParsed);
-    connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageCountParsingCanceled);
+    connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageCountParsingCancelled);
 
     connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumPageParsed);
-    connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageParsingCanceled);
+    connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageParsingCancelled);
 }
 
 ForumReader::~ForumReader()
@@ -59,7 +59,7 @@ QUrl ForumReader::convertToUrl(QString urlStr) const
     return QUrl(urlStr);
 }
 
-void ForumReader::startPageCountAsync(QString urlStr)
+void ForumReader::startPageCountAsync(ForumThreadUrl *url)
 {
     dumpFutureObj(m_forumPageCountWatcher.future(), "m_forumPageCountWatcher");
 
@@ -68,18 +68,13 @@ void ForumReader::startPageCountAsync(QString urlStr)
     //m_forumPageCountWatcher.cancel();
     m_forumPageCountWatcher.waitForFinished();
 
-    // FIXME: replace input param with ForumThreadUrlData
-    ForumThreadUrlData urlData;
-    urlData.m_sectionId = 22;
-    urlData.m_threadId = 74420;
-
     auto countFuture = QtConcurrent::run(
                 std::bind(&ForumThreadPool::getForumThreadPageCount, &ForumThreadPool::globalInstance(),
-                          urlData, std::ref(m_pageCount)));
+                          url->data(), std::ref(m_pageCount)));
     m_forumPageCountWatcher.setFuture(countFuture);
 }
 
-void ForumReader::startPageParseAsync(QString urlStr, int pageNo)
+void ForumReader::startPageParseAsync(ForumThreadUrl *url, int pageNo)
 {
     dumpFutureObj(m_forumPageParserWatcher.future(), "m_forumPageParserWatcher");
 
@@ -89,14 +84,9 @@ void ForumReader::startPageParseAsync(QString urlStr, int pageNo)
 //    m_pageCount = 0;
     m_pageNo = pageNo;
 
-    // FIXME: replace input param with ForumThreadUrlData
-    ForumThreadUrlData urlData;
-    urlData.m_sectionId = 22;
-    urlData.m_threadId = 74420;
-
     auto parseFuture = QtConcurrent::run(
                 std::bind(&ForumThreadPool::getForumPagePosts, &ForumThreadPool::globalInstance(),
-                          urlData, pageNo, std::ref(m_pagePosts)));
+                          url->data(), pageNo, std::ref(m_pagePosts)));
     m_forumPageParserWatcher.setFuture(parseFuture);
 
     // FIXME: a better way? server don't return Content-Length header;
@@ -119,7 +109,7 @@ void ForumReader::onForumPageCountParsed()
     emit pageCountParsed(m_pageCount);
 }
 
-void ForumReader::onForumPageCountParsingCanceled()
+void ForumReader::onForumPageCountParsingCancelled()
 {
     Q_ASSERT_X(0, Q_FUNC_INFO, "QtConcurrent::run result cannot be canceled");
 }
@@ -146,7 +136,7 @@ void ForumReader::onForumPageParsed()
     emit pageContentParsed(m_pageNo);
 }
 
-void ForumReader::onForumPageParsingCanceled()
+void ForumReader::onForumPageParsingCancelled()
 {
     Q_ASSERT_X(0, Q_FUNC_INFO, "QFuture returned by QtConcurrent::run() cannot be canceled");
 }
