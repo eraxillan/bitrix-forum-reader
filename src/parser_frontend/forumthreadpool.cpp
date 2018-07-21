@@ -2,6 +2,42 @@
 
 #include <website_backend/gumboparserimpl.h>
 
+ForumThreadPool::ForumThreadPool(QObject *parent) : QObject(parent)
+{
+}
+
+ForumThreadPool::~ForumThreadPool()
+{
+}
+
+size_t ForumThreadPool::pageCountCacheSize() const
+{
+    return m_threadPageCountCollection.size() * (sizeof(ForumThreadUrlData) + sizeof(int));
+}
+
+namespace {
+size_t postListSize(const bfr::PostList &posts)
+{
+    return posts.size() * (sizeof(bfr::PostPtr));
+}
+}
+
+size_t ForumThreadPool::pagePostsCacheSize() const
+{
+    size_t result;
+    for (const auto &urlKey : m_threadPagePostCollection.keys())
+    {
+        result += sizeof(ForumThreadUrlData);
+
+        for (const auto &pageNoKey : m_threadPagePostCollection.value(urlKey).keys())
+        {
+            result += sizeof(int);
+            result += postListSize(m_threadPagePostCollection.value(urlKey).value(pageNoKey));
+        }
+    }
+    return result;
+}
+
 void ForumThreadPool::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     emit downloadProgress(bytesReceived, bytesTotal);

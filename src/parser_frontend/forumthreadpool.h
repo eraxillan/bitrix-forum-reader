@@ -21,12 +21,11 @@ protected:
     ThreadPageCountMap m_threadPageCountCollection;
     ThreadPagePostMap m_threadPagePostCollection;
 
-    explicit ForumThreadPool(QObject *parent = nullptr) : QObject(parent) {}
-    //ForumThreadPool() {}
-    ~ForumThreadPool() {}
+    explicit ForumThreadPool(QObject *parent = nullptr);
+    ~ForumThreadPool();
 
-    size_t pageCountCacheSize() { return m_threadPageCountCollection.size() * (sizeof(ForumThreadUrlData) + sizeof(int)); }
-    size_t pagePostsCacheSize() { /*FIXME: implement correct size calc using loop on inner map*/ return m_threadPagePostCollection.size() * (sizeof(ForumThreadUrlData) + sizeof(PagePostMap)); }
+    size_t pageCountCacheSize() const;
+    size_t pagePostsCacheSize() const;
 
     void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
