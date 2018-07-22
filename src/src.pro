@@ -128,7 +128,7 @@ SOURCES += \
     website_backend/websiteinterface.cpp    \
     qml_frontend/forumreader.cpp            \
     qml_frontend/main.cpp                   \
-    parser_frontend/forumthreadpool.cpp \
+    parser_frontend/forumthreadpool.cpp     \
     tests/gumboparserimpl_tests.cpp
 
 HEADERS += \
@@ -200,11 +200,11 @@ windows {
     LIBS += -ladvapi32 -luser32 -lgdi32 -lws2_32 -lwsock32 -lWldap32
 
     # OpenSSL
-    LIBS += -L$$PWD/libs/openssl/win32/VC14/$$ARCH/$$buildmode
+    LIBS += -L$$TOPDIR/libs/openssl/win32/VC14/$$ARCH/$$buildmode
     # cURL
-    LIBS += -L$$PWD/libs/curl/win32/VC14/$$ARCH/$$buildmode
+    LIBS += -L$$TOPDIR/libs/curl/win32/VC14/$$ARCH/$$buildmode
     # Gumbo
-    LIBS += -L$$PWD/libs/gumbo-parser/win32/VC14/$$ARCH/$$buildmode
+    LIBS += -L$$TOPDIR/libs/gumbo-parser/win32/VC14/$$ARCH/$$buildmode
 
     LIBS += -llibeay32 -lssleay32
     LIBS += -llibcurl$$SUFFIX
@@ -259,7 +259,7 @@ windows {
 #######################################################################################################################
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH += $$OUT_PWD/../fluid/qml
+QML_IMPORT_PATH += $$TOPDIR/fluid/qml
 QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml
 QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+android
 #QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+ios
