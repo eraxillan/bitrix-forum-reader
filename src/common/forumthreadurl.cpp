@@ -8,6 +8,16 @@ ForumThreadUrlData::ForumThreadUrlData(int sectionId, int threadId) : m_sectionI
 {
 }
 
+ForumThreadUrlData::ForumThreadUrlData(const ForumThreadUrlData &other)
+{
+    m_sectionId = other.m_sectionId;
+    m_threadId = other.m_threadId;
+}
+
+ForumThreadUrlData::~ForumThreadUrlData()
+{
+}
+
 // --------------------------------------------------------------------------------------------------------------------------------------------------
 
 ForumThreadUrl::ForumThreadUrl(QObject *parent) : QObject(parent)

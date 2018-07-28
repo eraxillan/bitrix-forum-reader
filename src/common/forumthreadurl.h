@@ -10,6 +10,8 @@ struct ForumThreadUrlData
 
     ForumThreadUrlData();
     ForumThreadUrlData(int sectionId, int threadId);
+    ForumThreadUrlData(const ForumThreadUrlData &other);
+    ~ForumThreadUrlData();
 };
 
 class ForumThreadUrl : public QObject
@@ -42,6 +44,8 @@ signals:
     void sectionIdChanged();
     void threadIdChanged();
 };
+
+Q_DECLARE_METATYPE(ForumThreadUrlData)
 
 inline bool operator < (const ForumThreadUrlData &url1, const ForumThreadUrlData &url2)
 {
