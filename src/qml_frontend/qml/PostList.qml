@@ -71,7 +71,7 @@ ListView {
                 height: parent.height
 
                 radius: 0
-                color: isCurrent ? "skyblue" : model.color
+                color: isCurrent ? "skyblue" : (model.color === undefined ? "lightgrey" : model.color)
                 border {
                     color: "black"
                     width: 1
@@ -84,7 +84,7 @@ ListView {
                 //width: <dynamic binding>
 
                 radius: 0
-                color: isCurrent ? "skyblue" : model.color
+                color: isCurrent ? "skyblue" : (model.color === undefined ? "lightgrey" : model.color)
                 border {
                     color: "black"
                     width: 1
