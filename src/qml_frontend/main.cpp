@@ -77,7 +77,13 @@ bool initLogLibrary()
         std::cout << "initializing spdlog..." << std::endl;
 
         // Console logger with color
+#ifndef Q_OS_WIN
         spdlog::stdout_color_mt("console");
+#else
+        auto sink = std::make_shared<spdlog::sinks::windebug_sink_st>();
+        auto logger = std::make_shared<spdlog::logger>("console", sink);
+        spdlog::register_logger(logger);
+#endif
 
         // Customize msg format for all messages
         spdlog::set_pattern("[%^%L%$][%D %H:%M:%S.%e][%P:%t] %v");

@@ -7,6 +7,9 @@
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h> // must be included
+#ifdef Q_OS_WIN
+#include <spdlog/sinks/windebug_sink.h>
+#endif
 
 #define ConsoleLogger spdlog::get("console")
 
