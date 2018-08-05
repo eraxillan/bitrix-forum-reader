@@ -8,3 +8,6 @@
 	path = fluid
 	url = https://github.com/lirios/fluid
 	ignore = untracked
+[submodule "concurrentqueue"]
+	path = concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue
