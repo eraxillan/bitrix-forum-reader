@@ -43,6 +43,7 @@ using PostList = QList<PostPtr>;
 
 struct User;
 using UserPtr = QSharedPointer<User>;
+using UserList = QList<UserPtr>;
 
 }  // namespace bfr
 
