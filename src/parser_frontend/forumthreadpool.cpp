@@ -12,19 +12,19 @@ ForumThreadPool::~ForumThreadPool()
 
 size_t ForumThreadPool::pageCountCacheSize() const
 {
-    return m_threadPageCountCollection.size() * (sizeof(ForumThreadUrlData) + sizeof(int));
+    return static_cast<size_t>(m_threadPageCountCollection.size()) * (sizeof(ForumThreadUrlData) + sizeof(int));
 }
 
 namespace {
 size_t postListSize(const bfr::PostList &posts)
 {
-    return posts.size() * (sizeof(bfr::PostPtr));
+    return static_cast<size_t>(posts.size()) * (sizeof(bfr::PostPtr));
 }
 }
 
 size_t ForumThreadPool::pagePostsCacheSize() const
 {
-    size_t result;
+    size_t result = 0;
     for (const auto &urlKey : m_threadPagePostCollection.keys())
     {
         result += sizeof(ForumThreadUrlData);
