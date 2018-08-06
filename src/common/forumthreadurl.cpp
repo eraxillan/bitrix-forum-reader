@@ -26,6 +26,12 @@ ForumThreadUrl::ForumThreadUrl(QObject *parent) : QObject(parent)
     setThreadId(-1);
 }
 
+ForumThreadUrl::ForumThreadUrl(QObject *parent, ForumThreadUrlData urlData) : QObject(parent)
+{
+    setSectionId(urlData.m_sectionId);
+    setThreadId(urlData.m_threadId);
+}
+
 ForumThreadUrl::ForumThreadUrl(int sectionId, int threadId)
 {
     setSectionId(sectionId);

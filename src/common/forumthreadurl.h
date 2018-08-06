@@ -25,6 +25,7 @@ class ForumThreadUrl : public QObject
 
 public:
     explicit ForumThreadUrl(QObject *parent = nullptr);
+    explicit ForumThreadUrl(QObject *parent, ForumThreadUrlData urlData);
     ForumThreadUrl(int sectionId, int threadId);
     ~ForumThreadUrl();
 
