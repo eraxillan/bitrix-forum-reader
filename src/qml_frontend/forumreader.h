@@ -1,28 +1,22 @@
 #ifndef __BFR_FORUMREADER_H__
 #define __BFR_FORUMREADER_H__
 
+#include "task.h"
+
 #include "common/resultcode.h"
 #include "common/filedownloader.h"
 #include "common/forumthreadurl.h"
 #include "website_backend/websiteinterface.h"
+#include "concurrentqueue/blockingconcurrentqueue.h"
 
 class ForumReader : public QObject
 {
     Q_OBJECT
 
-    using PostList = bfr::PostList;
-    using ResultCodeFutureWatcher = QFutureWatcher<result_code::Type>;
-
-    ResultCodeFutureWatcher m_forumPageCountWatcher;
-    ResultCodeFutureWatcher m_forumPageParserWatcher;
-    ResultCodeFutureWatcher m_forumThreadParserWatcher;
-
-    PostList m_threadPosts;
-    PostList m_pagePosts;
-    int      m_pageCount;
-    int      m_pageNo;
-
-    result_code::Type m_lastError;
+    moodycamel::BlockingConcurrentQueue<BfrTask> m_tasks;
+    std::atomic<int> m_pendingTaskCount;
+    std::thread m_producerThread;
+    std::atomic<bool> m_timeToExit;
 
 public:
     ForumReader();
@@ -35,29 +29,13 @@ public:
     // Forum HTML page parser async API (use Qt signal-slots system)
     Q_INVOKABLE void      startPageCountAsync(ForumThreadUrl *url);
     Q_INVOKABLE void      startPageParseAsync(ForumThreadUrl *url, int pageNo);
-    Q_INVOKABLE void      startThreadParseAsync(ForumThreadUrl *url);
-
-    // The number of pages and posts
-    Q_INVOKABLE int       pageCount() const;
-    Q_INVOKABLE int       pagePostCount() const;
-
-    // Page posts properties getters
-    Q_INVOKABLE QString   postAuthorQml(int index) const;
-    Q_INVOKABLE QString   postAuthorSignature(int index) const;
-
-    // FIXME: currently unused! use it or remove
-    Q_INVOKABLE int       postAvatarMaxWidth() const;
-
-    Q_INVOKABLE QDateTime postDateTime(int index) const;
-    Q_INVOKABLE QString   postText(int index) const;
-    Q_INVOKABLE QString   postLastEdit(int index) const;
-    Q_INVOKABLE int       postLikeCount(int index) const;
+    Q_INVOKABLE void      startThreadUsersParseAsync(ForumThreadUrl *url);
 
 signals:
     // Forum parser signals
     void pageCountParsed(int pageCount);
-    void pageContentParsed(int pageNo);
-    void threadContentParsed(ForumThreadUrl *url);
+    void pageContentParsed(int pageCount, int pageNo, QVariantList posts);
+    void threadUsersParsed(ForumThreadUrl *url, QVariantList users);
 
     void pageContentParseProgressRange(int minimum, int maximum);
     void pageContentParseProgress(int value);
@@ -66,20 +44,8 @@ signals:
     void threadContentParseProgress(int value);
 
 private slots:
-    // Forum page count parser slots
-    void onForumPageCountParsed();
-    void onForumPageCountParsingCancelled();
-
     // Forum page downloader slots
     void onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-
-    // Forum page user posts parser slots
-    void onForumPageParsed();
-    void onForumPageParsingCancelled();
-
-    // Forum thread user posts parser slots
-    void onForumThreadParsed();
-    void onForumThreadParsingCancelled();
 };
 
 #endif // __BFR_FORUMREADER_H__

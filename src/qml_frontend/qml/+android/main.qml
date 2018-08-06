@@ -76,20 +76,20 @@ FluidControls.ApplicationWindow {
         }
 
         onPageContentParsed: {
-            // Fill the page counter
-            totalPageCount = reader.pageCount();
+            totalPageCount = pageCount;
             currentPageIndex = pageNo;
 
             // Fill the post list
-            for (var i = 0; i < reader.pagePostCount(); i++)
-            {
+            for (var i = 0; i < posts.length; i++) {
+                var aPost = posts[i];
+
                 dataModel.append( {  "color"                  : "lightgrey",
-                                     "postAuthorQml"          : reader.postAuthorQml(i),
-                                     "postDateTime"           : reader.postDateTime(i),
-                                     "postText"               : reader.postText(i),
-                                     "postLastEdit"           : reader.postLastEdit(i),
-                                     "postLikeCount"          : reader.postLikeCount(i),
-                                     "authorSignature"        : reader.postAuthorSignature(i)
+                                     "postAuthorQml"          : aPost["authorQml"],
+                                     "authorSignature"        : aPost["authorSignature"],
+                                     "postDateTime"           : aPost["date"],
+                                     "postText"               : aPost["contentQml"],
+                                     "postLastEdit"           : aPost["lastEdit"],
+                                     "postLikeCount"          : aPost["likeCount"]
                                   } );
             }
 
@@ -147,9 +147,9 @@ FluidControls.ApplicationWindow {
         appBar.maxActionCount: 5
 
         actions: [
-            // TODO: manage enable/disable state as in desktop version
-
             FluidControls.Action {
+                enabled: totalPageCount > 0;
+
                 text: qsTr("First page");
                 toolTip: qsTr("Go to first page");
                 onTriggered: currentPageIndex = 1;
@@ -159,6 +159,8 @@ FluidControls.ApplicationWindow {
             },
 
             FluidControls.Action {
+                enabled: (totalPageCount > 0) && (currentPageIndex >= 2);
+
                 text: qsTr("Previous page");
                 toolTip: qsTr("Go to previous page");
                 onTriggered: {
@@ -170,6 +172,8 @@ FluidControls.ApplicationWindow {
             },
 
             FluidControls.Action {
+                enabled: (totalPageCount > 0) && (currentPageIndex < totalPageCount);
+
                 text: qsTr("Next page");
                 toolTip: qsTr("Go to next page");
                 onTriggered: {
@@ -181,6 +185,8 @@ FluidControls.ApplicationWindow {
             },
 
             FluidControls.Action {
+                enabled: totalPageCount > 0;
+
                 text: qsTr("Last page");
                 toolTip: qsTr("Go to last page");
                 onTriggered: currentPageIndex = totalPageCount;
@@ -189,6 +195,8 @@ FluidControls.ApplicationWindow {
             },
 
             FluidControls.Action {
+                enabled: totalPageCount > 0;
+
                 text: qsTr("Go to page");
                 toolTip: qsTr("Go to specified page");
                 onTriggered: {

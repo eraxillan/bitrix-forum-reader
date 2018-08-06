@@ -3,6 +3,7 @@
 #include "common/logger.h"
 #include "common/filedownloader.h"
 #include "website_backend/gumboparserimpl.h"
+#include "website_backend/websiteinterface_qt.h"
 #include "parser_frontend/forumthreadpool.h"
 
 namespace {
@@ -27,29 +28,116 @@ void dumpFutureObj(QFuture<T> future, QString name)
 }
 
 ForumReader::ForumReader() :
-    m_forumPageCountWatcher(),
-    m_forumPageParserWatcher(),
-    m_forumThreadParserWatcher(),
-    m_pagePosts(),
-    m_pageCount(0),
-    m_pageNo(0),
-    m_lastError(result_code::Type::Ok)
+    m_pendingTaskCount(0),
+    m_timeToExit(false)
 {
     connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
     connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::threadParseProgress, this, &ForumReader::threadContentParseProgress);
 
-    connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumPageCountParsed);
-    connect(&m_forumPageCountWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageCountParsingCancelled);
+    m_producerThread = std::thread([&, this, &m_tasks = m_tasks]()
+    {
+        ConsoleLogger->info("Producer thread started");
 
-    connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumPageParsed);
-    connect(&m_forumPageParserWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumPageParsingCancelled);
+        ForumThreadPool &pool = ForumThreadPool::globalInstance();
 
-    connect(&m_forumThreadParserWatcher, &ResultCodeFutureWatcher::finished, this, &ForumReader::onForumThreadParsed);
-    connect(&m_forumThreadParserWatcher, &ResultCodeFutureWatcher::canceled, this, &ForumReader::onForumThreadParsingCancelled);
+        result_code::Type result = result_code::Type::Invalid;
+        BfrTask task;
+        while (!m_timeToExit.load(std::memory_order_acquire))
+        {
+            // NOTE: without timeout queue will wait for new item forever, and thread will never finish!
+            if (m_tasks.wait_dequeue_timed(task, std::chrono::milliseconds(100)))
+            {
+                // Process task
+                ConsoleLogger->info("Processing task");
+
+                switch (task.action()) {
+                case BfrTask::Action::ParseForumThreadPageCount: {
+                    int pageCount = -1;
+                    result = pool.getForumThreadPageCount(task.url(), pageCount);
+                    if (result_code::succeeded(result))
+                    {
+                        emit this->pageCountParsed(pageCount);
+                    }
+                    break;
+                }
+                case BfrTask::Action::ParseForumThreadPagePosts: {
+                    int pageCount = -1;
+                    result = pool.getForumThreadPageCount(task.url(), pageCount);
+                    if (result_code::succeeded(result))
+                    {
+                        bfr::PostList posts;
+                        result = pool.getForumPagePosts(task.url(), task.pageNo(), posts);
+                        if (result_code::succeeded(result))
+                        {
+                            QVariantList postsVrnt;
+                            for (const auto &post : posts)
+                            {
+                                QVariant var;
+                                PostQtWrapper pw(post);
+                                var.setValue(pw);
+
+                                postsVrnt.push_back(var);
+                            }
+
+                            emit this->pageContentParsed(pageCount, task.pageNo(), postsVrnt);
+                        }
+                    }
+                    break;
+                }
+                case BfrTask::Action::ExtractForumThreadUsers: {
+                    // TODO: add  `emit threadContentParseProgressRange(0, m_pageCount);`
+
+                    bfr::PostList threadPosts;
+                    result = pool.getForumThreadPosts(task.url(), threadPosts);
+                    if (result_code::succeeded(result))
+                    {
+                        // Extract users
+                        QMap<QString, bfr::UserPtr> threadUsersMap;
+                        for (const auto &post : threadPosts)
+                        {
+                            threadUsersMap.insert(post->m_author->m_userName, post->m_author);
+                        }
+
+                        // Wrap users collection to Qt-compatible container
+                        QVariantList usersVrnt;
+                        bfr::UserList threadUsersList = threadUsersMap.values();
+                        for (const auto &user : threadUsersList)
+                        {
+                            QVariant var;
+                            UserQtWrapper uw(user);
+                            var.setValue(uw);
+
+                            usersVrnt.push_back(var);
+                        }
+
+                        // NOTE: ForumThreadUrl object will be destroyed in ForumReader dtor
+                        emit this->threadUsersParsed(new ForumThreadUrl(this, task.url()), usersVrnt);
+                    }
+                    break;
+                }
+                default: {
+                    ConsoleLogger->error("Invalid task action got: {}", static_cast<int>(task.action()));
+                    break;
+                }
+                }
+
+                m_pendingTaskCount.fetch_add(-1, std::memory_order_release);
+            }
+        }
+
+        ConsoleLogger->info("Producer thread finished");
+    }
+    );
 }
 
 ForumReader::~ForumReader()
 {
+    ConsoleLogger->info("ForumReader dtor started");
+
+    m_timeToExit = true;
+    m_producerThread.join();
+
+    ConsoleLogger->info("ForumReader dtor finished");
 }
 
 QString ForumReader::applicationDirPath() const
@@ -66,33 +154,16 @@ QUrl ForumReader::convertToUrl(QString urlStr) const
 
 void ForumReader::startPageCountAsync(ForumThreadUrl *url)
 {
-    dumpFutureObj(m_forumPageCountWatcher.future(), "m_forumPageCountWatcher");
-
-    // Wait for previous operation finish (if any)
-    // NOTE: QtConcurrent::run() return future that cannot be canceled
-    //m_forumPageCountWatcher.cancel();
-    m_forumPageCountWatcher.waitForFinished();
-
-    auto countFuture = QtConcurrent::run(
-                std::bind(&ForumThreadPool::getForumThreadPageCount, &ForumThreadPool::globalInstance(),
-                          url->data(), std::ref(m_pageCount)));
-    m_forumPageCountWatcher.setFuture(countFuture);
+    ConsoleLogger->info("Enqueue forum thread page count parse task");
+    m_pendingTaskCount.fetch_add(1, std::memory_order_release);
+    m_tasks.enqueue(BfrTask(BfrTask::Action::ParseForumThreadPageCount, url->data()));
 }
 
 void ForumReader::startPageParseAsync(ForumThreadUrl *url, int pageNo)
 {
-    dumpFutureObj(m_forumPageParserWatcher.future(), "m_forumPageParserWatcher");
-
-    // Cleanup
-    m_pagePosts.clear();
-    // FIXME: implement updatePageNumber() method and call it here
-//    m_pageCount = 0;
-    m_pageNo = pageNo;
-
-    auto parseFuture = QtConcurrent::run(
-                std::bind(&ForumThreadPool::getForumPagePosts, &ForumThreadPool::globalInstance(),
-                          url->data(), pageNo, std::ref(m_pagePosts)));
-    m_forumPageParserWatcher.setFuture(parseFuture);
+    ConsoleLogger->info("Enqueue forum thread page posts parse task");
+    m_pendingTaskCount.fetch_add(1, std::memory_order_release);
+    m_tasks.enqueue(BfrTask(BfrTask::Action::ParseForumThreadPagePosts, url->data(), pageNo));
 
     // FIXME: a better way? server don't return Content-Length header;
     //        a HTML page size is unknown, and the only way to get it - download the entire page;
@@ -100,40 +171,16 @@ void ForumReader::startPageParseAsync(ForumThreadUrl *url, int pageNo)
     emit pageContentParseProgressRange(0, 400000);
 }
 
-void ForumReader::startThreadParseAsync(ForumThreadUrl *url)
+void ForumReader::startThreadUsersParseAsync(ForumThreadUrl *url)
 {
-    // FIXME: ensure pageCount is already determined
-    Q_ASSERT(m_pageCount > 0);
+    ConsoleLogger->info("Enqueue forum thread users parse task");
+    m_pendingTaskCount.fetch_add(1, std::memory_order_release);
+    m_tasks.enqueue(BfrTask(BfrTask::Action::ExtractForumThreadUsers, url->data()));
 
-    dumpFutureObj(m_forumThreadParserWatcher.future(), "m_forumThreadParserWatcher");
-
-    m_pagePosts.clear();
-
-    auto parseFuture = QtConcurrent::run(
-                std::bind(&ForumThreadPool::getForumThreadPosts, &ForumThreadPool::globalInstance(), url->data(), std::ref(m_threadPosts)));
-    m_forumThreadParserWatcher.setFuture(parseFuture);
-
-    emit threadContentParseProgressRange(0, m_pageCount);
+//    emit threadContentParseProgressRange(0, m_pageCount);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
-
-// FIXME: use m_lastError here
-
-void ForumReader::onForumPageCountParsed()
-{
-    dumpFutureObj(m_forumPageCountWatcher.future(), "m_forumPageCountWatcher");
-
-    Q_ASSERT(result_code::succeeded(m_forumPageCountWatcher.result()));
-    Q_ASSERT(m_pageCount > 0);
-
-    emit pageCountParsed(m_pageCount);
-}
-
-void ForumReader::onForumPageCountParsingCancelled()
-{
-    Q_ASSERT_X(0, Q_FUNC_INFO, "QtConcurrent::run result cannot be canceled");
-}
 
 void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
@@ -148,56 +195,9 @@ void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytes
     emit pageContentParseProgress((int)bytesReceived);
 }
 
-void ForumReader::onForumPageParsed()
-{
-    dumpFutureObj(m_forumPageParserWatcher.future(), "m_forumPageParserWatcher");
-
-    Q_ASSERT(result_code::succeeded(m_forumPageParserWatcher.result()));
-
-    emit pageContentParsed(m_pageNo);
-}
-
-void ForumReader::onForumPageParsingCancelled()
-{
-    Q_ASSERT_X(0, Q_FUNC_INFO, "QFuture returned by QtConcurrent::run() cannot be canceled");
-}
-
-void ForumReader::onForumThreadParsed()
-{
-    dumpFutureObj(m_forumThreadParserWatcher.future(), "m_forumThreadParserWatcher");
-
-    Q_ASSERT(result_code::succeeded(m_forumThreadParserWatcher.result()));
-
-    // NOTE: ForumThreadUrl object will be destroyed in ForumReader dtor
-    emit threadContentParsed(new ForumThreadUrl(this));
-}
-
-void ForumReader::onForumThreadParsingCancelled()
-{
-    Q_ASSERT_X(0, Q_FUNC_INFO, "QFuture returned by QtConcurrent::run() cannot be canceled");
-}
-
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
-// FIXME: add state checks, e.g. whether the page loaded
-
-int ForumReader::pageCount() const
-{
-    return m_pageCount;
-}
-
-int ForumReader::pagePostCount() const
-{
-    return m_pagePosts.size();
-}
-
-QString ForumReader::postAuthorQml(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index]->m_author->getQmlString(qrand());
-}
-
+#if 0
 int ForumReader::postAvatarMaxWidth() const
 {
     int maxWidth = 100;
@@ -209,39 +209,4 @@ int ForumReader::postAvatarMaxWidth() const
     }
     return maxWidth;
 }
-
-QDateTime ForumReader::postDateTime(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index]->m_date;
-}
-
-QString ForumReader::postText(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-    if (m_pagePosts[index]->m_data.empty()) return QString();
-
-    return m_pagePosts[index]->getQmlString(qrand());
-}
-
-QString ForumReader::postLastEdit(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index]->m_lastEdit;
-}
-
-int ForumReader::postLikeCount(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index]->m_likeCounter;
-}
-
-QString ForumReader::postAuthorSignature(int index) const
-{
-    Q_ASSERT(index >= 0 && index < m_pagePosts.size());
-
-    return m_pagePosts[index]->m_userSignature;
-}
+#endif

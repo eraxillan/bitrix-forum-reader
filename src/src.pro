@@ -126,7 +126,9 @@ SOURCES += \
     website_backend/qtgumbodocument.cpp     \
     website_backend/qtgumbonode.cpp         \
     website_backend/websiteinterface.cpp    \
+    website_backend/websiteinterface_qt.cpp \
     qml_frontend/forumreader.cpp            \
+    qml_frontend/task.cpp                   \
     qml_frontend/main.cpp                   \
     parser_frontend/forumthreadpool.cpp     \
     tests/gumboparserimpl_tests.cpp
@@ -141,9 +143,11 @@ HEADERS += \
     website_backend/qtgumbonode.h           \
     website_backend/websiteinterface_fwd.h  \
     website_backend/websiteinterface.h      \
+    website_backend/websiteinterface_qt.h   \
     website_backend/gumboparserimpl.h       \
+    parser_frontend/forumthreadpool.h       \
     qml_frontend/forumreader.h              \
-    parser_frontend/forumthreadpool.h
+    qml_frontend/task.h
 
 RESOURCES += qml_frontend/qml.qrc
 

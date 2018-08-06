@@ -135,8 +135,7 @@ ListView {
                     pageLoaded = false;
                     dataModel.clear();
 
-                    reader.startPageParseAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1="
-                                               + cmbPage.value.toString() + "#forum-message-list", cmbPage.value)
+                    reader.startPageParseAsync(testThreadUrl, cmbPage.value);
                 }
             }
         }

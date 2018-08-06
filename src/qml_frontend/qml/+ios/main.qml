@@ -55,29 +55,31 @@ ApplicationWindow {
             dataModel.clear();
 
             // Parse the page HTML data
-            reader.startPageParseAsync(testThreadUrl.pageUrl(pageCount), pageCount);
+            reader.startPageParseAsync(testThreadUrl, pageCount);
         }
 
         onPageContentParsed: {
-            // Fill the page counter
-            totalPageCount = reader.pageCount();
+            totalPageCount = pageCount;
             currentPageIndex = pageNo;
 
             // Fill the post list
-            for (var i = 0; i < reader.pagePostCount(); i++)
-            {
+            for (var i = 0; i < posts.length; i++) {
+                var aPost = posts[i];
+
                 dataModel.append( {  "color"                  : "lightgrey",
-                                     "postAuthorQml"          : reader.postAuthorQml(i),
-                                     "postDateTime"           : reader.postDateTime(i),
-                                     "postText"               : reader.postText(i),
-                                     "postLastEdit"           : reader.postLastEdit(i),
-                                     "postLikeCount"          : reader.postLikeCount(i),
-                                     "authorSignature"        : reader.postAuthorSignature(i)
+                                     "postAuthorQml"          : aPost["authorQml"],
+                                     "authorSignature"        : aPost["authorSignature"],
+                                     "postDateTime"           : aPost["date"],
+                                     "postText"               : aPost["contentQml"],
+                                     "postLastEdit"           : aPost["lastEdit"],
+                                     "postLikeCount"          : aPost["likeCount"]
                                   } );
             }
 
             qmlInit = true;
             pageLoaded = true;
+
+            snbrMain.open(qsTr("Page has been loaded"));
         }
     }
 
@@ -231,8 +233,7 @@ ApplicationWindow {
                         pageLoaded = false;
                         dataModel.clear();
 
-                        reader.startPageParseAsync("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1="
-                                                   + cmbPage.value.toString() + "#forum-message-list", cmbPage.value)
+                        reader.startPageParseAsync(testThreadUrl, cmbPage.value);
                     }
                 }
             }
@@ -269,6 +270,6 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        reader.startPageCountAsync(testThreadUrl.firstPageUrl());
+        reader.startPageCountAsync(testThreadUrl);
     }
 }
