@@ -21,14 +21,8 @@
 }
 */
 
-inline std::ostream& operator << (std::ostream &os, const QString &c)
-{
-    return os << c.toStdString();
-}
+inline std::ostream &operator<<(std::ostream &os, const QString &c) { return os << c.toStdString(); }
 
-inline std::ostream& operator << (std::ostream &os, const QDateTime &c)
-{
-    return os << c.toString().toStdString();
-}
+inline std::ostream &operator<<(std::ostream &os, const QDateTime &c) { return os << c.toString().toStdString(); }
 
 #endif // __BFR_LOGGER_H__

@@ -8,10 +8,9 @@ ForumThreadUrlData::ForumThreadUrlData(int sectionId, int threadId) : m_sectionI
 {
 }
 
-ForumThreadUrlData::ForumThreadUrlData(const ForumThreadUrlData &other)
-{
-    m_sectionId = other.m_sectionId;
-    m_threadId = other.m_threadId;
+ForumThreadUrlData::ForumThreadUrlData(const ForumThreadUrlData &other) {
+	m_sectionId = other.m_sectionId;
+	m_threadId = other.m_threadId;
 }
 
 ForumThreadUrlData::~ForumThreadUrlData()
@@ -20,62 +19,43 @@ ForumThreadUrlData::~ForumThreadUrlData()
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------
 
-ForumThreadUrl::ForumThreadUrl(QObject *parent) : QObject(parent)
-{
-    setSectionId(-1);
-    setThreadId(-1);
+ForumThreadUrl::ForumThreadUrl(QObject *parent)
+	: QObject(parent) {
+	setSectionId(-1);
+	setThreadId(-1);
 }
 
-ForumThreadUrl::ForumThreadUrl(QObject *parent, ForumThreadUrlData urlData) : QObject(parent)
-{
-    setSectionId(urlData.m_sectionId);
-    setThreadId(urlData.m_threadId);
+ForumThreadUrl::ForumThreadUrl(QObject *parent, ForumThreadUrlData urlData)
+	: QObject(parent) {
+	setSectionId(urlData.m_sectionId);
+	setThreadId(urlData.m_threadId);
 }
 
-ForumThreadUrl::ForumThreadUrl(int sectionId, int threadId)
-{
-    setSectionId(sectionId);
-    setThreadId(threadId);
+ForumThreadUrl::ForumThreadUrl(int sectionId, int threadId) {
+	setSectionId(sectionId);
+	setThreadId(threadId);
 }
 
 ForumThreadUrl::~ForumThreadUrl()
 {
 }
 
-ForumThreadUrlData ForumThreadUrl::data() const
-{
-    return m_data;
+ForumThreadUrlData ForumThreadUrl::data() const { return m_data; }
+
+int ForumThreadUrl::sectionId() const { return m_data.m_sectionId; }
+
+int ForumThreadUrl::threadId() const { return m_data.m_threadId; }
+
+void ForumThreadUrl::setSectionId(int sectionId) { m_data.m_sectionId = sectionId; }
+
+void ForumThreadUrl::setThreadId(int threadId) { m_data.m_threadId = threadId; }
+
+QString ForumThreadUrl::firstPageUrl() const {
+	return QString("http://www.banki.ru/forum/?PAGE_NAME=read&FID=" + QString::number(sectionId())
+		+ "&TID=" + QString::number(threadId()) + "&PAGEN_1=1#forum-message-list");
 }
 
-int ForumThreadUrl::sectionId() const
-{
-    return m_data.m_sectionId;
-}
-
-int ForumThreadUrl::threadId() const
-{
-    return m_data.m_threadId;
-}
-
-void ForumThreadUrl::setSectionId(int sectionId)
-{
-    m_data.m_sectionId = sectionId;
-}
-
-void ForumThreadUrl::setThreadId(int threadId)
-{
-    m_data.m_threadId = threadId;
-}
-
-QString ForumThreadUrl::firstPageUrl() const
-{
-    return QString("http://www.banki.ru/forum/?PAGE_NAME=read&FID=" + QString::number(sectionId())
-                   + "&TID=" + QString::number(threadId()) + "&PAGEN_1=1#forum-message-list");
-}
-
-QString ForumThreadUrl::pageUrl(int pageNumber) const
-{
-    return QString("http://www.banki.ru/forum/?PAGE_NAME=read&FID=" + QString::number(sectionId())
-                   + "&TID=" + QString::number(threadId())
-                   + "&PAGEN_1=" + QString::number(pageNumber) + "#forum-message-list");
+QString ForumThreadUrl::pageUrl(int pageNumber) const {
+	return QString("http://www.banki.ru/forum/?PAGE_NAME=read&FID=" + QString::number(sectionId())
+		+ "&TID=" + QString::number(threadId()) + "&PAGEN_1=" + QString::number(pageNumber) + "#forum-message-list");
 }

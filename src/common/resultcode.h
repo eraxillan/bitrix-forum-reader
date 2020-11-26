@@ -3,40 +3,33 @@
 
 namespace result_code {
 
-enum class Type
-{
-    Invalid = -1,
-    // General
-    Ok = 0,
-    OkFalse = 1,
-    Fail,
-    InProgress,
-    // CURL
-    CurlError,
-    // System
-    NetworkError,
-    InputOutputError,
-    // Forum parser
-    ForumPageParserError,
-    ForumParserError,
-    // Serialization
+enum class Type {
+	Invalid = -1,
+	// General
+	Ok = 0,
+	OkFalse = 1,
+	Fail,
+	InProgress,
+	// CURL
+	CurlError,
+	// System
+	NetworkError,
+	InputOutputError,
+	// Forum parser
+	ForumPageParserError,
+	ForumParserError,
+// Serialization
 #ifdef BFR_SERIALIZATION_ENABLED
-    InvalidFileFormat,
-    InvalidFileVersion,
-#endif  // #ifdef BFR_SERIALIZATION_ENABLED
-    // TODO: others
-    Count
+	InvalidFileFormat,
+	InvalidFileVersion,
+#endif // #ifdef BFR_SERIALIZATION_ENABLED
+	// TODO: others
+	Count
 };
 
-inline bool succeeded(Type rc)
-{
-    return ((rc == Type::Ok) || (rc == Type::OkFalse));
-}
+inline bool succeeded(Type rc) { return ((rc == Type::Ok) || (rc == Type::OkFalse)); }
 
-inline bool failed(Type rc)
-{
-    return !succeeded(rc);
-}
+inline bool failed(Type rc) { return !succeeded(rc); }
 
 }  // namespace result_code
 

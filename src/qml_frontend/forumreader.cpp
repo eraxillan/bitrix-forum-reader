@@ -11,173 +11,156 @@ template <typename T>
 void dumpFutureObj(QFuture<T> future, QString name)
 {
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-    ConsoleLogger->info("----------------------------------------------------");
-    ConsoleLogger->info("Future name: {}", name);
-    ConsoleLogger->info("Future is started: {}",  future.isStarted());
-    ConsoleLogger->info("Future is running: {}",  future.isRunning());
-    ConsoleLogger->info("Future is finished: {}", future.isFinished());
-    ConsoleLogger->info("Future is paused: {}",   future.isPaused());
-    ConsoleLogger->info("Future is canceled: {}", future.isCanceled());
-    ConsoleLogger->info("Future has result: {}",  future.isResultReadyAt(0));
-    ConsoleLogger->info("----------------------------------------------------");
+	ConsoleLogger->info("----------------------------------------------------");
+	ConsoleLogger->info("Future name: {}", name);
+	ConsoleLogger->info("Future is started: {}", future.isStarted());
+	ConsoleLogger->info("Future is running: {}", future.isRunning());
+	ConsoleLogger->info("Future is finished: {}", future.isFinished());
+	ConsoleLogger->info("Future is paused: {}", future.isPaused());
+	ConsoleLogger->info("Future is canceled: {}", future.isCanceled());
+	ConsoleLogger->info("Future has result: {}", future.isResultReadyAt(0));
+	ConsoleLogger->info("----------------------------------------------------");
 #else
-    Q_UNUSED(future);
-    Q_UNUSED(name);
+	Q_UNUSED(future);
+	Q_UNUSED(name);
 #endif
 }
 }
 
-ForumReader::ForumReader() :
-    m_pendingTaskCount(0),
-    m_timeToExit(false)
-{
-    connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::downloadProgress, this, &ForumReader::onForumPageDownloadProgress);
-    connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::threadParseProgress, this, &ForumReader::threadContentParseProgress);
+ForumReader::ForumReader()
+	: m_pendingTaskCount(0)
+	, m_timeToExit(false) {
+	connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::downloadProgress, this,
+		&ForumReader::onForumPageDownloadProgress);
+	connect(&ForumThreadPool::globalInstance(), &ForumThreadPool::threadParseProgress, this,
+		&ForumReader::threadContentParseProgress);
 
-    m_producerThread = std::thread([&, this, &m_tasks = m_tasks]()
-    {
-        ConsoleLogger->info("Producer thread started");
+	m_producerThread = std::thread([&, this, &m_tasks = m_tasks]() {
+		ConsoleLogger->info("Producer thread started");
 
-        ForumThreadPool &pool = ForumThreadPool::globalInstance();
+		ForumThreadPool &pool = ForumThreadPool::globalInstance();
 
-        result_code::Type result = result_code::Type::Invalid;
-        BfrTask task;
-        while (!m_timeToExit.load(std::memory_order_acquire))
-        {
-            // NOTE: without timeout queue will wait for new item forever, and thread will never finish!
-            if (m_tasks.wait_dequeue_timed(task, std::chrono::milliseconds(100)))
-            {
-                // Process task
-                ConsoleLogger->info("Processing task");
+		result_code::Type result = result_code::Type::Invalid;
+		BfrTask task;
+		while (!m_timeToExit.load(std::memory_order_acquire)) {
+			// NOTE: without timeout queue will wait for new item forever, and thread will never finish!
+			if (m_tasks.wait_dequeue_timed(task, std::chrono::milliseconds(100))) {
+				// Process task
+				ConsoleLogger->info("Processing task");
 
-                switch (task.action()) {
-                case BfrTask::Action::ParseForumThreadPageCount: {
-                    int pageCount = -1;
-                    result = pool.getForumThreadPageCount(task.url(), pageCount);
-                    if (result_code::succeeded(result))
-                    {
-                        emit this->pageCountParsed(pageCount);
-                    }
-                    break;
-                }
-                case BfrTask::Action::ParseForumThreadPagePosts: {
-                    int pageCount = -1;
-                    result = pool.getForumThreadPageCount(task.url(), pageCount);
-                    if (result_code::succeeded(result))
-                    {
-                        bfr::PostList posts;
-                        result = pool.getForumPagePosts(task.url(), task.pageNo(), posts);
-                        if (result_code::succeeded(result))
-                        {
-                            QVariantList postsVrnt;
-                            for (const auto &post : posts)
-                            {
-                                QVariant var;
-                                PostQtWrapper pw(post);
-                                var.setValue(pw);
+				switch (task.action()) {
+					case BfrTask::Action::ParseForumThreadPageCount: {
+						int pageCount = -1;
+						result = pool.getForumThreadPageCount(task.url(), pageCount);
+						if (result_code::succeeded(result)) {
+							emit this->pageCountParsed(pageCount);
+						}
+						break;
+					}
+					case BfrTask::Action::ParseForumThreadPagePosts: {
+						int pageCount = -1;
+						result = pool.getForumThreadPageCount(task.url(), pageCount);
+						if (result_code::succeeded(result)) {
+							bfr::PostList posts;
+							result = pool.getForumPagePosts(task.url(), task.pageNo(), posts);
+							if (result_code::succeeded(result)) {
+								QVariantList postsVrnt;
+								for (const auto &post : posts) {
+									QVariant var;
+									PostQtWrapper pw(post);
+									var.setValue(pw);
 
-                                postsVrnt.push_back(var);
-                            }
+									postsVrnt.push_back(var);
+								}
 
-                            emit this->pageContentParsed(pageCount, task.pageNo(), postsVrnt);
-                        }
-                    }
-                    break;
-                }
-                case BfrTask::Action::ExtractForumThreadUsers: {
-                    // TODO: add  `emit threadContentParseProgressRange(0, m_pageCount);`
+								emit this->pageContentParsed(pageCount, task.pageNo(), postsVrnt);
+							}
+						}
+						break;
+					}
+					case BfrTask::Action::ExtractForumThreadUsers: {
+						// TODO: add  `emit threadContentParseProgressRange(0, m_pageCount);`
 
-                    bfr::PostList threadPosts;
-                    result = pool.getForumThreadPosts(task.url(), threadPosts);
-                    if (result_code::succeeded(result))
-                    {
-                        // Extract users
-                        QMap<QString, bfr::UserPtr> threadUsersMap;
-                        for (const auto &post : threadPosts)
-                        {
-                            threadUsersMap.insert(post->m_author->m_userName, post->m_author);
-                        }
+						bfr::PostList threadPosts;
+						result = pool.getForumThreadPosts(task.url(), threadPosts);
+						if (result_code::succeeded(result)) {
+							// Extract users
+							QMap<QString, bfr::UserPtr> threadUsersMap;
+							for (const auto &post : threadPosts) {
+								threadUsersMap.insert(post->m_author->m_userName, post->m_author);
+							}
 
-                        // Wrap users collection to Qt-compatible container
-                        QVariantList usersVrnt;
-                        bfr::UserList threadUsersList = threadUsersMap.values();
-                        for (const auto &user : threadUsersList)
-                        {
-                            QVariant var;
-                            UserQtWrapper uw(user);
-                            var.setValue(uw);
+							// Wrap users collection to Qt-compatible container
+							QVariantList usersVrnt;
+							bfr::UserList threadUsersList = threadUsersMap.values();
+							for (const auto &user : threadUsersList) {
+								QVariant var;
+								UserQtWrapper uw(user);
+								var.setValue(uw);
 
-                            usersVrnt.push_back(var);
-                        }
+								usersVrnt.push_back(var);
+							}
 
-                        // NOTE: ForumThreadUrl object will be destroyed in ForumReader dtor
-                        emit this->threadUsersParsed(new ForumThreadUrl(this, task.url()), usersVrnt);
-                    }
-                    break;
-                }
-                default: {
-                    ConsoleLogger->error("Invalid task action got: {}", static_cast<int>(task.action()));
-                    break;
-                }
-                }
+							// NOTE: ForumThreadUrl object will be destroyed in ForumReader dtor
+							emit this->threadUsersParsed(new ForumThreadUrl(this, task.url()), usersVrnt);
+						}
+						break;
+					}
+					default: {
+						ConsoleLogger->error("Invalid task action got: {}", static_cast<int>(task.action()));
+						break;
+					}
+				}
 
-                m_pendingTaskCount.fetch_add(-1, std::memory_order_release);
-            }
-        }
+				m_pendingTaskCount.fetch_add(-1, std::memory_order_release);
+			}
+		}
 
-        ConsoleLogger->info("Producer thread finished");
-    }
-    );
+		ConsoleLogger->info("Producer thread finished");
+	});
 }
 
-ForumReader::~ForumReader()
-{
-    ConsoleLogger->info("ForumReader dtor started");
+ForumReader::~ForumReader() {
+	ConsoleLogger->info("ForumReader dtor started");
 
-    m_timeToExit = true;
-    m_producerThread.join();
+	m_timeToExit = true;
+	m_producerThread.join();
 
-    ConsoleLogger->info("ForumReader dtor finished");
+	ConsoleLogger->info("ForumReader dtor finished");
 }
 
-QString ForumReader::applicationDirPath() const
-{
-    QString result = qApp->applicationDirPath();
-    if (!result.endsWith("/")) result += "/";
-    return result;
+QString ForumReader::applicationDirPath() const {
+	QString result = qApp->applicationDirPath();
+	if (!result.endsWith("/"))
+		result += "/";
+	return result;
 }
 
-QUrl ForumReader::convertToUrl(QString urlStr) const
-{
-    return QUrl(urlStr);
+QUrl ForumReader::convertToUrl(QString urlStr) const { return QUrl(urlStr); }
+
+void ForumReader::startPageCountAsync(ForumThreadUrl *url) {
+	ConsoleLogger->info("Enqueue forum thread page count parse task");
+	m_pendingTaskCount.fetch_add(1, std::memory_order_release);
+	m_tasks.enqueue(BfrTask(BfrTask::Action::ParseForumThreadPageCount, url->data()));
 }
 
-void ForumReader::startPageCountAsync(ForumThreadUrl *url)
-{
-    ConsoleLogger->info("Enqueue forum thread page count parse task");
-    m_pendingTaskCount.fetch_add(1, std::memory_order_release);
-    m_tasks.enqueue(BfrTask(BfrTask::Action::ParseForumThreadPageCount, url->data()));
+void ForumReader::startPageParseAsync(ForumThreadUrl *url, int pageNo) {
+	ConsoleLogger->info("Enqueue forum thread page posts parse task");
+	m_pendingTaskCount.fetch_add(1, std::memory_order_release);
+	m_tasks.enqueue(BfrTask(BfrTask::Action::ParseForumThreadPagePosts, url->data(), pageNo));
+
+	// FIXME: a better way? server don't return Content-Length header;
+	//        a HTML page size is unknown, and the only way to get it - download the entire page;
+	//        however we know forum HTML page average size - it is around 400 Kb
+	emit pageContentParseProgressRange(0, 400000);
 }
 
-void ForumReader::startPageParseAsync(ForumThreadUrl *url, int pageNo)
-{
-    ConsoleLogger->info("Enqueue forum thread page posts parse task");
-    m_pendingTaskCount.fetch_add(1, std::memory_order_release);
-    m_tasks.enqueue(BfrTask(BfrTask::Action::ParseForumThreadPagePosts, url->data(), pageNo));
+void ForumReader::startThreadUsersParseAsync(ForumThreadUrl *url) {
+	ConsoleLogger->info("Enqueue forum thread users parse task");
+	m_pendingTaskCount.fetch_add(1, std::memory_order_release);
+	m_tasks.enqueue(BfrTask(BfrTask::Action::ExtractForumThreadUsers, url->data()));
 
-    // FIXME: a better way? server don't return Content-Length header;
-    //        a HTML page size is unknown, and the only way to get it - download the entire page;
-    //        however we know forum HTML page average size - it is around 400 Kb
-    emit pageContentParseProgressRange(0, 400000);
-}
-
-void ForumReader::startThreadUsersParseAsync(ForumThreadUrl *url)
-{
-    ConsoleLogger->info("Enqueue forum thread users parse task");
-    m_pendingTaskCount.fetch_add(1, std::memory_order_release);
-    m_tasks.enqueue(BfrTask(BfrTask::Action::ExtractForumThreadUsers, url->data()));
-
-//    emit threadContentParseProgressRange(0, m_pageCount);
+	//    emit threadContentParseProgressRange(0, m_pageCount);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -185,14 +168,14 @@ void ForumReader::startThreadUsersParseAsync(ForumThreadUrl *url)
 void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-    ConsoleLogger->info("{}: {} bytes received, from {} bytes total", Q_FUNC_INFO, bytesReceived, bytesTotal);
+	ConsoleLogger->info("{}: {} bytes received, from {} bytes total", Q_FUNC_INFO, bytesReceived, bytesTotal);
 #endif
 
-    // NOTE: currently banki.ru server don't return Content-Length header
-    Q_ASSERT(bytesTotal <= 0);
+	// NOTE: currently banki.ru server don't return Content-Length header
+	Q_ASSERT(bytesTotal <= 0);
 
-    // NOTE: HTML page size should not exceed 2^32 bytes, i hope :)
-    emit pageContentParseProgress((int)bytesReceived);
+	// NOTE: HTML page size should not exceed 2^32 bytes, i hope :)
+	emit pageContentParseProgress((int)bytesReceived);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------------------

@@ -9,54 +9,53 @@
 
 #include <functional>
 
-class ForumThreadPool : public QObject
-{
-    Q_OBJECT
+class ForumThreadPool : public QObject {
+	Q_OBJECT
 
 protected:
-    using PagePostMap = QMap<int /*pageNo*/, bfr::PostList /*pagePosts*/>;
-    using ThreadPagePostMap = QMap<ForumThreadUrlData /*forumThreadUrl*/, PagePostMap /*forumThreadPagesPosts*/>;
-    using ThreadPageCountMap = QMap<ForumThreadUrlData /*forumThreadUrl*/, int /*pageCount*/>;
+	using PagePostMap = QMap<int /*pageNo*/, bfr::PostList /*pagePosts*/>;
+	using ThreadPagePostMap = QMap<ForumThreadUrlData /*forumThreadUrl*/, PagePostMap /*forumThreadPagesPosts*/>;
+	using ThreadPageCountMap = QMap<ForumThreadUrlData /*forumThreadUrl*/, int /*pageCount*/>;
 
-    ThreadPageCountMap m_threadPageCountCollection;
-    ThreadPagePostMap m_threadPagePostCollection;
+	ThreadPageCountMap m_threadPageCountCollection;
+	ThreadPagePostMap m_threadPagePostCollection;
 
-    explicit ForumThreadPool(QObject *parent = nullptr);
-    ~ForumThreadPool();
+	explicit ForumThreadPool(QObject *parent = nullptr);
+	~ForumThreadPool();
 
-    size_t pageCountCacheSize() const;
-    size_t pagePostsCacheSize() const;
+	size_t pageCountCacheSize() const;
+	size_t pagePostsCacheSize() const;
 
-    void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-
-public:
-    static ForumThreadPool &globalInstance();
-
-    // Delete copy and move constructors and assign operators
-    ForumThreadPool(ForumThreadPool const&) = delete;             // Copy construct
-    ForumThreadPool(ForumThreadPool&&) = delete;                  // Move construct
-    ForumThreadPool& operator=(ForumThreadPool const&) = delete;  // Copy assign
-    ForumThreadPool& operator=(ForumThreadPool &&) = delete;      // Move assign
+	void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
 public:
-    // FIXME: implement
-    //enum class Policy { Invalid = -1, CachedOnly, PreferCached, PreferNew, NewOnly, Count };
-    //void setPolicy(Policy policy);
-    // FIXME: implement
-    //void setMaximumMemoryUsage(quint64 maxCacheMem);
+	static ForumThreadPool &globalInstance();
 
-    /*SYNC*/ result_code::Type getForumThreadPageCount(ForumThreadUrlData urlData, int &pageCount);
+	// Delete copy and move constructors and assign operators
+	ForumThreadPool(ForumThreadPool const &) = delete; // Copy construct
+	ForumThreadPool(ForumThreadPool &&) = delete; // Move construct
+	ForumThreadPool &operator=(ForumThreadPool const &) = delete; // Copy assign
+	ForumThreadPool &operator=(ForumThreadPool &&) = delete; // Move assign
 
-    /*SYNC*/ result_code::Type getForumPagePosts(ForumThreadUrlData urlData, int pageNo, bfr::PostList &posts);
+public:
+	// FIXME: implement
+	//enum class Policy { Invalid = -1, CachedOnly, PreferCached, PreferNew, NewOnly, Count };
+	//void setPolicy(Policy policy);
+	// FIXME: implement
+	//void setMaximumMemoryUsage(quint64 maxCacheMem);
 
-    /*SYNC*/ result_code::Type getForumThreadPosts(ForumThreadUrlData urlData, bfr::PostList &posts);
+	/*SYNC*/ result_code::Type getForumThreadPageCount(ForumThreadUrlData urlData, int &pageCount);
+
+	/*SYNC*/ result_code::Type getForumPagePosts(ForumThreadUrlData urlData, int pageNo, bfr::PostList &posts);
+
+	/*SYNC*/ result_code::Type getForumThreadPosts(ForumThreadUrlData urlData, bfr::PostList &posts);
 
 signals:
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-//    void downloadFinished();
-//    void downloadFailed(result_code::Type code);
+	void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+	//    void downloadFinished();
+	//    void downloadFailed(result_code::Type code);
 
-    void threadParseProgress(int pageNo, int pageCount);
+	void threadParseProgress(int pageNo, int pageCount);
 };
 
 #endif // FORUMTHREADPOOL_H

@@ -23,47 +23,46 @@
 
 #include "common/resultcode.h"
 
-class FileDownloader : public QObject
-{
-    Q_OBJECT
+class FileDownloader : public QObject {
+	Q_OBJECT
 
 public:
-    explicit FileDownloader(QObject *parent = nullptr);
-    virtual ~FileDownloader();
+	explicit FileDownloader(QObject *parent = nullptr);
+	virtual ~FileDownloader();
 
-    // Async API
-    void startDownloadAsync(QUrl url);
-    QByteArray downloadedData() const;
-    result_code::Type lastError() const;
+	// Async API
+	void startDownloadAsync(QUrl url);
+	QByteArray downloadedData() const;
+	result_code::Type lastError() const;
 
-    // Sync API
-    //using ProgressCallback = void (*)(qint64 /*bytesReceived*/, qint64 /*bytesTotal*/);
-    using ProgressCallback = std::function<void(qint64, qint64)>;
-    static bool downloadUrl(QString urlStr, QByteArray& data, ProgressCallback progressCb = nullptr);
+	// Sync API
+	//using ProgressCallback = void (*)(qint64 /*bytesReceived*/, qint64 /*bytesTotal*/);
+	using ProgressCallback = std::function<void(qint64, qint64)>;
+	static bool downloadUrl(QString urlStr, QByteArray &data, ProgressCallback progressCb = nullptr);
 
 signals:
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void downloadFinished();
-    void downloadFailed(result_code::Type code);
+	void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+	void downloadFinished();
+	void downloadFailed(result_code::Type code);
 
 #ifdef USE_QT_NAM
 private slots:
-    void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void onDownloadFinished();
-    void onDownloadFailed(QNetworkReply::NetworkError code);
+	void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+	void onDownloadFinished();
+	void onDownloadFailed(QNetworkReply::NetworkError code);
 #endif
 
 private:
 #ifdef USE_QT_NAM
-    QNetworkAccessManager m_webCtrl;
-    QPointer<QNetworkReply> m_reply;
+	QNetworkAccessManager m_webCtrl;
+	QPointer<QNetworkReply> m_reply;
 #endif
 
-    QByteArray m_downloadedData;
-    result_code::Type m_lastError;
+	QByteArray m_downloadedData;
+	result_code::Type m_lastError;
 
-    // Async API
-    QFutureWatcher<QByteArray> m_downloadedDataWatcher;
+	// Async API
+	QFutureWatcher<QByteArray> m_downloadedDataWatcher;
 };
 
 #endif // __BFR_FILEDOWNLOADER_H__
