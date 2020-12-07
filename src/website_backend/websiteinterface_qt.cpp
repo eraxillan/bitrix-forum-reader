@@ -5,10 +5,10 @@
 PostQtWrapper::PostQtWrapper() : m_authorQml(), m_authorSignature(), m_date(), m_contentQml(), m_lastEdit(), m_likeCount(0) {}
 
 PostQtWrapper::PostQtWrapper(bfr::PostPtr post) {
-	m_authorQml = post->m_author->getQmlString(qrand());
+	m_authorQml = post->m_author->getQmlString(QRandomGenerator::global()->generate());
 	m_authorSignature = post->m_userSignature;
 	m_date = post->m_date;
-	m_contentQml = post->getQmlString(qrand());
+	m_contentQml = post->getQmlString(QRandomGenerator::global()->generate());
 	m_lastEdit = post->m_lastEdit;
 	m_likeCount = post->m_likeCounter;
 }
@@ -40,7 +40,7 @@ UserQtWrapper::UserQtWrapper()
 UserQtWrapper::UserQtWrapper(bfr::UserPtr user) {
 	m_name = user->m_userName;
 	m_avatarUrl = user->m_userAvatar ? user->m_userAvatar->m_url : QString();
-	m_registrationDate = user->m_registrationDate;
+	m_registrationDate = user->m_registrationDate.startOfDay();
 	m_city = user->m_city;
 	m_postCount = user->m_postCount;
 	m_threadPostCount = user->m_threadPostCount;
@@ -54,7 +54,7 @@ QString UserQtWrapper::name() const { return m_name; }
 
 QString UserQtWrapper::avatarUrl() const { return m_avatarUrl; }
 
-QDate UserQtWrapper::registrationDate() const { return m_registrationDate; }
+QDateTime UserQtWrapper::registrationDate() const { return m_registrationDate; }
 
 QString UserQtWrapper::city() const { return m_city; }
 

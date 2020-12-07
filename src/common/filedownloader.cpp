@@ -249,7 +249,9 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallb
 	curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &progressCb);
 
 	//    curl_easy_setopt(curl, CURLOPT_USERPWD, "user:pass");
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.51.0");
+	//curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.51.0");
+	curl_easy_setopt(curl, CURLOPT_USERAGENT,
+		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36");
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
 	curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 

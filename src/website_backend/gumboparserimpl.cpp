@@ -13,7 +13,7 @@
 using namespace bfr;
 
 namespace {
-static const QString g_bankiRuHost = "http://www.banki.ru";
+static const QString g_bankiRuHost = "https://www.banki.ru";
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -837,7 +837,7 @@ PostImagePtr ForumPageParser::parseImage(QtGumboNodePtr imgNode) const {
 	QString imageSrcStr = imgNode->getAttribute("src");
 	BFR_RETURN_DEFAULT_IF(imageSrcStr.isEmpty(), "Image source attribute is empty or absent");
 	if (imageSrcStr.startsWith("//"))
-		imageSrcStr.prepend("http:");
+		imageSrcStr.prepend("https:");
 	else if (!imageSrcStr.startsWith(g_bankiRuHost) && !imageSrcStr.startsWith("http:")
 		&& !imageSrcStr.startsWith("https:")) {
 		imageSrcStr.prepend(g_bankiRuHost);

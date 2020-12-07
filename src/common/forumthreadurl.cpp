@@ -1,22 +1,5 @@
 #include "forumthreadurl.h"
 
-ForumThreadUrlData::ForumThreadUrlData() : m_sectionId(-1), m_threadId(-1)
-{
-}
-
-ForumThreadUrlData::ForumThreadUrlData(int sectionId, int threadId) : m_sectionId(sectionId), m_threadId(threadId)
-{
-}
-
-ForumThreadUrlData::ForumThreadUrlData(const ForumThreadUrlData &other) {
-	m_sectionId = other.m_sectionId;
-	m_threadId = other.m_threadId;
-}
-
-ForumThreadUrlData::~ForumThreadUrlData()
-{
-}
-
 // --------------------------------------------------------------------------------------------------------------------------------------------------
 
 ForumThreadUrl::ForumThreadUrl(QObject *parent)
@@ -51,11 +34,16 @@ void ForumThreadUrl::setSectionId(int sectionId) { m_data.m_sectionId = sectionI
 void ForumThreadUrl::setThreadId(int threadId) { m_data.m_threadId = threadId; }
 
 QString ForumThreadUrl::firstPageUrl() const {
-	return QString("http://www.banki.ru/forum/?PAGE_NAME=read&FID=" + QString::number(sectionId())
-		+ "&TID=" + QString::number(threadId()) + "&PAGEN_1=1#forum-message-list");
+	// https://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=358149
+	return QString("https://www.banki.ru/forum/?PAGE_NAME=read&FID=%1&TID=%2")
+		.arg(sectionId())
+		.arg(threadId());
 }
 
 QString ForumThreadUrl::pageUrl(int pageNumber) const {
-	return QString("http://www.banki.ru/forum/?PAGE_NAME=read&FID=" + QString::number(sectionId())
-		+ "&TID=" + QString::number(threadId()) + "&PAGEN_1=" + QString::number(pageNumber) + "#forum-message-list");
+	// https://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=358149&PAGEN_1=14#forum-message-list
+	return QString("https://www.banki.ru/forum/?PAGE_NAME=read&FID=%1&TID=%2&PAGEN_1=%3#forum-message-list")
+		.arg(sectionId())
+		.arg(threadId())
+		.arg(pageNumber);
 }

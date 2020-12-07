@@ -6,6 +6,7 @@
 #include <QDateTime>
 
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/fmt/ostr.h> // must be included
 #ifdef Q_OS_WIN
 #include <spdlog/sinks/windebug_sink.h>

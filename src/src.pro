@@ -31,7 +31,7 @@ defineTest(minQtVersion) {
 TEMPLATE = app
 CONFIG -= debug_and_release debug_and_release_target
 
-TOPDIR = $$PWD/..
+TOPDIR = $$clean_path($$PWD/..)
 
 #######################################################################################################################
 # Platform-specific setup
@@ -105,17 +105,26 @@ QT += multimedia concurrent
 
 android: QT += androidextras
 
-CONFIG += c++11
+CONFIG += c++17
 INCLUDEPATH += "."
 INCLUDEPATH += $$TOPDIR
 
 # DEFINES += USE_QT_NAM
 # DEFINES += QT_GUMBO_METADATA
-# DEFINES += BITRIX_FORUM_READER_SYNC_API
 # DEFINES += BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
 # DEFINES += BFR_PRINT_DEBUG_OUTPUT
 # DEFINES += BFR_DUMP_GENERATED_QML_IN_FILES
-DEFINES += BFR_SERIALIZATION_ENABLED
+# DEFINES += "BFR_QML_OUTPUT_DIR=\"\\\"__temp_qml\\\"\""
+# DEFINES += BFR_SERIALIZATION_ENABLED
+
+DEFINES += BFR_SHOW_SPOILER
+DEFINES += BFR_SHOW_QUOTE
+DEFINES += BFR_SHOW_IMAGE
+DEFINES += BFR_SHOW_LINEBREAK
+DEFINES += BFR_SHOW_PLAINTEXT
+DEFINES += BFR_SHOW_RICHTEXT
+DEFINES += BFR_SHOW_VIDEO
+DEFINES += BFR_SHOW_HYPERLINK
 
 #######################################################################################################################
 
@@ -166,13 +175,14 @@ windows {
 } else:linux:!android {
     ARCH = x64
 } else:android {
-    # TODO: only armeabi-v7a and x86 are currently supported
-    contains(QT_ARCH, arm) {
+    equals(QT_ARCH, "arm64-v8a") {
+        ARCH = arm64-v8a
+    } else:equals(QT_ARCH, "armeabi-v7a") {
         ARCH = armeabi-v7a
-    } else:contains(QT_ARCH, i386) {
+    } else:contains(QT_ARCH, "i386") {
         ARCH = x86
     } else {
-        error("Unsupported Android architecture")
+        error("Unsupported Android architecture $$QT_ARCH!")
     }
 } else:ios {
     ARCH = arm64
@@ -226,7 +236,9 @@ windows {
     # Linux (Desktop, X86_64, shared libraries)
 
     # cURL
-    # Just use system library installed ("sudo apt-get install libcurl4-openssl-dev" command for Ubuntu)
+    # Just use system library installed:
+    # Ubuntu: sudo apt-get install libcurl4-openssl-dev
+    # Fedora: sudo dnf install libcurl-devel
     INCLUDEPATH += "/usr/include/x86_64-linux-gnu"
     LIBS += -L"/usr/lib/x86_64-linux-gnu"
     LIBS += -l"curl"
@@ -239,7 +251,7 @@ windows {
 
     # cURL
     INCLUDEPATH += $$TOPDIR/curl/prebuilt-with-ssl/android/include
-    LIBS += -L$$PWD/curl/prebuilt-with-ssl/android/$$ARCH
+    LIBS += -L$$TOPDIR/curl/prebuilt-with-ssl/android/$$ARCH
     LIBS += -lcurl
 
     # Gumbo
@@ -250,7 +262,7 @@ windows {
 
     # cURL
     INCLUDEPATH += $$TOPDIR/curl/prebuilt-with-ssl/iOS/include
-    LIBS += -L$$PWD/curl/prebuilt-with-ssl/iOS
+    LIBS += -L$$TOPDIR/curl/prebuilt-with-ssl/iOS
     LIBS += -lcurl
 
     # Gumbo
@@ -261,6 +273,8 @@ windows {
 }
 
 #######################################################################################################################
+
+CONFIG+=fluid_resource_icons
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH += $$TOPDIR/fluid/qml

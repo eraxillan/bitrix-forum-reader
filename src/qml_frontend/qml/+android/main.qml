@@ -45,7 +45,7 @@ FluidControls.ApplicationWindow {
         id: testThreadUrl;
 
         sectionId: 22;
-        threadId: 74420;
+        threadId: 358149;
     }
 
     ForumReader {

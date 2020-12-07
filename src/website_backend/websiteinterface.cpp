@@ -511,8 +511,7 @@ bool PostSpoiler::isValid() const { return !m_data.isEmpty(); }
 
 uint PostSpoiler::getHash(uint seed) const { return qHash(m_title, seed) ^ qHash(m_data, seed); }
 
-QString PostSpoiler::getQmlString(int randomSeed) const
-{
+QString PostSpoiler::getQmlString(quint32 randomSeed) const {
 #ifndef BFR_SHOW_SPOILER
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostSpoiler'; }\n");
@@ -544,8 +543,7 @@ uint PostQuote::getHash(uint seed) const {
 	return qHash(m_title, seed) ^ qHash(m_userName, seed) ^ qHash(m_url, seed) ^ qHash(m_data, seed);
 }
 
-QString PostQuote::getQmlString(int randomSeed) const
-{
+QString PostQuote::getQmlString(quint32 randomSeed) const {
 #ifndef BFR_SHOW_QUOTE
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostQuote'; }\n");
@@ -600,8 +598,7 @@ uint PostImage::getHash(uint seed) const {
 		^ qHash(m_altName, seed) /* ^ qHash(m_id, seed) */ ^ qHash(m_className, seed);
 }
 
-QString PostImage::getQmlString(int randomSeed) const
-{
+QString PostImage::getQmlString(quint32 randomSeed) const {
 #ifndef BFR_SHOW_IMAGE
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostImage'; }\n");
@@ -634,8 +631,7 @@ bool PostLineBreak::isValid() const { return true; }
 
 uint PostLineBreak::getHash(uint seed) const { return qHash(0, seed); }
 
-QString PostLineBreak::getQmlString(int randomSeed) const
-{
+QString PostLineBreak::getQmlString(quint32 randomSeed) const {
 #ifndef BFR_SHOW_LINEBREAK
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostLineBreak'; }\n");
@@ -663,8 +659,7 @@ bool PostPlainText::isValid() const { return !m_text.isEmpty(); }
 
 uint PostPlainText::getHash(uint seed) const { return qHash(m_text, seed); }
 
-QString PostPlainText::getQmlString(int randomSeed) const
-{
+QString PostPlainText::getQmlString(quint32 randomSeed) const {
 #ifndef BFR_SHOW_PLAINTEXT
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostPlainText'; }\n");
@@ -705,8 +700,7 @@ uint PostRichText::getHash(uint seed) const {
 		^ qHash(m_isUnderlined, seed) ^ qHash(m_isStrikedOut, seed);
 }
 
-QString PostRichText::getQmlString(int randomSeed) const
-{
+QString PostRichText::getQmlString(quint32 randomSeed) const {
 #ifndef BFR_SHOW_RICHTEXT
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostRichText'; }\n");
@@ -848,8 +842,7 @@ bool PostVideo::isValid() const { return !m_urlStr.isEmpty() && m_url.isValid();
 
 uint PostVideo::getHash(uint seed) const { return qHash(m_urlStr, seed) ^ qHash(m_url, seed); }
 
-QString PostVideo::getQmlString(int randomSeed) const
-{
+QString PostVideo::getQmlString(quint32 randomSeed) const {
 #ifndef BFR_SHOW_VIDEO
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostVideo';}\n");
@@ -887,8 +880,7 @@ uint PostHyperlink::getHash(uint seed) const {
 	return qHash(m_urlStr, seed) ^ qHash(m_url, seed) ^ qHash(m_title, seed) ^ qHash(m_tip, seed) ^ qHash(m_rel, seed);
 }
 
-QString PostHyperlink::getQmlString(int randomSeed) const
-{
+QString PostHyperlink::getQmlString(quint32 randomSeed) const {
 #ifndef BFR_SHOW_HYPERLINK
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostHyperlink'; }\n");
@@ -925,7 +917,7 @@ uint Post::getHash(uint seed) const {
 		^ qHash(m_userSignature, seed) ^ qHash(m_date, seed);
 }
 
-QString Post::getQmlString(int randomSeed) const {
+QString Post::getQmlString(quint32 randomSeed) const {
 	QString qmlStr = readQmlFile("://qml/Post.qml");
 
 	int validItemsCount = 0;
@@ -986,7 +978,7 @@ uint User::getHash(uint seed) const {
 		^ qHash(m_registrationDate, seed) ^ qHash(m_reputation, seed) ^ qHash(m_city, seed);
 }
 
-QString User::getQmlString(int randomSeed) const {
+QString User::getQmlString(quint32 randomSeed) const {
 	QString qmlStr = readQmlFile("://qml/User.qml");
 
 	qmlStr.replace("_6afb4d56214b4bb69281bf9bbf60396b", QString::number(randomSeed));

@@ -77,9 +77,9 @@ bool initLogLibrary() {
 	try {
 		std::cout << "initializing spdlog..." << std::endl;
 
-		// Console logger with color
+		// Console multi threaded logger with color
 #ifndef Q_OS_WIN
-		spdlog::stdout_color_mt("console");
+		/*auto console =*/ spdlog::stdout_color_mt("console");
 #else
 		auto sink = std::make_shared<spdlog::sinks::windebug_sink_st>();
 		auto logger = std::make_shared<spdlog::logger>("console", sink);
@@ -114,7 +114,6 @@ int main(int argc, char *argv[]) {
 	if (!initLogLibrary())
 		return 1;
 
-	//qsrand(1);
 	qmlRegisterType<ForumThreadUrl>("ru.banki.reader", 1, 0, "ForumThreadUrl");
 	qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
 

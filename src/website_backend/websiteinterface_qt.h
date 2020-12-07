@@ -1,7 +1,7 @@
 #ifndef WEBSITEINTERFACE_QT_H
 #define WEBSITEINTERFACE_QT_H
 
-#include <QtCore/QDate>
+#include <QtCore/QDateTime>
 
 #include <website_backend/websiteinterface_fwd.h>
 
@@ -39,7 +39,7 @@ class UserQtWrapper {
 
 	QString m_name;
 	QString m_avatarUrl;
-	QDate m_registrationDate;
+	QDateTime m_registrationDate;
 	QString m_city;
 	int m_postCount;
 	int m_threadPostCount;
@@ -65,7 +65,7 @@ public:
 
 	QString name() const;
 	QString avatarUrl() const;
-	QDate registrationDate() const;
+	QDateTime registrationDate() const;
 	QString city() const;
 	int postCount() const;
 	int threadPostCount() const;

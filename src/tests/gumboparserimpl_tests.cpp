@@ -3,7 +3,7 @@
 #include "common/filedownloader.h"
 #include "website_backend/gumboparserimpl.h"
 
-static const QString g_forumFirstPageUrl("http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list");
+static const QString g_forumFirstPageUrl("https://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=358149");
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -36,6 +36,7 @@ TEST_CASE("Serialization of forum page posts to file", "[ForumReader]") {
 					REQUIRE(fpp.getPagePosts(htmlRawData, userPosts) == result_code::Type::Ok);
 					REQUIRE(!userPosts.isEmpty());
 
+#ifdef BFR_SERIALIZATION_ENABLED
 					SECTION("Serialize and deserialize data") {
 						REQUIRE(result_code::succeeded(bfr::serializePosts(userPosts)));
 
@@ -45,6 +46,7 @@ TEST_CASE("Serialization of forum page posts to file", "[ForumReader]") {
 						REQUIRE(userPosts != userPosts_2);
 						REQUIRE(comparePostLists(userPosts, userPosts_2));
 					}
+#endif
 				}
 			}
 		}

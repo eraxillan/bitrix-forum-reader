@@ -7,6 +7,9 @@ import QtQuick.Controls.Universal 2.3
 import QtQuick.Window 2.2
 import Qt.labs.settings 1.0
 
+import Fluid.Core 1.0 as FluidCore
+import Fluid.Controls 1.0 as FluidControls
+
 import ru.banki.reader 1.0
 import "../qml" as GenericUi
 
@@ -28,11 +31,16 @@ ApplicationWindow {
     property int currentPageIndex: 1
     property int postIndex: 1;
 
+    FluidControls.SnackBar {
+         id: snbrMain
+         //onClicked: console.log("Snack bar button clicked")
+    }
+
     ForumThreadUrl {
         id: testThreadUrl;
 
         sectionId: 22;
-        threadId: 74420;
+        threadId: 358149;
     }
 
     ForumReader {

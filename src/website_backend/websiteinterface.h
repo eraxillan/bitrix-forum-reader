@@ -4,20 +4,7 @@
 #include <QtCore/QtCore>
 
 #include <common/resultcode.h>
-
 #include <website_backend/websiteinterface_fwd.h>
-
-//#define BFR_QML_OUTPUT_DIR QString("__temp_qml")
-
-// FIXME: move those defines to project files
-#define BFR_SHOW_SPOILER
-#define BFR_SHOW_QUOTE
-#define BFR_SHOW_IMAGE
-#define BFR_SHOW_LINEBREAK
-#define BFR_SHOW_PLAINTEXT
-#define BFR_SHOW_RICHTEXT
-#define BFR_SHOW_VIDEO
-#define BFR_SHOW_HYPERLINK
 
 #ifdef BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
 #define BFR_DEBUG_FRAME_VISIBLE "true"
@@ -53,7 +40,7 @@ struct IPostObject {
 
 	virtual bool isValid() const = 0;
 	virtual uint getHash(uint seed) const = 0;
-	virtual QString getQmlString(int randomSeed) const = 0;
+	virtual QString getQmlString(quint32 randomSeed) const = 0;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	virtual QDataStream &serialize(QDataStream &stream) const = 0;
@@ -70,7 +57,7 @@ struct PostSpoiler : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -89,7 +76,7 @@ struct PostQuote : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -112,7 +99,7 @@ struct PostImage : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -125,7 +112,7 @@ struct PostLineBreak : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -141,7 +128,7 @@ struct PostPlainText : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -162,7 +149,7 @@ struct PostRichText : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -180,7 +167,7 @@ struct PostVideo : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -206,7 +193,7 @@ struct PostHyperlink : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -234,7 +221,7 @@ struct Post : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;
@@ -266,7 +253,7 @@ struct User : IPostObject {
 
 	bool isValid() const Q_DECL_OVERRIDE;
 	uint getHash(uint seed) const Q_DECL_OVERRIDE;
-	QString getQmlString(int randomSeed) const Q_DECL_OVERRIDE;
+	QString getQmlString(quint32 randomSeed) const Q_DECL_OVERRIDE;
 
 #ifdef BFR_SERIALIZATION_ENABLED
 	QDataStream &serialize(QDataStream &stream) const Q_DECL_OVERRIDE;

@@ -7,10 +7,33 @@ struct ForumThreadUrlData {
 	int m_sectionId;
 	int m_threadId;
 
-	ForumThreadUrlData();
-	ForumThreadUrlData(int sectionId, int threadId);
-	ForumThreadUrlData(const ForumThreadUrlData &other);
-	~ForumThreadUrlData();
+	constexpr ForumThreadUrlData() noexcept
+		: m_sectionId(-1)
+		, m_threadId(-1) { }
+
+	constexpr ForumThreadUrlData(int sectionId, int threadId) noexcept
+		: m_sectionId(sectionId)
+		, m_threadId(threadId) { }
+
+	constexpr ForumThreadUrlData(const ForumThreadUrlData &other) noexcept
+		: m_sectionId(other.m_sectionId)
+		, m_threadId(other.m_threadId) { }
+
+	constexpr ForumThreadUrlData &operator=(ForumThreadUrlData arg) noexcept {
+		// NOTE: std::swap will be marked as `constexpr` only in C++20
+		//std::swap(m_sectionId, arg.m_sectionId);
+		//std::swap(m_threadId, arg.m_threadId);
+
+		auto swapInt = [](int &first, int &second) {
+			int temp = first;
+			first = second;
+			second = temp;
+		};
+		swapInt(m_sectionId, arg.m_sectionId);
+		swapInt(m_threadId, arg.m_threadId);
+
+		return *this;
+	}
 };
 
 class ForumThreadUrl : public QObject {
@@ -33,10 +56,10 @@ public:
 	void setSectionId(int sectionId);
 	void setThreadId(int threadId);
 
-	// "http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=1#forum-message-list"
+	// "https://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=358149"
 	Q_INVOKABLE QString firstPageUrl() const;
 
-	// "http://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=74420&PAGEN_1=215#forum-message-list"
+	// "https://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=358149&PAGEN_1=14#forum-message-list"
 	Q_INVOKABLE QString pageUrl(int pageNumber) const;
 
 signals:
