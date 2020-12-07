@@ -59,10 +59,14 @@ macx {
 darwin: QMAKE_RPATHDIR += @loader_path/../Frameworks
 
 android {
+    QT += svg widgets
+
     DISTFILES += \
         android/AndroidManifest.xml \
         android/res/values/libs.xml \
-        android/build.gradle
+        android/build.gradle \
+        android/gradle/wrapper/gradle-wrapper.jar \
+        android/gradle/wrapper/gradle-wrapper.properties
 
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 } else:macos {
@@ -103,7 +107,13 @@ QT += multimedia concurrent
 # USE_QT_NAM: QT += network
 # QT += gui widgets
 
-android: QT += androidextras
+android {
+    QT += androidextras
+
+    ANDROID_ABIS = \
+        armeabi-v7a \
+        arm64-v8a
+}
 
 CONFIG += c++17
 INCLUDEPATH += "."

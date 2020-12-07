@@ -62,4 +62,10 @@ unix {
     INSTALLS += target
 }
 
-android: QMAKE_CFLAGS += -std=c11
+android {
+    QMAKE_CFLAGS += -std=c11
+
+    ANDROID_ABIS = \
+        armeabi-v7a \
+        arm64-v8a
+}
