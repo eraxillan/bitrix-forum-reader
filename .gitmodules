@@ -1,13 +1,18 @@
 [submodule "curl"]
 	path = curl
-	url = https://www.github.com/gcesarmza/curl-android-ios
+	url = https://github.com/gcesarmza/curl-android-ios
+	branch = master
 [submodule "spdlog"]
 	path = spdlog
 	url = https://github.com/gabime/spdlog
+	branch = v1.x
 [submodule "fluid"]
 	path = fluid
 	url = https://github.com/lirios/fluid
+	branch = develop
 	ignore = untracked
 [submodule "concurrentqueue"]
 	path = concurrentqueue
 	url = https://github.com/cameron314/concurrentqueue
+	branch = master
+
