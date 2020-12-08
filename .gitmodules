@@ -16,3 +16,6 @@
 	url = https://github.com/cameron314/concurrentqueue
 	branch = master
 
+[submodule "thirdparty/android_openssl"]
+	path = thirdparty/android_openssl
+	url = https://github.com/KDAB/android_openssl.git

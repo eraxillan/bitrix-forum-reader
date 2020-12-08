@@ -264,6 +264,9 @@ windows {
 } else:android {
     # Android (Mobile, X86/ARMv7/ARM64, static and shared libraries)
 
+    # OpenSSL 1.1: shared
+    android: include($$TOPDIR/thirdparty/android_openssl/openssl.pri)
+
     # cURL: static
     INCLUDEPATH += $$TOPDIR/curl/prebuilt-with-ssl/android/include
     LIBS += -L$$TOPDIR/curl/prebuilt-with-ssl/android/$$ARCH
