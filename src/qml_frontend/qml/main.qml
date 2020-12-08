@@ -7,7 +7,7 @@ import QtQuick.Controls.Universal 2.3
 import QtQuick.Window 2.2
 import Qt.labs.settings 1.0
 
-import Fluid.Core 1.0 as FluidCore
+//import Fluid.Core 1.0 as FluidCore
 import Fluid.Controls 1.0 as FluidControls
 
 import ru.banki.reader 1.0
