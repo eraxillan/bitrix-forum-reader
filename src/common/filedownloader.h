@@ -19,6 +19,9 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
+#else
+#define CURL_TRUE 1
+#define CURL_FALSE 0
 #endif
 
 #include "common/resultcode.h"

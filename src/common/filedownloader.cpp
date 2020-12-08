@@ -92,6 +92,8 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
 	}
 
 	curl_easy_setopt(curl, CURLOPT_URL, urlStr.toLocal8Bit().constData());
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, CURL_TRUE);
+	curl_easy_setopt(curl, CURLOPT_FAILONERROR, CURL_TRUE);
 
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 	curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, downloadFileProgressCallback);
@@ -107,6 +109,12 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, downloadFileWriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
+
+	// FIXME HACK: need corect cert stuff setup instead of ignoring them
+#ifdef Q_OS_ANDROID
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, CURL_FALSE);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, CURL_FALSE);
+#endif
 
 	result = curl_easy_perform(curl);
 	if (result != CURLE_OK) {
@@ -243,6 +251,8 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallb
 	}
 
 	curl_easy_setopt(curl, CURLOPT_URL, urlStr.toLocal8Bit().constData());
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, CURL_TRUE);
+	curl_easy_setopt(curl, CURLOPT_FAILONERROR, CURL_TRUE);
 
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 	curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, downloadFileProgressCallback_2);
@@ -260,6 +270,12 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallb
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, downloadFileWriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
+
+	// FIXME HACK: need corect cert stuff setup instead of ignoring them
+#ifdef Q_OS_ANDROID
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, CURL_FALSE);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, CURL_FALSE);
+#endif
 
 	result = curl_easy_perform(curl);
 	if (result != CURLE_OK) {
