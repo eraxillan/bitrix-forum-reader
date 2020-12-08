@@ -8,6 +8,9 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/fmt/ostr.h> // must be included
+#ifdef Q_OS_ANDROID
+#include <spdlog/sinks/android_sink.h>
+#endif
 #ifdef Q_OS_WIN
 #include <spdlog/sinks/windebug_sink.h>
 #endif

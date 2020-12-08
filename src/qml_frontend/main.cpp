@@ -78,7 +78,9 @@ bool initLogLibrary() {
 		std::cout << "initializing spdlog..." << std::endl;
 
 		// Console multi threaded logger with color
-#ifndef Q_OS_WIN
+#ifdef Q_OS_ANDROID
+		/*auto android_logger =*/spdlog::android_logger_mt("console", "Bitrix Forum Reader"); // "android"
+#elif Q_OS_UNIX
 		/*auto console =*/ spdlog::stdout_color_mt("console");
 #else
 		auto sink = std::make_shared<spdlog::sinks::windebug_sink_st>();
@@ -119,7 +121,7 @@ int main(int argc, char *argv[]) {
 
 	QGuiApplication::setApplicationName("Bitrix Forum Reader");
 	QGuiApplication::setOrganizationName("Alexander Kamyshnikov");
-	QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QGuiApplication app(argc, argv);
 
 	Catch::Session session;
