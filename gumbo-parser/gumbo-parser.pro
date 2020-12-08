@@ -2,25 +2,29 @@ QT -= gui
 
 TARGET = gumbo-parser
 TEMPLATE = lib
-CONFIG  += staticlib
+#CONFIG += staticlib
 VERSION = 0.10.1
 
 #DEFINES += GUMBO_DEBUG
 
-# Build mode (release by default)
-buildmode = release
-CONFIG(debug, debug|release):buildmode = debug
+#######################################################################################################################
 
-APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
-APP_ARCH = $$first( $$list( $$QT_ARCH ) )
-APP_COMPILER = $$first( $$list( $$QMAKE_COMPILER ) )
-APP_BUILD_DIR = $$PWD/../__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
+# Build mode (release by default)
+#buildmode = release
+#CONFIG(debug, debug|release):buildmode = debug
+
+#APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
+#APP_ARCH = $$first( $$list( $$QT_ARCH ) )
+#APP_COMPILER = $$first( $$list( $$QMAKE_COMPILER ) )
+#APP_BUILD_DIR = $$PWD/../__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
 
 # Output directories setup
-DESTDIR     = $${APP_BUILD_DIR}
-UI_DIR      = $${APP_BUILD_DIR}
-OBJECTS_DIR = $${APP_BUILD_DIR}
-MOC_DIR     = $${APP_BUILD_DIR}
+#DESTDIR     = $${APP_BUILD_DIR}
+#UI_DIR      = $${APP_BUILD_DIR}
+#OBJECTS_DIR = $${APP_BUILD_DIR}
+#MOC_DIR     = $${APP_BUILD_DIR}
+
+#######################################################################################################################
 
 HEADERS += \
         src/attribute.h \
@@ -57,15 +61,13 @@ win32 {
     INCLUDEPATH += $$PWD/visualc/include
 }
 
-unix {
-    target.path = /usr/lib
-    INSTALLS += target
-}
+#unix {
+#    target.path = /usr/lib
+#    INSTALLS += target
+#}
 
 android {
     QMAKE_CFLAGS += -std=c11
-
-    ANDROID_ABIS = \
-        armeabi-v7a \
-        arm64-v8a
 }
+
+ANDROID_ABIS = armeabi-v7a arm64-v8a

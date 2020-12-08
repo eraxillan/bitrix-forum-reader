@@ -84,21 +84,21 @@ android {
 #######################################################################################################################
 
 # Build mode (release by default)
-buildmode = release
-CONFIG(debug, debug|release):buildmode = debug
+#buildmode = release
+#CONFIG(debug, debug|release):buildmode = debug
 
-APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
-APP_ARCH = $$first( $$list( $$QT_ARCH ) )
-APP_COMPILER = $$first( $$list( $$QMAKE_COMPILER ) )
-APP_BUILD_DIR = $$TOPDIR/__BUILD__/client/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
+#APP_PLATFORM = $$first($$list($$QMAKE_PLATFORM))
+#APP_ARCH = $$first($$list($$QT_ARCH))
+#APP_COMPILER = $$first($$list($$QMAKE_COMPILER))
+#APP_BUILD_DIR = $$TOPDIR/__BUILD__/client/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
 
-GUMBO_BUILD_DIR = $$TOPDIR/__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
+#GUMBO_BUILD_DIR = $$TOPDIR/__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
 
 # Output directories setup
-DESTDIR     = $${APP_BUILD_DIR}
-UI_DIR      = $${APP_BUILD_DIR}
-OBJECTS_DIR = $${APP_BUILD_DIR}
-MOC_DIR     = $${APP_BUILD_DIR}
+#DESTDIR     = $${APP_BUILD_DIR}
+#UI_DIR      = $${APP_BUILD_DIR}
+#OBJECTS_DIR = $${APP_BUILD_DIR}
+#MOC_DIR     = $${APP_BUILD_DIR}
 
 #######################################################################################################################
 
@@ -107,12 +107,17 @@ QT += multimedia concurrent
 # USE_QT_NAM: QT += network
 # QT += gui widgets
 
+FLUID_OUT_DIR = $$clean_path($$OUT_PWD/../fluid/qml)
+GUMBO_PARSER_OUT_DIR = $$clean_path($$OUT_PWD/../gumbo-parser)
+
 android {
     QT += androidextras
 
-    ANDROID_ABIS = \
-        armeabi-v7a \
-        arm64-v8a
+    # Bundle Fluid QML plugins with the application
+    ANDROID_EXTRA_PLUGINS = $$FLUID_OUT_DIR
+
+    # Android package sources
+    ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 }
 
 CONFIG += c++17
@@ -257,16 +262,16 @@ windows {
     LIBS += -L$$GUMBO_BUILD_DIR
     LIBS += -lgumbo-parser
 } else:android {
-    # Android (Mobile, X86/ARMv7, static libraries)
+    # Android (Mobile, X86/ARMv7/ARM64, static and shared libraries)
 
-    # cURL
+    # cURL: static
     INCLUDEPATH += $$TOPDIR/curl/prebuilt-with-ssl/android/include
     LIBS += -L$$TOPDIR/curl/prebuilt-with-ssl/android/$$ARCH
     LIBS += -lcurl
 
-    # Gumbo
-    LIBS += -L$$GUMBO_BUILD_DIR
-    LIBS += -lgumbo-parser
+    # Gumbo: shared
+    LIBS += -L$$GUMBO_PARSER_OUT_DIR
+    LIBS += -lgumbo-parser_$$QT_ARCH
 } else:ios {
     # iOS (Mobile, Universal binary, static libraries)
 
@@ -284,13 +289,48 @@ windows {
 
 #######################################################################################################################
 
-CONFIG+=fluid_resource_icons
+#CONFIG += fluid_resource_icons
+
+QML_FILES += \
+    $$TOPDIR/src/qml_frontend/qml/+android/main.qml \
+    $$TOPDIR/src/qml_frontend/qml/+android/NavigationPanel.qml \
+    $$TOPDIR/src/qml_frontend/qml/+android/PostList.qml \
+    $$TOPDIR/src/qml_frontend/qml/+ios/main.qml \
+    $$TOPDIR/src/qml_frontend/qml/main.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostAnimatedImage.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostHyperlink.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostImage.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostLineBreak.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostList.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostPlainText.qml \
+    $$TOPDIR/src/qml_frontend/qml/Post.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostQuote.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostRichText.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostSpoiler.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostVideo.qml \
+    $$TOPDIR/src/qml_frontend/qml/UserListDialog.qml \
+    $$TOPDIR/src/qml_frontend/qml/User.qml
+
+# Copy all files to the build directory so that QtCreator will recognize
+# the QML module and the demo will run without installation
+#isEmpty(DESTDIR): DESTDIR = $$OUT_PWD
+#qmlfiles2build.files = $$QML_FILES
+#qmlfiles2build.path = $$DESTDIR
+#COPIES += qmlfiles2build
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH += $$TOPDIR/fluid/qml
-QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml
-QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+android
+QML_IMPORT_PATH += $$FLUID_OUT_DIR
+#QML_IMPORT_PATH += $$DESTDIR
+
+#QML_IMPORT_PATH += $$TOPDIR/fluid/qml
+#QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml
+#QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+android
 #QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+ios
+
+# Additional import path used to resolve QML modules just for Qt Quick Designer
+QML_DESIGNER_IMPORT_PATH =
 
 # Default rules for deployment
 include(deployment.pri)
+
+ANDROID_ABIS = armeabi-v7a arm64-v8a
