@@ -1,7 +1,8 @@
 TEMPLATE = subdirs
 
 # Third-party
-SUBDIRS += fluid
+SUBDIRS += thirdparty/fluid
+# FIXME: switch to git submodule instead of raw copy
 SUBDIRS += gumbo-parser
 
 SUBDIRS += src

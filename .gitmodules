@@ -1,18 +1,18 @@
 [submodule "curl"]
-	path = curl
+	path = thirdparty/curl
 	url = https://github.com/gcesarmza/curl-android-ios
 	branch = master
 [submodule "spdlog"]
-	path = spdlog
+	path = thirdparty/spdlog
 	url = https://github.com/gabime/spdlog
 	branch = v1.x
 [submodule "fluid"]
-	path = fluid
+	path = thirdparty/fluid
 	url = https://github.com/lirios/fluid
 	branch = develop
 	ignore = untracked
 [submodule "concurrentqueue"]
-	path = concurrentqueue
+	path = thirdparty/concurrentqueue
 	url = https://github.com/cameron314/concurrentqueue
 	branch = master
 

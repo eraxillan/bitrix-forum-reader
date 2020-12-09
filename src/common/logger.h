@@ -12,7 +12,7 @@
 #include <spdlog/sinks/android_sink.h>
 #endif
 #ifdef Q_OS_WIN
-#include <spdlog/sinks/windebug_sink.h>
+#include <thirdparty/spdlog/sinks/windebug_sink.h>
 #endif
 
 #define ConsoleLogger spdlog::get("console")

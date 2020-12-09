@@ -218,7 +218,8 @@ CONFIG(debug, debug|release) {
 #   3) Gumbo HTML5 parser library
 
 INCLUDEPATH += $$TOPDIR/gumbo-parser/src
-INCLUDEPATH += $$TOPDIR/spdlog/include
+INCLUDEPATH += $$TOPDIR/thirdparty/spdlog/include
+INCLUDEPATH += $$TOPDIR/thirdparty
 
 windows {
     # Windows (Desktop, X86_64, static libraries)
@@ -268,8 +269,8 @@ windows {
     android: include($$TOPDIR/thirdparty/android_openssl/openssl.pri)
 
     # cURL: static
-    INCLUDEPATH += $$TOPDIR/curl/prebuilt-with-ssl/android/include
-    LIBS += -L$$TOPDIR/curl/prebuilt-with-ssl/android/$$ARCH
+    INCLUDEPATH += $$TOPDIR/thirdparty/curl/prebuilt-with-ssl/android/include
+    LIBS += -L$$TOPDIR/thirdparty/curl/prebuilt-with-ssl/android/$$ARCH
     LIBS += -lcurl
 
     # Gumbo: shared
@@ -279,8 +280,8 @@ windows {
     # iOS (Mobile, Universal binary, static libraries)
 
     # cURL
-    INCLUDEPATH += $$TOPDIR/curl/prebuilt-with-ssl/iOS/include
-    LIBS += -L$$TOPDIR/curl/prebuilt-with-ssl/iOS
+    INCLUDEPATH += $$TOPDIR/thirdparty/curl/prebuilt-with-ssl/iOS/include
+    LIBS += -L$$TOPDIR/thirdparty/curl/prebuilt-with-ssl/iOS
     LIBS += -lcurl
 
     # Gumbo
@@ -291,8 +292,6 @@ windows {
 }
 
 #######################################################################################################################
-
-#CONFIG += fluid_resource_icons
 
 QML_FILES += \
     $$TOPDIR/src/qml_frontend/qml/+android/main.qml \
