@@ -63,36 +63,45 @@ android {
 
 #######################################################################################################################
 
+# General compiler options
+CONFIG += c++17
+INCLUDEPATH += "."
+INCLUDEPATH += $$TOPDIR
+
 QT += qml quick quickcontrols2
 QT += multimedia concurrent
 
 # FIXME: check whether those deps are required
 android: QT += androidextras svg gui widgets
 
-# FIXME: implement 'use QtNetworkManager' as CONFIG flag
-#USE_QT_NAM: QT += network
-#QT += network
+# qmake CONFIG option 'bfr_use_curl' force program to use libcurl
+# instead of QNetworkManager (default choice)
+!bfr_use_curl {
+    QT += network
+    DEFINES += USE_QT_NAM
+}
 
-CONFIG += c++17
-INCLUDEPATH += "."
-INCLUDEPATH += $$TOPDIR
+# Enable all debug features in the corresponing build
+CONFIG(debug, debug|release) {
+    DEFINES += QT_GUMBO_METADATA
+    DEFINES += BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
+    DEFINES += BFR_PRINT_DEBUG_OUTPUT
+    DEFINES += BFR_DUMP_GENERATED_QML_IN_FILES
+    DEFINES += "BFR_QML_OUTPUT_DIR=\"\\\"__temp_qml\\\"\""
+    DEFINES += BFR_SERIALIZATION_ENABLED
+}
 
-# DEFINES += USE_QT_NAM
-# DEFINES += QT_GUMBO_METADATA
-# DEFINES += BFR_DRAW_FRAME_ON_COMPONENT_FOR_DEBUG
-# DEFINES += BFR_PRINT_DEBUG_OUTPUT
-# DEFINES += BFR_DUMP_GENERATED_QML_IN_FILES
-# DEFINES += "BFR_QML_OUTPUT_DIR=\"\\\"__temp_qml\\\"\""
-# DEFINES += BFR_SERIALIZATION_ENABLED
-
-DEFINES += BFR_SHOW_SPOILER
-DEFINES += BFR_SHOW_QUOTE
-DEFINES += BFR_SHOW_IMAGE
-DEFINES += BFR_SHOW_LINEBREAK
-DEFINES += BFR_SHOW_PLAINTEXT
-DEFINES += BFR_SHOW_RICHTEXT
-DEFINES += BFR_SHOW_VIDEO
-DEFINES += BFR_SHOW_HYPERLINK
+# All forum UI items are enabled by default,
+# but may be disabled for debugging purposes
+# using qmake CONFIG options
+!bfr_no_spoiler_item:   DEFINES += BFR_SHOW_SPOILER
+!bfr_no_quote_item:     DEFINES += BFR_SHOW_QUOTE
+!bfr_no_image_item:     DEFINES += BFR_SHOW_IMAGE
+!bfr_no_linebreak_item: DEFINES += BFR_SHOW_LINEBREAK
+!bfr_no_plaintext_item: DEFINES += BFR_SHOW_PLAINTEXT
+!bfr_no_richtext_item:  DEFINES += BFR_SHOW_RICHTEXT
+!bfr_no_video_item:     DEFINES += BFR_SHOW_VIDEO
+!bfr_no_hyperlink_item: DEFINES += BFR_SHOW_HYPERLINK
 
 #######################################################################################################################
 
@@ -183,8 +192,6 @@ CONFIG(debug, debug|release) {
     SUFFIX = d
 }
 
-# FIXME: check whether Windows version can be build without external OpenSSL
-
 # Link with:
 #   1) OpenSSL library
 #   2) cURL library (compiled with OpenSSL support)
@@ -196,27 +203,32 @@ INCLUDEPATH += $$TOPDIR/thirdparty
 
 windows {
     # Windows (Desktop, X86_64, static libraries)
-    DEFINES += CURL_STATICLIB
-    INCLUDEPATH += $$TOPDIR/libs/curl/win32/include
+    # FIXME: check whether Windows version can be build without external OpenSSL
     
     QMAKE_LFLAGS_DEBUG += /ignore:4099
     LIBS += -ladvapi32 -luser32 -lgdi32 -lws2_32 -lwsock32 -lWldap32
 
-    # OpenSSL
-    LIBS += -L$$TOPDIR/libs/openssl/win32/VC14/$$ARCH/$$buildmode
-    # cURL
-    LIBS += -L$$TOPDIR/libs/curl/win32/VC14/$$ARCH/$$buildmode
+    # libcurl and openssl
+    bfr_use_curl {
+        LIBS += -L$$TOPDIR/libs/openssl/win32/VC14/$$ARCH/$$buildmode
+        LIBS += -llibeay32 -lssleay32
+
+        DEFINES += CURL_STATICLIB
+        INCLUDEPATH += $$TOPDIR/libs/curl/win32/include
+        LIBS += -L$$TOPDIR/libs/curl/win32/VC14/$$ARCH/$$buildmode
+        LIBS += -llibcurl$$SUFFIX
+    }
+
     # Gumbo
     LIBS += -L$$TOPDIR/libs/gumbo-parser/win32/VC14/$$ARCH/$$buildmode
-
-    LIBS += -llibeay32 -lssleay32
-    LIBS += -llibcurl$$SUFFIX
     LIBS += -lgumbo-parser
 } else:macx {
-    # cURL
-    INCLUDEPATH += $$TOPDIR/libs/curl/macos/include
-    LIBS += -L$$PWD/libs/curl/macos/lib
-    LIBS += -lcurl
+    # libcurl
+    bfr_use_curl {
+        INCLUDEPATH += $$TOPDIR/libs/curl/macos/include
+        LIBS += -L$$PWD/libs/curl/macos/lib
+        LIBS += -lcurl
+    }
 
     # Gumbo
     LIBS += -L$$GUMBO_PARSER_OUT_DIR
@@ -228,9 +240,11 @@ windows {
     # Just use system library installed:
     # Ubuntu: sudo apt-get install libcurl4-openssl-dev
     # Fedora: sudo dnf install libcurl-devel
-    INCLUDEPATH += "/usr/include/x86_64-linux-gnu"
-    LIBS += -L"/usr/lib/x86_64-linux-gnu"
-    LIBS += -l"curl"
+    bfr_use_curl {
+        INCLUDEPATH += "/usr/include/x86_64-linux-gnu"
+        LIBS += -L"/usr/lib/x86_64-linux-gnu"
+        LIBS += -l"curl"
+    }
 
     # Gumbo
     LIBS += -L$$GUMBO_PARSER_OUT_DIR
@@ -255,10 +269,12 @@ windows {
         $$SSL_PATH/latest/x86_64/libcrypto_1_1.so \
         $$SSL_PATH/latest/x86_64/libssl_1_1.so
 
-    # cURL: static
-    INCLUDEPATH += $$TOPDIR/thirdparty/curl/prebuilt-with-ssl/android/include
-    LIBS += -L$$TOPDIR/thirdparty/curl/prebuilt-with-ssl/android/$$ARCH
-    LIBS += -lcurl
+    # libcurl: static
+    bfr_use_curl {
+        INCLUDEPATH += $$TOPDIR/thirdparty/curl/prebuilt-with-ssl/android/include
+        LIBS += -L$$TOPDIR/thirdparty/curl/prebuilt-with-ssl/android/$$ARCH
+        LIBS += -lcurl
+    }
 
     # Gumbo: shared
     LIBS += -L$$GUMBO_PARSER_OUT_DIR
@@ -266,10 +282,12 @@ windows {
 } else:ios {
     # iOS (Mobile, Universal binary, static libraries)
 
-    # cURL
-    INCLUDEPATH += $$TOPDIR/thirdparty/curl/prebuilt-with-ssl/iOS/include
-    LIBS += -L$$TOPDIR/thirdparty/curl/prebuilt-with-ssl/iOS
-    LIBS += -lcurl
+    # libcurl: static
+    bfr_use_curl {
+        INCLUDEPATH += $$TOPDIR/thirdparty/curl/prebuilt-with-ssl/iOS/include
+        LIBS += -L$$TOPDIR/thirdparty/curl/prebuilt-with-ssl/iOS
+        LIBS += -lcurl
+    }
 
     # Gumbo
     LIBS += -L$$GUMBO_PARSER_OUT_DIR

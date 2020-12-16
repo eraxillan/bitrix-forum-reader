@@ -78,9 +78,9 @@ bool initLogLibrary() {
 		std::cout << "initializing spdlog..." << std::endl;
 
 		// Console multi threaded logger with color
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID)
 		/*auto android_logger =*/spdlog::android_logger_mt("console", "Bitrix Forum Reader"); // "android"
-#elif Q_OS_UNIX
+#elif defined(Q_OS_UNIX)
 		/*auto console =*/ spdlog::stdout_color_mt("console");
 #else
 		auto sink = std::make_shared<spdlog::sinks::windebug_sink_st>();
@@ -116,6 +116,12 @@ int main(int argc, char *argv[]) {
 	if (!initLogLibrary())
 		return 1;
 
+#ifdef Q_OS_ANDROID
+	qputenv("QT_QUICK_CONTROLS_STYLE", "Material");
+#endif
+
+	// FIXME: test correctness due to error messages:
+	// "Warning: QML import could not be resolved in any of the import paths: ru.banki.reader"
 	qmlRegisterType<ForumThreadUrl>("ru.banki.reader", 1, 0, "ForumThreadUrl");
 	qmlRegisterType<ForumReader>("ru.banki.reader", 1, 0, "ForumReader");
 
@@ -141,6 +147,25 @@ int main(int argc, char *argv[]) {
 	}
 
 #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
+	// Application data on mobile platform must be stored
+	// in the specific directory only
+#if defined(Q_OS_ANDROID)
+	QDir appDataDir = QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+	BFR_RETURN_VALUE_IF(!appDataDir.isReadable(), 1, "unable to get application local data directory path!");
+
+	// Clean the generated QML output directory
+	if (appDataDir.exists(BFR_QML_OUTPUT_DIR)) {
+		BFR_RETURN_VALUE_IF(!appDataDir.cd(BFR_QML_OUTPUT_DIR), 1, "unable to change current directory!");
+		BFR_RETURN_VALUE_IF(!appDataDir.removeRecursively(), 1, "unable to remove entire directory!");
+		BFR_RETURN_VALUE_IF(!appDataDir.cdUp(), 1, "unable to change current directory!");
+	}
+	// Now recreate it
+	BFR_RETURN_VALUE_IF(!appDataDir.mkdir(BFR_QML_OUTPUT_DIR), 1, "unable to create subdirectory!");
+	BFR_RETURN_VALUE_IF(!appDataDir.cd(BFR_QML_OUTPUT_DIR), 1, "unable to change current directory!");
+#elif defined(Q_OS_IOS)
+	// FIXME: implement if possible
+#else
+	// Desktop platforms allow to use application directory
 	QDir appRootDir(qApp->applicationDirPath());
 	Q_ASSERT(appRootDir.isReadable());
 	// Clean the generated QML output directory
@@ -151,6 +176,7 @@ int main(int argc, char *argv[]) {
 	}
 	Q_ASSERT(appRootDir.mkdir(BFR_QML_OUTPUT_DIR));
 	Q_ASSERT(appRootDir.cd(BFR_QML_OUTPUT_DIR));
+#endif
 #endif
 
 	int exitCode = -1;
