@@ -1,29 +1,6 @@
-defineTest(minQtVersion) {
-    maj = $$1
-    min = $$2
-    patch = $$3
-    isEqual(QT_MAJOR_VERSION, $$maj) {
-        isEqual(QT_MINOR_VERSION, $$min) {
-            isEqual(QT_PATCH_VERSION, $$patch) {
-                return(true)
-            }
-            greaterThan(QT_PATCH_VERSION, $$patch) {
-                return(true)
-            }
-        }
-        greaterThan(QT_MINOR_VERSION, $$min) {
-            return(true)
-        }
-    }
-    greaterThan(QT_MAJOR_VERSION, $$maj) {
-        return(true)
-    }
-    return(false)
-}
-
-!minQtVersion(5, 8, 0) {
-    message("Cannot build this demo with Qt version $${QT_VERSION}.")
-    error("Use at least Qt 5.8.0.")
+!versionAtLeast(QT_VERSION, "5.15.0") {
+    message("Cannot build this program with Qt version $${QT_VERSION}")
+    error("Use at least Qt 5.15.0")
 }
 
 #######################################################################################################################
@@ -32,6 +9,8 @@ TEMPLATE = app
 CONFIG -= debug_and_release debug_and_release_target
 
 TOPDIR = $$clean_path($$PWD/..)
+FLUID_OUT_DIR = $$clean_path($$OUT_PWD/../thirdparty/fluid/qml)
+GUMBO_PARSER_OUT_DIR = $$clean_path($$OUT_PWD/../gumbo-parser)
 
 #######################################################################################################################
 # Platform-specific setup
@@ -59,22 +38,23 @@ macx {
 darwin: QMAKE_RPATHDIR += @loader_path/../Frameworks
 
 android {
-    QT += svg widgets
-
+    # NOTE: free icon got from https://www.materialui.co/materialIcons/communication/forum_black_64x64.png
     DISTFILES += \
         android/AndroidManifest.xml \
-        android/res/values/libs.xml \
-        android/build.gradle \
-        android/gradle/wrapper/gradle-wrapper.jar \
-        android/gradle/wrapper/gradle-wrapper.properties
+        android/res/drawable/icon.png \
+        android/res/values/strings.xml
 
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+    # Bundle Fluid QML plugins with the application
+    ANDROID_EXTRA_PLUGINS = $$FLUID_OUT_DIR
 } else:macos {
     QMAKE_INFO_PLIST = Info.plist
 } else:ios|tvos {
     QMAKE_INFO_PLIST = Info-ios.plist
 }
 
+# Use platform-specific QML source files
 android {
     DEFINES += QT_EXTRA_FILE_SELECTOR=\\\"android\\\"
 } else:ios|tvos {
@@ -83,42 +63,15 @@ android {
 
 #######################################################################################################################
 
-# Build mode (release by default)
-#buildmode = release
-#CONFIG(debug, debug|release):buildmode = debug
-
-#APP_PLATFORM = $$first($$list($$QMAKE_PLATFORM))
-#APP_ARCH = $$first($$list($$QT_ARCH))
-#APP_COMPILER = $$first($$list($$QMAKE_COMPILER))
-#APP_BUILD_DIR = $$TOPDIR/__BUILD__/client/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
-
-#GUMBO_BUILD_DIR = $$TOPDIR/__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
-
-# Output directories setup
-#DESTDIR     = $${APP_BUILD_DIR}
-#UI_DIR      = $${APP_BUILD_DIR}
-#OBJECTS_DIR = $${APP_BUILD_DIR}
-#MOC_DIR     = $${APP_BUILD_DIR}
-
-#######################################################################################################################
-
 QT += qml quick quickcontrols2
 QT += multimedia concurrent
-# USE_QT_NAM: QT += network
-# QT += gui widgets
 
-FLUID_OUT_DIR = $$clean_path($$OUT_PWD/../fluid/qml)
-GUMBO_PARSER_OUT_DIR = $$clean_path($$OUT_PWD/../gumbo-parser)
+# FIXME: check whether those deps are required
+android: QT += androidextras svg gui widgets
 
-android {
-    QT += androidextras
-
-    # Bundle Fluid QML plugins with the application
-    ANDROID_EXTRA_PLUGINS = $$FLUID_OUT_DIR
-
-    # Android package sources
-    ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
-}
+# FIXME: implement 'use QtNetworkManager' as CONFIG flag
+#USE_QT_NAM: QT += network
+#QT += network
 
 CONFIG += c++17
 INCLUDEPATH += "."
@@ -172,6 +125,26 @@ HEADERS += \
     parser_frontend/forumthreadpool.h       \
     qml_frontend/forumreader.h              \
     qml_frontend/task.h
+
+QML_FILES += \
+    $$TOPDIR/src/qml_frontend/qml/+android/main.qml \
+    $$TOPDIR/src/qml_frontend/qml/+android/NavigationPanel.qml \
+    $$TOPDIR/src/qml_frontend/qml/+android/PostList.qml \
+    $$TOPDIR/src/qml_frontend/qml/+ios/main.qml \
+    $$TOPDIR/src/qml_frontend/qml/main.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostAnimatedImage.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostHyperlink.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostImage.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostLineBreak.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostList.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostPlainText.qml \
+    $$TOPDIR/src/qml_frontend/qml/Post.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostQuote.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostRichText.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostSpoiler.qml \
+    $$TOPDIR/src/qml_frontend/qml/PostVideo.qml \
+    $$TOPDIR/src/qml_frontend/qml/UserListDialog.qml \
+    $$TOPDIR/src/qml_frontend/qml/User.qml
 
 RESOURCES += qml_frontend/qml.qrc
 
@@ -246,7 +219,7 @@ windows {
     LIBS += -lcurl
 
     # Gumbo
-    LIBS += -L$$GUMBO_BUILD_DIR
+    LIBS += -L$$GUMBO_PARSER_OUT_DIR
     LIBS += -lgumbo-parser
 } else:linux:!android {
     # Linux (Desktop, X86_64, shared libraries)
@@ -260,13 +233,27 @@ windows {
     LIBS += -l"curl"
 
     # Gumbo
-    LIBS += -L$$GUMBO_BUILD_DIR
+    LIBS += -L$$GUMBO_PARSER_OUT_DIR
     LIBS += -lgumbo-parser
 } else:android {
     # Android (Mobile, X86/ARMv7/ARM64, static and shared libraries)
 
     # OpenSSL 1.1: shared
-    android: include($$TOPDIR/thirdparty/android_openssl/openssl.pri)
+    # NOTE: recommended way below:
+    # include($$TOPDIR/thirdparty/android_openssl/openssl.pri)
+    # will not work for custom Qt built with shared OpenSSL libraries as we are using;
+    # so just manually include libraries for latest Qt and Android
+    CONFIG(release, debug|release): SSL_PATH = $$TOPDIR/thirdparty/android_openssl
+                              else: SSL_PATH = $$TOPDIR/thirdparty/android_openssl/no-asm
+    ANDROID_EXTRA_LIBS += \
+        $$SSL_PATH/latest/arm/libcrypto_1_1.so \
+        $$SSL_PATH/latest/arm/libssl_1_1.so \
+        $$SSL_PATH/latest/arm64/libcrypto_1_1.so \
+        $$SSL_PATH/latest/arm64/libssl_1_1.so \
+        $$SSL_PATH/latest/x86/libcrypto_1_1.so \
+        $$SSL_PATH/latest/x86/libssl_1_1.so \
+        $$SSL_PATH/latest/x86_64/libcrypto_1_1.so \
+        $$SSL_PATH/latest/x86_64/libssl_1_1.so
 
     # cURL: static
     INCLUDEPATH += $$TOPDIR/thirdparty/curl/prebuilt-with-ssl/android/include
@@ -285,33 +272,13 @@ windows {
     LIBS += -lcurl
 
     # Gumbo
-    LIBS += -L$$GUMBO_BUILD_DIR
+    LIBS += -L$$GUMBO_PARSER_OUT_DIR
     LIBS += -lgumbo-parser
 } else {
     error("Unsupported OS")
 }
 
 #######################################################################################################################
-
-QML_FILES += \
-    $$TOPDIR/src/qml_frontend/qml/+android/main.qml \
-    $$TOPDIR/src/qml_frontend/qml/+android/NavigationPanel.qml \
-    $$TOPDIR/src/qml_frontend/qml/+android/PostList.qml \
-    $$TOPDIR/src/qml_frontend/qml/+ios/main.qml \
-    $$TOPDIR/src/qml_frontend/qml/main.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostAnimatedImage.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostHyperlink.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostImage.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostLineBreak.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostList.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostPlainText.qml \
-    $$TOPDIR/src/qml_frontend/qml/Post.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostQuote.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostRichText.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostSpoiler.qml \
-    $$TOPDIR/src/qml_frontend/qml/PostVideo.qml \
-    $$TOPDIR/src/qml_frontend/qml/UserListDialog.qml \
-    $$TOPDIR/src/qml_frontend/qml/User.qml
 
 # Copy all files to the build directory so that QtCreator will recognize
 # the QML module and the demo will run without installation
@@ -324,7 +291,7 @@ QML_FILES += \
 QML_IMPORT_PATH += $$FLUID_OUT_DIR
 #QML_IMPORT_PATH += $$DESTDIR
 
-#QML_IMPORT_PATH += $$TOPDIR/fluid/qml
+#QML_IMPORT_PATH += $$TOPDIR/thirdparty/fluid/qml
 #QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml
 #QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+android
 #QML_IMPORT_PATH += $$OUT_PWD/qml_frontend/qml/+ios
