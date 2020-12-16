@@ -13,8 +13,6 @@
 #include <QtCore/QUrl>
 #include <QtConcurrent/QtConcurrent>
 
-//#define USE_QT_NAM
-
 #ifdef USE_QT_NAM
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
@@ -31,10 +29,10 @@ class FileDownloader : public QObject {
 
 public:
 	explicit FileDownloader(QObject *parent = nullptr);
-	virtual ~FileDownloader();
+	virtual ~FileDownloader() = default;
 
 	// Async API
-	void startDownloadAsync(QUrl url);
+	void startDownloadAsync(const QUrl &url);
 	QByteArray downloadedData() const;
 	result_code::Type lastError() const;
 
@@ -50,22 +48,33 @@ signals:
 
 #ifdef USE_QT_NAM
 private slots:
+	void onMetadataChanged();
 	void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 	void onDownloadFinished();
 	void onDownloadFailed(QNetworkReply::NetworkError code);
+	void onSslErrors(const QList<QSslError> &errors);
 #endif
 
 private:
 #ifdef USE_QT_NAM
-	QNetworkAccessManager m_webCtrl;
+	QPointer<QNetworkAccessManager> m_nm;
 	QPointer<QNetworkReply> m_reply;
+	ProgressCallback m_progressCb;
 #endif
 
 	QByteArray m_downloadedData;
 	result_code::Type m_lastError;
 
+#ifndef USE_QT_NAM
 	// Async API
 	QFutureWatcher<QByteArray> m_downloadedDataWatcher;
+#endif
+private:
+#ifndef USE_QT_NAM
+	static const char *CACertificatesPath;
+#else
+	void startDownloadSync(const QUrl &url);
+#endif
 };
 
 #endif // __BFR_FILEDOWNLOADER_H__

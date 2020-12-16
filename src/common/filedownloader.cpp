@@ -3,15 +3,21 @@
 
 #ifndef USE_QT_NAM
 #include <curl/curl.h>
+
+const char *FileDownloader::CACertificatesPath { /*"/system/etc/security/cacerts_google"*/ "/system/etc/security/cacerts" };
 #endif
 
-FileDownloader::FileDownloader(QObject *parent) : QObject(parent)
-{
+namespace {
+static const char *bfrUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36";
 }
 
-FileDownloader::~FileDownloader()
-{
-}
+FileDownloader::FileDownloader(QObject *parent)
+	: QObject(parent)
+	, m_nm(new QNetworkAccessManager(this))
+	, m_reply(nullptr)
+	, m_progressCb(nullptr)
+	, m_downloadedData()
+	, m_lastError(result_code::Type::Invalid) { }
 
 // Async API
 
@@ -100,7 +106,7 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
 	curl_easy_setopt(curl, CURLOPT_XFERINFODATA, thisObj);
 
 	//    curl_easy_setopt(curl, CURLOPT_USERPWD, "user:pass");
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.51.0");
+	curl_easy_setopt(curl, bfrUserAgent);
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
 	curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 
@@ -154,21 +160,60 @@ QByteArray downloadFileAsync(QString urlStr, FileDownloader* thisObj, QByteArray
 }
 #endif
 
-void FileDownloader::startDownloadAsync(QUrl url) {
+#ifdef USE_QT_NAM
+void FileDownloader::startDownloadSync(const QUrl &url) {
+	m_lastError = result_code::Type::Invalid;
+	m_downloadedData.clear();
+
+	QNetworkRequest request;
+	request.setUrl(url);
+	request.setRawHeader("User-Agent", bfrUserAgent);
+
+	// FIXME: move to separate method and call on program start
+	//m_nm->connectToHostEncrypted(url.host());
+
+	QEventLoop loop;
+	connect(m_nm, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()), Qt::DirectConnection);
+
+	m_reply = m_nm->get(request);
+	if (!m_reply) {
+		SPDLOG_ERROR("GET request failed for URL '{}'", url.toString());
+		return;
+	}
+
+	connect(m_reply, &QNetworkReply::metaDataChanged, this, &FileDownloader::onMetadataChanged, Qt::DirectConnection);
+	connect(m_reply, &QNetworkReply::downloadProgress, this, &FileDownloader::onDownloadProgress, Qt::DirectConnection);
+	connect(m_reply, &QNetworkReply::finished, this, &FileDownloader::onDownloadFinished, Qt::DirectConnection);
+	connect(m_reply, &QNetworkReply::errorOccurred, this, &FileDownloader::onDownloadFailed, Qt::DirectConnection);
+	connect(m_reply, &QNetworkReply::sslErrors, this, &FileDownloader::onSslErrors, Qt::DirectConnection);
+
+	loop.exec();
+}
+#endif
+
+void FileDownloader::startDownloadAsync(const QUrl &url) {
 	m_lastError = result_code::Type::Invalid;
 	m_downloadedData.clear();
 
 #ifdef USE_QT_NAM
-	m_reply = m_webCtrl.get(QNetworkRequest(url));
-	Q_CHECK_PTR(m_reply);
-	if (!m_reply)
+	QNetworkRequest request;
+	request.setUrl(url);
+	request.setRawHeader("User-Agent", bfrUserAgent);
+
+	// FIXME: move to separate method and call on program start
+	//m_nm->connectToHostEncrypted(url.host());
+
+	m_reply = m_nm->get(request);
+	if (!m_reply) {
+		SPDLOG_ERROR("GET request failed for URL '{}'", url.toString());
 		return;
-	connect(m_reply, &QNetworkReply::downloadProgress, this, &FileDownloader::onDownloadProgress);
-	connect(m_reply, &QNetworkReply::finished, this, &FileDownloader::onDownloadFinished);
-	// NOTE: don't work due to overload issues
-	//connect(m_reply, &QNetworkReply::error,            this, &FileDownloader::onDownloadFailed);
-	connect(m_reply.data(), SIGNAL(error(QNetworkReply::NetworkError)), this,
-		SLOT(onDownloadFailed(QNetworkReply::NetworkError)));
+	}
+
+	connect(m_reply, &QNetworkReply::metaDataChanged, this, &FileDownloader::onMetadataChanged, Qt::DirectConnection);
+	connect(m_reply, &QNetworkReply::downloadProgress, this, &FileDownloader::onDownloadProgress, Qt::DirectConnection);
+	connect(m_reply, &QNetworkReply::finished, this, &FileDownloader::onDownloadFinished, Qt::DirectConnection);
+	connect(m_reply, &QNetworkReply::errorOccurred, this, &FileDownloader::onDownloadFailed, Qt::DirectConnection);
+	connect(m_reply, &QNetworkReply::sslErrors, this, &FileDownloader::onSslErrors, Qt::DirectConnection);
 #else
 	// FIXME: test what happens when we will call this method again BEFORE previous call finishes
 	//    m_downloadedDataWatcher.waitForFinished();
@@ -183,16 +228,28 @@ QByteArray FileDownloader::downloadedData() const { return m_downloadedData; }
 result_code::Type FileDownloader::lastError() const { return m_lastError; }
 
 #ifdef USE_QT_NAM
+void FileDownloader::onMetadataChanged() {
+	SPDLOG_INFO("bytesAvail: {}", m_reply->bytesAvailable());
+	SPDLOG_INFO("has content-length: {}", m_reply->hasRawHeader("Content-Length"));
+}
+
 void FileDownloader::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal) {
+	SPDLOG_INFO("received {} bytes from total {}", bytesReceived, bytesTotal);
+
 	m_lastError = result_code::Type::InProgress;
+
+	if (m_progressCb)
+		m_progressCb(bytesReceived, bytesTotal);
 
 	emit downloadProgress(bytesReceived, bytesTotal);
 }
 
 void FileDownloader::onDownloadFinished() {
-	Q_CHECK_PTR(m_reply);
-	if (!m_reply)
+	if (!m_reply) {
+		SPDLOG_ERROR("logic error: m_reply is null");
+		m_lastError = result_code::Type::NetworkError;
 		return;
+	}
 
 	m_lastError = result_code::Type::Ok;
 
@@ -206,7 +263,16 @@ void FileDownloader::onDownloadFailed(QNetworkReply::NetworkError code) {
 	m_lastError = result_code::Type::NetworkError;
 
 	// FIXME: map the NetworkError to the ResultCode
+	Q_UNUSED(code);
 	emit downloadFailed(result_code::Type::NetworkError /*, code*/);
+}
+
+void FileDownloader::onSslErrors(const QList<QSslError> &errors) {
+	m_lastError = result_code::Type::NetworkError;
+
+	Q_UNUSED(errors);
+	for (const auto &error : errors)
+		SPDLOG_ERROR("SSL error: '{}'", error.errorString());
 }
 #endif
 
@@ -214,16 +280,14 @@ void FileDownloader::onDownloadFailed(QNetworkReply::NetworkError code) {
 // Sync API
 
 #ifdef USE_QT_NAM
-bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data) {
-	FileDownloader fd;
-	fd.startDownloadAsync(urlStr);
+bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallback progressCb) {
 
-	Q_ASSERT(fd.lastError() == result_code::Type::Invalid);
-	while (fd.lastError() == result_code::Type::Invalid || fd.lastError() == result_code::Type::InProgress)
-		qApp->processEvents();
+	QScopedPointer<FileDownloader> fd(new FileDownloader);
+	fd->m_progressCb = progressCb;
+	fd->startDownloadSync(QUrl(urlStr));
 
-	data = fd.downloadedData();
-	return result_code::succeeded(fd.lastError());
+	data = fd->downloadedData();
+	return result_code::succeeded(fd->lastError());
 }
 #else
 bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallback progressCb) {
@@ -259,9 +323,7 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallb
 	curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &progressCb);
 
 	//    curl_easy_setopt(curl, CURLOPT_USERPWD, "user:pass");
-	//curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.51.0");
-	curl_easy_setopt(curl, CURLOPT_USERAGENT,
-		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36");
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, bfrUserAgent);
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
 	curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 
@@ -273,8 +335,14 @@ bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallb
 
 	// FIXME HACK: need corect cert stuff setup instead of ignoring them
 #ifdef Q_OS_ANDROID
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, CURL_FALSE);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, CURL_FALSE);
+	//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, CURL_FALSE);
+	//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, CURL_FALSE);
+
+	// #define BFR_RETURN_VALUE_IF(cond, returnValue, msg)
+
+	BFR_RETURN_VALUE_IF(curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1) != CURLE_OK, false, "setting CURLOPT_SSL_VERIFYPEER failed");
+	BFR_RETURN_VALUE_IF(curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2) != CURLE_OK, false, "setting CURLOPT_SSL_VERIFYHOST failed");
+	BFR_RETURN_VALUE_IF(curl_easy_setopt(curl, CURLOPT_CAPATH, CACertificatesPath) != CURLE_OK, false, "setting CURLOPT_CAPATH failed");
 #endif
 
 	result = curl_easy_perform(curl);

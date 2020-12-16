@@ -171,8 +171,9 @@ void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytes
 	ConsoleLogger->info("{}: {} bytes received, from {} bytes total", Q_FUNC_INFO, bytesReceived, bytesTotal);
 #endif
 
-	// NOTE: currently banki.ru server don't return Content-Length header
-	Q_ASSERT(bytesTotal <= 0);
+	// NOTE: this field is unreliable source of data length, often it is just -1
+	//Q_ASSERT(bytesTotal <= 0);
+	Q_UNUSED(bytesTotal);
 
 	// NOTE: HTML page size should not exceed 2^32 bytes, i hope :)
 	emit pageContentParseProgress((int)bytesReceived);
