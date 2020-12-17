@@ -24,7 +24,7 @@
 #ifndef __BFR_FORUMTHREADURL_H__
 #define __BFR_FORUMTHREADURL_H__
 
-#include <QtCore/QtCore>
+#include <QtCore/QObject>
 
 struct ForumThreadUrlData {
 	int m_sectionId;

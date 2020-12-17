@@ -28,24 +28,26 @@
 //       modifications:
 //       - optional use of powerful libcurl instead of Qt Network framework
 //       - progress tracking support
-//       - async API support
+//       - async/sync API support
 
 // FIXME: implement proxy auth
 
-#include <QtCore/QByteArray>
+#include <QtCore/QEventLoop>
+#include <QtCore/QPointer>
 #include <QtCore/QUrl>
-#include <QtConcurrent/QtConcurrent>
 
 #ifdef USE_QT_NAM
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #else
+#include <QtConcurrent/QtConcurrent>
 #define CURL_TRUE 1
 #define CURL_FALSE 0
 #endif
 
-#include "common/resultcode.h"
+#include <common/resultcode.h>
+#include <common/logger.h>
 
 class FileDownloader : public QObject {
 	Q_OBJECT

@@ -21,17 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include <QSettings>
-#include <QQuickStyle>
-#include <QQmlFileSelector>
-#include <QScreen>
-
-#ifdef Q_OS_ANDROID
-#include <QAndroidJniObject>
-#endif
+#include <QtGui/QGuiApplication>
+#include <QtQml/QQmlApplicationEngine>
+#include <QtQml/QQmlFileSelector>
 
 #ifdef Q_OS_WINDOWS
 #define CATCH_CONFIG_COLOUR_WINDOWS
@@ -45,12 +37,10 @@
 
 #include <common/logger.h>
 #include <common/forumthreadurl.h>
+#include <qml_frontend/forumreader.h>
 
-#include "website_backend/gumboparserimpl.h"
-#include "qml_frontend/forumreader.h"
-
-// FIXME: cleanup includes and prepend Qt ones with module path
 // FIXME: update QML imports to modern versions
+// FIXME: minimize use of Qt containers, smart pointers and primitive types (use stdlib ones instead)
 // FIXME: move raw strings (error messages etc.) to separate file and get them thru new LocalizationManager class
 //
 // FIXME: enforce constness

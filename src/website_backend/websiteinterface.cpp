@@ -22,16 +22,17 @@
  * SOFTWARE.
 */
 #include "websiteinterface.h"
-#include "common/logger.h"
+
+#include <common/logger.h>
 
 #ifdef BFR_SERIALIZATION_ENABLED
-
 namespace {
 static const quint32 BFR_SERIALIZATION_MAGIC = 0xBF6EADE6;
 static const quint32 BFR_SERIALIZATION_VERSION = 0x00000001;
 }
 
 QDataStream &operator<<(QDataStream &stream, const bfr::IPostObject &obj) { return obj.serialize(stream); }
+
 QDataStream &operator>>(QDataStream &stream, bfr::IPostObject &obj) { return obj.deserialize(stream); }
 
 QDataStream &operator<<(QDataStream &stream, const bfr::IPostObjectList &postList) {
@@ -41,6 +42,7 @@ QDataStream &operator<<(QDataStream &stream, const bfr::IPostObjectList &postLis
 
 	return stream;
 }
+
 QDataStream &operator>>(QDataStream &stream, bfr::IPostObjectList &postList) {
 	int size = 0;
 	stream >> size;

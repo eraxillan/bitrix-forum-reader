@@ -22,7 +22,6 @@
  * SOFTWARE.
 */
 #include "filedownloader.h"
-#include "common/logger.h"
 
 #ifndef USE_QT_NAM
 #include <curl/curl.h>

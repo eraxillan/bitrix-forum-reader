@@ -22,7 +22,8 @@
  * SOFTWARE.
 */
 #include "gumboparserimpl.h"
-#include "common/logger.h"
+
+#include <common/logger.h>
 
 // FIXME: temp ban support:
 // <div class = "forum-ban-info">

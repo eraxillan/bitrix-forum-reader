@@ -23,8 +23,8 @@
 */
 #include "catch.hpp"
 
-#include "common/filedownloader.h"
-#include "website_backend/gumboparserimpl.h"
+#include <common/filedownloader.h>
+#include <website_backend/gumboparserimpl.h>
 
 static const QString g_forumFirstPageUrl("https://www.banki.ru/forum/?PAGE_NAME=read&FID=22&TID=358149");
 

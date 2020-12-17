@@ -24,7 +24,16 @@
 #ifndef __BFR_WEBSITEINTERFACE_H__
 #define __BFR_WEBSITEINTERFACE_H__
 
-#include <QtCore/QtCore>
+#include <QtCore/QUrl>
+#include <QtCore/QDateTime>
+#include <QtCore/QDataStream>
+#include <QtCore/QTextStream>
+#include <QtCore/QRandomGenerator>
+#include <QtCore/QStandardPaths>
+#include <QtCore/QDir>
+#ifdef BFR_DUMP_GENERATED_QML_IN_FILES
+#include <QtCore/QCoreApplication>
+#endif
 
 #include <common/resultcode.h>
 #include <website_backend/websiteinterface_fwd.h>

@@ -24,7 +24,7 @@
 #ifndef __BFR_HTMLTAG_H__
 #define __BFR_HTMLTAG_H__
 
-#include "gumbo-parser/src/gumbo.h"
+#include <gumbo-parser/src/gumbo.h>
 
 enum class HtmlTag {
 	HTML = GUMBO_TAG_HTML,

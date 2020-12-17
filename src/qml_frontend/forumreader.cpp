@@ -23,11 +23,13 @@
 */
 #include "forumreader.h"
 
-#include "common/logger.h"
-#include "common/filedownloader.h"
-#include "website_backend/gumboparserimpl.h"
-#include "website_backend/websiteinterface_qt.h"
-#include "parser_frontend/forumthreadpool.h"
+#include <QtCore/QFuture>
+
+#include <common/logger.h>
+#include <common/filedownloader.h>
+#include <website_backend/gumboparserimpl.h>
+#include <website_backend/websiteinterface_qt.h>
+#include <parser_frontend/forumthreadpool.h>
 
 namespace {
 template <typename T>

@@ -22,7 +22,8 @@
  * SOFTWARE.
 */
 #include "qtgumbodocument.h"
-#include "common/logger.h"
+
+#include <common/logger.h>
 
 #include <iostream>
 

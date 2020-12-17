@@ -24,11 +24,15 @@
 #ifndef __BFR_QTGUMBONODE_H__
 #define __BFR_QTGUMBONODE_H__
 
-#include <QtCore/QtCore>
+#include <QtCore/QString>
+#include <QtCore/QVector>
+#include <QtCore/QMap>
+#include <QtCore/QTextCodec>
 
 #include <memory>
 
-#include "gumbo-parser/src/gumbo.h"
+#include <gumbo-parser/src/gumbo.h>
+
 #include "html_tag.h"
 
 class QtGumboNode;

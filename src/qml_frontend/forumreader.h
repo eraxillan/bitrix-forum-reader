@@ -26,10 +26,10 @@
 
 #include "task.h"
 
-#include "common/resultcode.h"
-#include "common/filedownloader.h"
-#include "common/forumthreadurl.h"
-#include "website_backend/websiteinterface.h"
+#include <common/resultcode.h>
+#include <common/filedownloader.h>
+#include <common/forumthreadurl.h>
+#include <website_backend/websiteinterface.h>
 
 #include <concurrentqueue/blockingconcurrentqueue.h>
 

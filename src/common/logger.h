@@ -24,9 +24,9 @@
 #ifndef __BFR_LOGGER_H__
 #define __BFR_LOGGER_H__
 
-#include <QByteArray>
-#include <QString>
-#include <QDateTime>
+#include <QtCore/QByteArray>
+#include <QtCore/QString>
+#include <QtCore/QDateTime>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>

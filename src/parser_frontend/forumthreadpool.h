@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#ifndef FORUMTHREADPOOL_H
-#define FORUMTHREADPOOL_H
+#ifndef __BFR_FORUMTHREADPOOL_H__
+#define __BFR_FORUMTHREADPOOL_H__
 
 #include <common/resultcode.h>
 #include <common/logger.h>
@@ -81,4 +81,4 @@ signals:
 	void threadParseProgress(int pageNo, int pageCount);
 };
 
-#endif // FORUMTHREADPOOL_H
+#endif // __BFR_FORUMTHREADPOOL_H__
