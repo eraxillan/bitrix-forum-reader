@@ -40,6 +40,7 @@
 #include <qml_frontend/forumreader.h>
 
 // FIXME: update QML imports to modern versions
+// FIXME: make catch2 library a submodule and remove local copy
 // FIXME: minimize use of Qt containers, smart pointers and primitive types (use stdlib ones instead)
 // FIXME: move raw strings (error messages etc.) to separate file and get them thru new LocalizationManager class
 //

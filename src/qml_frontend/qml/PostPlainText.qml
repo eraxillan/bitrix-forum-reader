@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-import QtQuick 2.10;
+import QtQuick 2.15
 
 Text {
     id: dynTxtPost_63f18ed6e6c84c7c803ca7bd2b7c8a43;

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-import QtQuick 2.10;
+import QtQuick 2.15
 
 /*Video {
    id: video%1;

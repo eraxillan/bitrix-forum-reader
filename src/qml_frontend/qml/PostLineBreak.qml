@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-import QtQuick 2.10;
+import QtQuick 2.15
 
 Text {
     id: lineBreak_0b2f8da4a11c4b9a8ba2e642cc9e113e;

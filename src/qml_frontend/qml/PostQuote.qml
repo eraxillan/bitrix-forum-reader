@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-import QtQuick 2.10;
+import QtQuick 2.15
 
 Rectangle {
     id: rctQuote_d965b5e7c48a416aaeea7772888d02e4;

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-import QtQuick 2.10;
+import QtQuick 2.15
 
 Image {
     id: img_6d63cf96fdc747d591311cfa352b26e4;

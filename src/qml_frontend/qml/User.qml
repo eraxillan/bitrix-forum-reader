@@ -21,12 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-import QtQuick 2.10;
-import QtQuick.Layouts 1.3;
-import QtQuick.Controls 2.15;
-import QtQuick.Controls.Material 2.3;
-import QtQuick.Controls.Universal 2.3;
-import QtQuick.Window 2.2;
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Controls.Material 2.12
+import QtQuick.Controls.Universal 2.12
+import QtQuick.Window 2.15
 
 Column {
     id: clmnUserInfo_6afb4d56214b4bb69281bf9bbf60396b;

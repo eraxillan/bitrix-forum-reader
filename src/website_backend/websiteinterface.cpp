@@ -547,7 +547,7 @@ QString PostSpoiler::getQmlString(quint32 randomSeed) const {
 
 	QString qmlStr = readQmlFile("://qml/PostSpoiler.qml");
 
-	qmlStr.replace("import QtQuick 2.10;", "");
+	qmlStr.replace("import QtQuick 2.15", "");
 	qmlStr.replace("_fcdde97089594b218fbc925097a2f982", QString::number(randomSeed));
 	qmlStr.replace("_4d4282062caf43929173ac37159d230f", m_title);
 	qmlStr.replace("state: _d664d2ca198c40819fb4850253db6886;", spoilerQml);
@@ -584,7 +584,7 @@ QString PostQuote::getQmlString(quint32 randomSeed) const {
 
 	QString qmlStr = readQmlFile("://qml/PostQuote.qml");
 
-	qmlStr.replace("import QtQuick 2.10;", "");
+	qmlStr.replace("import QtQuick 2.15", "");
 	qmlStr.replace("_d965b5e7c48a416aaeea7772888d02e4", QString::number(randomSeed));
 	qmlStr.replace("_2ca6e4441d074fbebef439a882585113", titleEsc);
 	qmlStr.replace("_81318a4c46474759b9ebd6b0e94873aa", userNameEsc);
@@ -639,7 +639,7 @@ QString PostImage::getQmlString(quint32 randomSeed) const {
 		qmlStr = readQmlFile("://qml/PostAnimatedImage.qml");
 	}
 
-	qmlStr.replace("import QtQuick 2.10;", "");
+	qmlStr.replace("import QtQuick 2.15", "");
 	qmlStr.replace("_6d63cf96fdc747d591311cfa352b26e4", QString::number(randomSeed));
 	qmlStr.replace("_5b4898dbfff046a7ad6474e9b9155808", m_url);
 	return qmlStr;
@@ -663,7 +663,7 @@ QString PostLineBreak::getQmlString(quint32 randomSeed) const {
 #else
 	QString qmlStr = readQmlFile("://qml/PostLineBreak.qml");
 
-	qmlStr.replace("import QtQuick 2.10;", "");
+	qmlStr.replace("import QtQuick 2.15", "");
 	qmlStr.replace("_0b2f8da4a11c4b9a8ba2e642cc9e113e", QString::number(randomSeed));
 	qmlStr.replace("_51d55029cb9f49aabdb30ae957929ebc", BFR_DEBUG_FRAME_VISIBLE);
 	return qmlStr;
@@ -693,7 +693,7 @@ QString PostPlainText::getQmlString(quint32 randomSeed) const {
 	QString textEsc = QString(m_text).replace("'", "\\'");
 
 	// NOTE: Qt Creator editor requires this import statement, but Qt.createQmlObject() call will fail on it
-	qmlStr.replace("import QtQuick 2.10;", "");
+	qmlStr.replace("import QtQuick 2.15", "");
 
 	qmlStr.replace("_63f18ed6e6c84c7c803ca7bd2b7c8a43", QString::number(randomSeed));
 	qmlStr.replace("_da5eb852c7b64ceca937ddb810b0bcdc", textEsc);
@@ -733,7 +733,7 @@ QString PostRichText::getQmlString(quint32 randomSeed) const {
 	QString qmlStr = readQmlFile("://qml/PostRichText.qml");
 	QString textEsc = QString(m_text).replace("'", "\\'");
 
-	qmlStr.replace("import QtQuick 2.10;", "");
+	qmlStr.replace("import QtQuick 2.15", "");
 	qmlStr.replace("_b48bb9229e2545d28a3024bffdbae97f", QString::number(randomSeed));
 	qmlStr.replace("#FF00FF00", m_color);
 	qmlStr.replace("_e0b18a71c2ea460c8229a2b8019490d7", m_isBold ? "true" : "false");
@@ -874,7 +874,7 @@ QString PostVideo::getQmlString(quint32 randomSeed) const {
 #else
 	QString qmlStr = readQmlFile("://qml/PostVideo.qml");
 
-	qmlStr.replace("import QtQuick 2.10;", "");
+	qmlStr.replace("import QtQuick 2.15", "");
 	qmlStr.replace("_2f0a985471e44cd69925f80d37de946a", QString::number(randomSeed));
 	qmlStr.replace("_c66d930f7e324345ba9ae5741f3d4142", m_urlStr);
 	return qmlStr;
@@ -912,7 +912,7 @@ QString PostHyperlink::getQmlString(quint32 randomSeed) const {
 #else
 	QString qmlStr = readQmlFile("://qml/PostHyperlink.qml");
 
-	qmlStr.replace("import QtQuick 2.10;", "");
+	qmlStr.replace("import QtQuick 2.15", "");
 	qmlStr.replace("_0947683f69d64f0b9e37d78a2e2a9925", QString::number(randomSeed));
 	qmlStr.replace("_8f07025844744bbc84bf2c1868f58abd", m_title);
 	qmlStr.replace("_b93596dcbae045a18be44f67d45f22a8", m_urlStr);
