@@ -10,7 +10,7 @@ import Qt.labs.settings 1.0
 //import Fluid.Core 1.0 as FluidCore
 import Fluid.Controls 1.0 as FluidControls
 
-import ru.banki.reader 1.0
+import name.eraxillan.bfr 1.0
 import "../qml" as GenericUi
 
 

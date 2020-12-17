@@ -176,8 +176,8 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
 	}
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("post count: {}, reputation: {}, city: {}, all posts url: {}, registration date: {}", postCount,
-		reputation, cityStr, userAllPosts, registrationDate.toString(Qt::SystemLocaleShortDate));
+	ConsoleLogger->info("post count: {}, reputation: {}, city: {}, all posts url: {}, registration date: {}", postCount, reputation, cityStr,
+		userAllPosts, QLocale::system().toString(registrationDate, QLocale::ShortFormat));
 #endif
 
 	UserAdditionalInfo result;

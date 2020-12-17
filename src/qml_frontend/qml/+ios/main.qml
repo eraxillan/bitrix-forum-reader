@@ -7,7 +7,7 @@ import QtQuick.Controls.Universal 2.3
 import QtQuick.Window 2.2
 import Qt.labs.settings 1.0
 
-import ru.banki.reader 1.0
+import name.eraxillan.bfr 1.0
 
 ApplicationWindow {
     id:      wndMain

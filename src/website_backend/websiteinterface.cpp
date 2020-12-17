@@ -948,37 +948,31 @@ QString Post::getQmlString(quint32 randomSeed) const {
 
 #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
 #if defined(Q_OS_ANDROID)
-	QDir appDataDir = QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+	const QDir appDataDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
 	BFR_RETURN_VALUE_IF(!appDataDir.isReadable(), QString(), "unable to get application local data directory path!");
-
-	QString fullDirPath = appDataDir.path();
-	if (!fullDirPath.endsWith("/"))
-		fullDirPath += "/";
 
 	// FIXME: find a way to get access to the page and post number fields to the Post object;
 	//        as an option - implement "Property" interface in "Post" object and set page number and post index as properties
-	static int pageNo = 130;
+	static const int pageNo = 130;
 	static int index = 1;
-	Q_ASSERT(WriteTextFile(fullDirPath + "page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
+	const QString qmlFilePath = appDataDir.absoluteFilePath("page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml");
+
+	BFR_RETURN_VALUE_IF(!WriteTextFile(qmlFilePath, qmlStr), QString(), "unable to dump qml file!");
 	index++;
 
 #elif defined(Q_OS_IOS)
 	// FIXME: implement if possible
 #else
-	QDir appRootDir(qApp->applicationDirPath());
-	Q_ASSERT(appRootDir.isReadable());
-	Q_ASSERT(appRootDir.cd(BFR_QML_OUTPUT_DIR));
-
-	QString fullDirPath = appRootDir.path();
-	if (!fullDirPath.endsWith("/"))
-		fullDirPath += "/";
+	QDir appDataDir(qApp->applicationDirPath());
+	BFR_RETURN_VALUE_IF(!appDataDir.isReadable(), QString(), "unable to get application local data directory path!");
 
 	// FIXME: find a way to get access to the page and post number fields to the Post object;
 	//        as an option - implement "Property" interface in "Post" object and set page number and post index as properties
-	static int pageNo = 130;
+	static const int pageNo = 130;
 	static int index = 1;
-	Q_ASSERT(WriteTextFile(
-		fullDirPath + "page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml", qmlStr));
+	const QString qmlFilePath = appDataDir.absoluteFilePath("page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml");
+
+	BFR_RETURN_VALUE_IF(!WriteTextFile(qmlFilePath, qmlStr), QString(), "unable to dump qml file!");
 	index++;
 #endif
 #endif
