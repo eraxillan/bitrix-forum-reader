@@ -21,6 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
+#ifdef Q_OS_WINDOWS
+#define CATCH_CONFIG_COLOUR_WINDOWS
+#elif defined(Q_OS_UNIX)
+#define CATCH_CONFIG_COLOUR_ANSI
+#else
+#define CATCH_CONFIG_COLOUR_NONE
+#endif
+#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 
 #include <common/filedownloader.h>

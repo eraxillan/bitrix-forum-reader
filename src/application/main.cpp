@@ -25,19 +25,11 @@
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlFileSelector>
 
-#ifdef Q_OS_WINDOWS
-#define CATCH_CONFIG_COLOUR_WINDOWS
-#elif defined(Q_OS_UNIX)
-#define CATCH_CONFIG_COLOUR_ANSI
-#else
-#define CATCH_CONFIG_COLOUR_NONE
-#endif
-#define CATCH_CONFIG_RUNNER     // no generated main()
-#include "catch.hpp"
+#include <iostream>
 
 #include <common/logger.h>
 #include <common/forumthreadurl.h>
-#include <qml_frontend/forumreader.h>
+#include <forumreader.h>
 
 // FIXME: update QML imports to modern versions
 // FIXME: make catch2 library a submodule and remove local copy
@@ -128,22 +120,6 @@ int main(int argc, char *argv[]) {
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QGuiApplication app(argc, argv);
 
-	Catch::Session session;
-	int returnCode = session.applyCommandLine(argc, argv, Catch::Session::OnUnusedOptions::Ignore);
-	if (returnCode != 0)
-		return returnCode;
-	for (auto unusedOpt : session.unusedTokens()) {
-		if (unusedOpt.type == Catch::Clara::Parser::Token::LongOpt) {
-			if (unusedOpt.data == "test") {
-				int numFailed = session.run();
-				// NOTE: on Unices only the lower 8 bits are usually used, clamping
-				// the return value to 255 prevents false negative when some multiple
-				// of 256 tests has failed
-				return (numFailed < 0xff ? numFailed : 0xff);
-			}
-		}
-	}
-
 #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
 	// Application data on mobile platform must be stored
 	// in the specific directory only
@@ -167,6 +143,7 @@ int main(int argc, char *argv[]) {
 
 #if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
 		QDir appDir(qApp->applicationDirPath());
+		appDir.cdUp();
 		appDir.cdUp();
 		appDir.cd("thirdparty/fluid/qml");
 		engine.addImportPath(appDir.path());

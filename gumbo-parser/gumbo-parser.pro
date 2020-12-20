@@ -2,27 +2,12 @@ QT -= gui
 
 TARGET = gumbo-parser
 TEMPLATE = lib
-#CONFIG += staticlib
+CONFIG += dll
 VERSION = 0.10.1
 
+CONFIG -= debug_and_release debug_and_release_target
+
 #DEFINES += GUMBO_DEBUG
-
-#######################################################################################################################
-
-# Build mode (release by default)
-#buildmode = release
-#CONFIG(debug, debug|release):buildmode = debug
-
-#APP_PLATFORM = $$first( $$list( $$QMAKE_PLATFORM ) )
-#APP_ARCH = $$first( $$list( $$QT_ARCH ) )
-#APP_COMPILER = $$first( $$list( $$QMAKE_COMPILER ) )
-#APP_BUILD_DIR = $$PWD/../__BUILD__/gumbo/$${buildmode}/$${APP_PLATFORM}-$${APP_ARCH}-$${APP_COMPILER}
-
-# Output directories setup
-#DESTDIR     = $${APP_BUILD_DIR}
-#UI_DIR      = $${APP_BUILD_DIR}
-#OBJECTS_DIR = $${APP_BUILD_DIR}
-#MOC_DIR     = $${APP_BUILD_DIR}
 
 #######################################################################################################################
 
