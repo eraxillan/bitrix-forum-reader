@@ -651,6 +651,11 @@ QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode) {
 				userSignatureStr += "<img src='" + imageObj->m_url + "'/><br/>";
 				break;
 			}
+			case HtmlTag::WBR: {
+				// NOTE: by design word break is optional here
+				userSignatureStr += "<br/>";
+				break;
+			}
 			// TODO: implement other cases if discovered
 			default: {
 				BFR_RETURN_DEFAULT_IF(true, "Not implemented");

@@ -44,6 +44,7 @@
 // FIXME: save full post history to the LOCAL SQLite database
 // FIXME: add abitity to assign a note string to each forum user (e.g. "useless one")
 
+namespace {
 bool initLogLibrary() {
 	try {
 		std::cout << "initializing spdlog..." << std::endl;
@@ -101,6 +102,7 @@ bool setupQmlDumpDirectory(const QString &dumpDirPath) {
 	return true;
 }
 #endif
+} // namespace
 
 int main(int argc, char *argv[]) {
 	if (!initLogLibrary())
