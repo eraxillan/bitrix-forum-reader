@@ -49,7 +49,7 @@ QtGumboDocument::QtGumboDocument(QString rawData) {
 	QTextCodec *htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
+	SystemLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
 #endif
 
 	// Convert to UTF-8: Gumbo library understands only this encoding
@@ -130,7 +130,7 @@ static std::string handle_unknown_tag(GumboStringPiece *text) {
 	tagname = std::string(gsp.data, gsp.length);
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("UNKNOWN TAG: {}", tagname);
+	SystemLogger->info("UNKNOWN TAG: {}", tagname);
 #endif
 	return tagname;
 }

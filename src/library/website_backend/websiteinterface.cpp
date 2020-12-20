@@ -417,21 +417,21 @@ result_code::Type serializePosts(const bfr::PostList &posts) {
 		localDataDir += QDir::separator();
 	QDir localDataDirObj(localDataDir);
 	if (!localDataDirObj.exists()) {
-		ConsoleLogger->warn("Local data directory not exists, trying to create it...");
+		SystemLogger->warn("Local data directory not exists, trying to create it...");
 		if (!localDataDirObj.mkpath(localDataDir)) {
-			ConsoleLogger->error("Unable to create local data directory");
+			SystemLogger->error("Unable to create local data directory");
 			return result_code::Type::InputOutputError;
 		}
 
-		ConsoleLogger->info("Local data directory was successfully created");
+		SystemLogger->info("Local data directory was successfully created");
 	}
 
 	QString filePath = localDataDir + "bfr.dat";
-	ConsoleLogger->info("Forum posts database file path: {}", filePath.toStdString());
+	SystemLogger->info("Forum posts database file path: {}", filePath.toStdString());
 
 	QFile file(filePath);
 	if (!file.open(QIODevice::WriteOnly)) {
-		ConsoleLogger->error("Unable to create file '{}'", filePath);
+		SystemLogger->error("Unable to create file '{}'", filePath);
 		return result_code::Type::InputOutputError;
 	}
 
@@ -455,16 +455,16 @@ result_code::Type deserializePosts(bfr::PostList &posts) {
 		localDataDir += QDir::separator();
 	QDir localDataDirObj(localDataDir);
 	if (!localDataDirObj.exists()) {
-		ConsoleLogger->error("Local data directory not exists");
+		SystemLogger->error("Local data directory not exists");
 		return result_code::Type::InputOutputError;
 	}
 
 	QString filePath = localDataDir + "bfr.dat";
-	ConsoleLogger->info("Forum posts database file path: {}", filePath.toStdString());
+	SystemLogger->info("Forum posts database file path: {}", filePath.toStdString());
 
 	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly)) {
-		ConsoleLogger->error("Unable to open file '{}'", filePath);
+		SystemLogger->error("Unable to open file '{}'", filePath);
 		return result_code::Type::InputOutputError;
 	}
 
@@ -475,14 +475,14 @@ result_code::Type deserializePosts(bfr::PostList &posts) {
 	quint32 magicNumber = 0;
 	out >> magicNumber;
 	if (magicNumber != BFR_SERIALIZATION_MAGIC) {
-		ConsoleLogger->error("Invalid file format");
+		SystemLogger->error("Invalid file format");
 		return result_code::Type::InvalidFileFormat;
 	}
 
 	quint32 versionNumber = 0;
 	out >> versionNumber;
 	if (versionNumber != BFR_SERIALIZATION_VERSION) {
-		ConsoleLogger->error("Invalid file version");
+		SystemLogger->error("Invalid file version");
 		return result_code::Type::InvalidFileVersion;
 	}
 
@@ -802,19 +802,19 @@ for (int i = 0; i < jsonFormatsArray.size(); ++i)
 	}
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("--------------------------------------------------");
-	ConsoleLogger->info("Video width: {}", videoWidth);
-	ConsoleLogger->info("Video height: {}", videoHeight);
-	ConsoleLogger->info("Video codec: {}", videoCodecStr);
-	//        ConsoleLogger->info("Audio codec: {}", audioCodecStr);
-	ConsoleLogger->info("File format: {}", videoFormatNote);
-	//        ConsoleLogger->info("File extension: {}", videoFileExt);
-	ConsoleLogger->info("--------------------------------------------------");
+	SystemLogger->info("--------------------------------------------------");
+	SystemLogger->info("Video width: {}", videoWidth);
+	SystemLogger->info("Video height: {}", videoHeight);
+	SystemLogger->info("Video codec: {}", videoCodecStr);
+	//        SystemLogger->info("Audio codec: {}", audioCodecStr);
+	SystemLogger->info("File format: {}", videoFormatNote);
+	//        SystemLogger->info("File extension: {}", videoFileExt);
+	SystemLogger->info("--------------------------------------------------");
 #endif
 }
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-//    ConsoleLogger->info("Maximum resolution: {} x {}", maxVideoWidth, maxVideoHeight);
+//    SystemLogger->info("Maximum resolution: {} x {}", maxVideoWidth, maxVideoHeight);
 #endif
 
 return true;

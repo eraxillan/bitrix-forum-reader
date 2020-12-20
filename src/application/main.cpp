@@ -62,7 +62,7 @@ bool initLogLibrary() {
 		spdlog::set_pattern("[%^%L%$][%D %H:%M:%S.%e][%P:%t] %v");
 		spdlog::set_level(spdlog::level::trace);
 
-		ConsoleLogger->info("spdlog was successfully initialized");
+		SystemLogger->info("spdlog was successfully initialized");
 	}
 	// Exceptions will only be thrown upon failed logger or sink construction (not during logging)
 	catch (const spdlog::spdlog_ex &ex) {
@@ -74,7 +74,7 @@ bool initLogLibrary() {
 }
 
 void deinitLogLibrary() {
-	ConsoleLogger->info("deinitializing spdlog...");
+	SystemLogger->info("deinitializing spdlog...");
 
 	// Release and close all loggers
 	spdlog::drop_all();
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
 
 		exitCode = app.exec();
 	} catch (...) {
-		ConsoleLogger->critical("ERROR: unhandled exception caught!");
+		SystemLogger->critical("ERROR: unhandled exception caught!");
 
 		deinitLogLibrary();
 		return 1;

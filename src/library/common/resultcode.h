@@ -59,8 +59,8 @@ inline bool failed(Type rc) { return !succeeded(rc); }
 
 #define BFR_DECLARE_DEFAULT_RETURN_TYPE_N_VALUE(Type, value) static Type __invalid_return_value__ = value;
 #define BFR_DECLARE_DEFAULT_RETURN_TYPE(Type) static Type __invalid_return_value__;
-#define BFR_RETURN_VOID_IF(cond, msg) { if (cond) { Q_ASSERT_X(0, Q_FUNC_INFO, msg); ConsoleLogger->error("{}: assert failure with message '{}'", Q_FUNC_INFO, msg); return; } }
-#define BFR_RETURN_DEFAULT_IF(cond, msg) { if (cond) { Q_ASSERT_X(0, Q_FUNC_INFO, msg); ConsoleLogger->error("{}: assert failure with message '{}'", Q_FUNC_INFO, msg); return __invalid_return_value__; } }
-#define BFR_RETURN_VALUE_IF(cond, returnValue, msg) { if (cond) { Q_ASSERT_X(0, Q_FUNC_INFO, msg); ConsoleLogger->error("{}: assert failure with message '{}'", Q_FUNC_INFO, msg); return returnValue; } }
+#define BFR_RETURN_VOID_IF(cond, msg) { if (cond) { Q_ASSERT_X(0, Q_FUNC_INFO, msg); SystemLogger->error("{}: assert failure with message '{}'", Q_FUNC_INFO, msg); return; } }
+#define BFR_RETURN_DEFAULT_IF(cond, msg) { if (cond) { Q_ASSERT_X(0, Q_FUNC_INFO, msg); SystemLogger->error("{}: assert failure with message '{}'", Q_FUNC_INFO, msg); return __invalid_return_value__; } }
+#define BFR_RETURN_VALUE_IF(cond, returnValue, msg) { if (cond) { Q_ASSERT_X(0, Q_FUNC_INFO, msg); SystemLogger->error("{}: assert failure with message '{}'", Q_FUNC_INFO, msg); return returnValue; } }
 
 #endif // __BFR_RESULTCODE_H__

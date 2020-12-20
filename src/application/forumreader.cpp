@@ -36,15 +36,15 @@ template <typename T>
 void dumpFutureObj(QFuture<T> future, QString name)
 {
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("----------------------------------------------------");
-	ConsoleLogger->info("Future name: {}", name);
-	ConsoleLogger->info("Future is started: {}", future.isStarted());
-	ConsoleLogger->info("Future is running: {}", future.isRunning());
-	ConsoleLogger->info("Future is finished: {}", future.isFinished());
-	ConsoleLogger->info("Future is paused: {}", future.isPaused());
-	ConsoleLogger->info("Future is canceled: {}", future.isCanceled());
-	ConsoleLogger->info("Future has result: {}", future.isResultReadyAt(0));
-	ConsoleLogger->info("----------------------------------------------------");
+	SystemLogger->info("----------------------------------------------------");
+	SystemLogger->info("Future name: {}", name);
+	SystemLogger->info("Future is started: {}", future.isStarted());
+	SystemLogger->info("Future is running: {}", future.isRunning());
+	SystemLogger->info("Future is finished: {}", future.isFinished());
+	SystemLogger->info("Future is paused: {}", future.isPaused());
+	SystemLogger->info("Future is canceled: {}", future.isCanceled());
+	SystemLogger->info("Future has result: {}", future.isResultReadyAt(0));
+	SystemLogger->info("----------------------------------------------------");
 #else
 	Q_UNUSED(future);
 	Q_UNUSED(name);
@@ -61,7 +61,7 @@ ForumReader::ForumReader()
 		&ForumReader::threadContentParseProgress);
 
 	m_producerThread = std::thread([&, this, &m_tasks = m_tasks]() {
-		ConsoleLogger->info("Producer thread started");
+		SystemLogger->info("Producer thread started");
 
 		ForumThreadPool &pool = ForumThreadPool::globalInstance();
 
@@ -71,7 +71,7 @@ ForumReader::ForumReader()
 			// NOTE: without timeout queue will wait for new item forever, and thread will never finish!
 			if (m_tasks.wait_dequeue_timed(task, std::chrono::milliseconds(100))) {
 				// Process task
-				ConsoleLogger->info("Processing task");
+				SystemLogger->info("Processing task");
 
 				switch (task.action()) {
 					case BfrTask::Action::ParseForumThreadPageCount: {
@@ -132,7 +132,7 @@ ForumReader::ForumReader()
 						break;
 					}
 					default: {
-						ConsoleLogger->error("Invalid task action got: {}", static_cast<int>(task.action()));
+						SystemLogger->error("Invalid task action got: {}", static_cast<int>(task.action()));
 						break;
 					}
 				}
@@ -141,17 +141,17 @@ ForumReader::ForumReader()
 			}
 		}
 
-		ConsoleLogger->info("Producer thread finished");
+		SystemLogger->info("Producer thread finished");
 	});
 }
 
 ForumReader::~ForumReader() {
-	ConsoleLogger->info("ForumReader dtor started");
+	SystemLogger->info("ForumReader dtor started");
 
 	m_timeToExit = true;
 	m_producerThread.join();
 
-	ConsoleLogger->info("ForumReader dtor finished");
+	SystemLogger->info("ForumReader dtor finished");
 }
 
 QString ForumReader::applicationDirPath() const {
@@ -164,13 +164,13 @@ QString ForumReader::applicationDirPath() const {
 QUrl ForumReader::convertToUrl(QString urlStr) const { return QUrl(urlStr); }
 
 void ForumReader::startPageCountAsync(ForumThreadUrl *url) {
-	ConsoleLogger->info("Enqueue forum thread page count parse task");
+	SystemLogger->info("Enqueue forum thread page count parse task");
 	m_pendingTaskCount.fetch_add(1, std::memory_order_release);
 	m_tasks.enqueue(BfrTask(BfrTask::Action::ParseForumThreadPageCount, url->data()));
 }
 
 void ForumReader::startPageParseAsync(ForumThreadUrl *url, int pageNo) {
-	ConsoleLogger->info("Enqueue forum thread page posts parse task");
+	SystemLogger->info("Enqueue forum thread page posts parse task");
 	m_pendingTaskCount.fetch_add(1, std::memory_order_release);
 	m_tasks.enqueue(BfrTask(BfrTask::Action::ParseForumThreadPagePosts, url->data(), pageNo));
 
@@ -181,7 +181,7 @@ void ForumReader::startPageParseAsync(ForumThreadUrl *url, int pageNo) {
 }
 
 void ForumReader::startThreadUsersParseAsync(ForumThreadUrl *url) {
-	ConsoleLogger->info("Enqueue forum thread users parse task");
+	SystemLogger->info("Enqueue forum thread users parse task");
 	m_pendingTaskCount.fetch_add(1, std::memory_order_release);
 	m_tasks.enqueue(BfrTask(BfrTask::Action::ExtractForumThreadUsers, url->data()));
 
@@ -193,7 +193,7 @@ void ForumReader::startThreadUsersParseAsync(ForumThreadUrl *url) {
 void ForumReader::onForumPageDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("{}: {} bytes received, from {} bytes total", Q_FUNC_INFO, bytesReceived, bytesTotal);
+	SystemLogger->info("{}: {} bytes received, from {} bytes total", Q_FUNC_INFO, bytesReceived, bytesTotal);
 #endif
 
 	// NOTE: this field is unreliable source of data length, often it is just -1

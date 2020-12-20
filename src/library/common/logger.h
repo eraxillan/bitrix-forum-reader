@@ -38,7 +38,7 @@
 #include <thirdparty/spdlog/sinks/windebug_sink.h>
 #endif
 
-#define ConsoleLogger spdlog::get("console")
+#define SystemLogger spdlog::get("console")
 
 // FIXME: don't work
 //FMT_DISABLE_CONVERSION_TO_INT(QByteArray);

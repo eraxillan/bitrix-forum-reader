@@ -60,7 +60,7 @@ void ForumPageParser::printTagsRecursively(QtGumboNodePtr node, int &level) {
 	if (node->hasClassAttribute())
 		classAttrValue = ", class = " + node->getClassAttribute();
 
-	ConsoleLogger->info("{} {} {} {}", levelStr, node->getTagName(), idAttrValue, classAttrValue);
+	SystemLogger->info("{} {} {} {}", levelStr, node->getTagName(), idAttrValue, classAttrValue);
 
 	QtGumboNodes children = node->getChildren();
 	for (auto iChild = children.begin(); iChild != children.end(); ++iChild) {
@@ -200,7 +200,7 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
 	}
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("post count: {}, reputation: {}, city: {}, all posts url: {}, registration date: {}", postCount, reputation, cityStr,
+	SystemLogger->info("post count: {}, reputation: {}, city: {}, all posts url: {}, registration date: {}", postCount, reputation, cityStr,
 		userAllPosts, QLocale::system().toString(registrationDate, QLocale::ShortFormat));
 #endif
 
@@ -269,10 +269,10 @@ UserPtr ForumPageParser::getPostUser(QtGumboNodePtr trNode1) {
 	PostImagePtr userAvatar = getUserAvatar(userInfoNode);
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info(
+	SystemLogger->info(
 		"User info: id = {}, name = {}, profile url: {}", ubi.m_id, ubi.m_name, ubi.m_profileUrl.toDisplayString());
 	if (userAvatar)
-		ConsoleLogger->info(
+		SystemLogger->info(
 			"User avatar info: url = {}, size = {} x {}", userAvatar->m_url, userAvatar->m_width, userAvatar->m_height);
 #endif
 
@@ -360,11 +360,11 @@ PostPtr ForumPageParser::getPostValue(QtGumboNodePtr trNode1) {
 	lastEditStr = lastEditStr.replace("/profile/", g_bankiRuHost + "/profile/");
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("Post:");
-	ConsoleLogger->info("	ID: {}", id);
+	SystemLogger->info("Post:");
+	SystemLogger->info("	ID: {}", id);
 	if (!userSignatureStr.isEmpty())
-		ConsoleLogger->info("   User signature: {}", userSignatureStr);
-	ConsoleLogger->info("	Date: {}", postDate);
+		SystemLogger->info("   User signature: {}", userSignatureStr);
+	SystemLogger->info("	Date: {}", postDate);
 #endif
 
 	postInfo->m_id = id;
@@ -979,20 +979,20 @@ PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const {
 	QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("-------------------------------------");
-	ConsoleLogger->info("Start index: {}", tbodyTrTdNodeChildIndex);
+	SystemLogger->info("-------------------------------------");
+	SystemLogger->info("Start index: {}", tbodyTrTdNodeChildIndex);
 	for (int i = 0; i < tbodyTrTdChildren.size(); ++i) {
 		const QString idxString = i == tbodyTrTdNodeChildIndex ? QString("[ *") + QString::number(i) + QString("* ]")
 															   : QString("[ ") + QString::number(i) + QString(" ]");
 
 		if (tbodyTrTdChildren[i]->isElement())
-			ConsoleLogger->info("{} Element: {}", idxString, tbodyTrTdChildren[i]->getTagName());
+			SystemLogger->info("{} Element: {}", idxString, tbodyTrTdChildren[i]->getTagName());
 		else if (tbodyTrTdChildren[i]->isText())
-			ConsoleLogger->info("{} Text: {}", idxString, tbodyTrTdChildren[i]->getInnerText());
+			SystemLogger->info("{} Text: {}", idxString, tbodyTrTdChildren[i]->getInnerText());
 		else if (!tbodyTrTdChildren[i]->isComment() && !tbodyTrTdChildren[i]->isWhitespace())
-			ConsoleLogger->info("{} Unknown item", idxString);
+			SystemLogger->info("{} Unknown item", idxString);
 	}
-	ConsoleLogger->info("-------------------------------------");
+	SystemLogger->info("-------------------------------------");
 #endif
 
 	parseMessage(tbodyTrTdChildren.mid(tbodyTrTdNodeChildIndex), result->m_data);
@@ -1027,18 +1027,18 @@ PostSpoilerPtr ForumPageParser::parseSpoiler(QtGumboNodePtr tableNode) const {
 	QtGumboNodes tbodyTrTdChildren = tbodyTrTdNode->getChildren(false);
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("-------------------------------------");
+	SystemLogger->info("-------------------------------------");
 	for (int i = 0; i < tbodyTrTdChildren.size(); ++i) {
 		const QString idxString = QString("[ ") + QString::number(i) + QString(" ]");
 
 		if (tbodyTrTdChildren[i]->isElement())
-			ConsoleLogger->info("{} Element: {}", idxString, tbodyTrTdChildren[i]->getTagName());
+			SystemLogger->info("{} Element: {}", idxString, tbodyTrTdChildren[i]->getTagName());
 		else if (tbodyTrTdChildren[i]->isText())
-			ConsoleLogger->info("{} Text: {}", idxString, tbodyTrTdChildren[i]->getInnerText());
+			SystemLogger->info("{} Text: {}", idxString, tbodyTrTdChildren[i]->getInnerText());
 		else if (!tbodyTrTdChildren[i]->isComment() && !tbodyTrTdChildren[i]->isWhitespace())
-			ConsoleLogger->info("{} Unknown item", idxString);
+			SystemLogger->info("{} Unknown item", idxString);
 	}
-	ConsoleLogger->info("-------------------------------------");
+	SystemLogger->info("-------------------------------------");
 #endif
 
 	parseMessage(tbodyTrTdChildren, result->m_data);
@@ -1057,7 +1057,7 @@ QByteArray convertHtmlToUft8(QByteArray rawHtmlData) {
 	QTextCodec *htmlCodec = QTextCodec::codecForHtml(rawHtmlData);
 	BFR_RETURN_DEFAULT_IF(!htmlCodec, "No HTML codec found");
 #ifdef BFR_PRINT_DEBUG_OUTPUT
-	ConsoleLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
+	SystemLogger->info("HTML encoding/charset is '{}'", htmlCodec->name().toStdString());
 #endif
 	QString resultStr = htmlCodec->toUnicode(rawHtmlData);
 	result = resultStr.toUtf8();

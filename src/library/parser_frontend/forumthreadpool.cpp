@@ -71,36 +71,36 @@ result_code::Type ForumThreadPool::getForumThreadPageCount(ForumThreadUrlData ur
 	if (m_threadPageCountCollection.contains(urlData)) {
 		pageCount = m_threadPageCountCollection.value(urlData);
 
-		ConsoleLogger->debug(
+		SystemLogger->debug(
 			"Got forum thread '{}' page count ({}) from pagecount-cache", url->firstPageUrl(), pageCount);
 		return result_code::Type::Ok;
 	}
 
 	// 1) Download the first forum web page
-	ConsoleLogger->debug(
+	SystemLogger->debug(
 		"Forum thread '{}' was not parsed yet, no page count in the pagecount-cache", url->firstPageUrl());
-	ConsoleLogger->debug("Downloading first page of forum thread '{}'...", url->firstPageUrl());
+	SystemLogger->debug("Downloading first page of forum thread '{}'...", url->firstPageUrl());
 	QByteArray htmlRawData;
 	BFR_RETURN_VALUE_IF(
 		!FileDownloader::downloadUrl(url->firstPageUrl(), htmlRawData,
 			std::bind(&ForumThreadPool::onDownloadProgress, this, std::placeholders::_1, std::placeholders::_2)),
 		result_code::Type::NetworkError, "Unable to download first forum thread page");
-	ConsoleLogger->debug("Forum thread '{}' first page has been downloaded", url->firstPageUrl());
+	SystemLogger->debug("Forum thread '{}' first page has been downloaded", url->firstPageUrl());
 
 	// 2) Parse the page HTML to get the page count
 	bfr::ForumPageParser fpp;
 	int pageCountTemp = -1;
-	ConsoleLogger->debug("Parsing first page of forum thread '{}'...", url->firstPageUrl());
+	SystemLogger->debug("Parsing first page of forum thread '{}'...", url->firstPageUrl());
 	result_code::Type result = fpp.getPageCount(htmlRawData, pageCountTemp);
 	BFR_RETURN_VALUE_IF(result_code::failed(result), result, "Unable to parse first forum thread page");
-	ConsoleLogger->debug("Forum thread '{}' first page has been parsed", url->firstPageUrl());
+	SystemLogger->debug("Forum thread '{}' first page has been parsed", url->firstPageUrl());
 
 	// 4) Update cache
 	pageCount = pageCountTemp;
 	m_threadPageCountCollection.insert(urlData, pageCount);
-	ConsoleLogger->debug(
+	SystemLogger->debug(
 		"Forum thread '{}' page count ({}) was added to pagecount-cache", url->firstPageUrl(), pageCount);
-	ConsoleLogger->debug("New size of pagecount-cache: {} bytes", pageCountCacheSize());
+	SystemLogger->debug("New size of pagecount-cache: {} bytes", pageCountCacheSize());
 	return result_code::Type::Ok;
 }
 
@@ -111,44 +111,44 @@ result_code::Type ForumThreadPool::getForumPagePosts(ForumThreadUrlData urlData,
 		if (m_threadPagePostCollection.value(urlData).contains(pageNo)) {
 			posts = m_threadPagePostCollection.value(urlData).value(pageNo);
 
-			ConsoleLogger->debug("Got forum thread '{}' page posts (size = {}) from pageposts-cache",
+			SystemLogger->debug("Got forum thread '{}' page posts (size = {}) from pageposts-cache",
 				url->pageUrl(pageNo), posts.size());
 			return result_code::Type::Ok;
 		}
 	}
 
 	// 1) Download the first forum web page
-	ConsoleLogger->debug(
+	SystemLogger->debug(
 		"Forum thread '{}' was not parsed yet, no page posts in the pageposts-cache", url->pageUrl(pageNo));
-	ConsoleLogger->debug("Downloading first page of forum thread '{}'...", url->pageUrl(pageNo));
+	SystemLogger->debug("Downloading first page of forum thread '{}'...", url->pageUrl(pageNo));
 	QByteArray htmlRawData;
 	BFR_RETURN_VALUE_IF(
 		!FileDownloader::downloadUrl(url->pageUrl(pageNo), htmlRawData,
 			std::bind(&ForumThreadPool::onDownloadProgress, this, std::placeholders::_1, std::placeholders::_2)),
 		result_code::Type::NetworkError, "Unable to download specified forum thread page");
-	ConsoleLogger->debug("Forum thread '{}' specified page has been downloaded", url->pageUrl(pageNo));
+	SystemLogger->debug("Forum thread '{}' specified page has been downloaded", url->pageUrl(pageNo));
 
 	// 2) Parse the page HTML to get the page count
 	bfr::ForumPageParser fpp;
 	int pageCount = -1;
-	ConsoleLogger->debug("Parsing specified page of forum thread '{}': page count...", url->pageUrl(pageNo));
+	SystemLogger->debug("Parsing specified page of forum thread '{}': page count...", url->pageUrl(pageNo));
 	result_code::Type result = fpp.getPageCount(htmlRawData, pageCount);
 	BFR_RETURN_VALUE_IF(result_code::failed(result), result, "Unable to parse specified forum thread page");
-	ConsoleLogger->debug("Forum thread '{}' specified page has been parsed: page count", url->pageUrl(pageNo));
+	SystemLogger->debug("Forum thread '{}' specified page has been parsed: page count", url->pageUrl(pageNo));
 
 	// 3) Parse the page HTML to get the page user posts
 	bfr::PostList postsTemp;
-	ConsoleLogger->debug("Parsing specified page of forum thread '{}': page posts...", url->pageUrl(pageNo));
+	SystemLogger->debug("Parsing specified page of forum thread '{}': page posts...", url->pageUrl(pageNo));
 	result = fpp.getPagePosts(htmlRawData, postsTemp);
 	BFR_RETURN_VALUE_IF(result_code::failed(result), result, "Unable to parse specified forum thread page");
-	ConsoleLogger->debug("Forum thread '{}' specified page has been parsed: page posts", url->pageUrl(pageNo));
+	SystemLogger->debug("Forum thread '{}' specified page has been parsed: page posts", url->pageUrl(pageNo));
 
 	// 4) Update cache
 	m_threadPagePostCollection[urlData][pageNo] = postsTemp;
 	posts.swap(postsTemp);
-	ConsoleLogger->debug(
+	SystemLogger->debug(
 		"Forum thread '{}' page posts (count: {}) was added to pageposts-cache", url->pageUrl(pageNo), posts.size());
-	ConsoleLogger->debug("New size of pageposts-cache: {} bytes", pagePostsCacheSize());
+	SystemLogger->debug("New size of pageposts-cache: {} bytes", pagePostsCacheSize());
 	return result_code::Type::Ok;
 }
 
@@ -172,6 +172,6 @@ result_code::Type ForumThreadPool::getForumThreadPosts(ForumThreadUrlData urlDat
 		emit threadParseProgress(i, pageCount);
 	}
 
-	ConsoleLogger->debug("Forum thread '{}' posts has been parsed", url->firstPageUrl());
+	SystemLogger->debug("Forum thread '{}' posts has been parsed", url->firstPageUrl());
 	return result_code::Type::Ok;
 }
