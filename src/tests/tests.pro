@@ -58,6 +58,7 @@ SOURCES += \
 INCLUDEPATH += $$TOPDIR/thirdparty
 INCLUDEPATH += $$TOPDIR/gumbo-parser/src
 INCLUDEPATH += $$TOPDIR/thirdparty/spdlog/include
+INCLUDEPATH += $$TOPDIR/thirdparty/catch2
 
 windows {
     # Windows (Desktop, X86_64, static libraries)
