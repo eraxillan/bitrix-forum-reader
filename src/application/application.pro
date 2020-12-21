@@ -15,7 +15,7 @@ BFR_INCLUDE_DIR = $$TOPDIR/src/library
 BFR_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../src/library)
 # Thirdparty libraries
 FLUID_OUT_DIR = $$clean_path($$OUT_PWD/../../thirdparty/fluid/qml)
-GUMBO_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../gumbo-parser)
+GUMBO_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../thirdparty/gumbo-parser)
 
 #######################################################################################################################
 # Platform-specific setup
@@ -163,7 +163,7 @@ CONFIG(debug, debug|release) {
 #   2) cURL library (compiled with OpenSSL support) - optionally
 #   3) Gumbo HTML5 parser library
 
-INCLUDEPATH += $$TOPDIR/gumbo-parser/src
+INCLUDEPATH += $$TOPDIR/thirdparty/gumbo-parser/src
 INCLUDEPATH += $$TOPDIR/thirdparty/spdlog/include
 INCLUDEPATH += $$TOPDIR/thirdparty
 

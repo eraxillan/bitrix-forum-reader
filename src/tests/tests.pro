@@ -16,7 +16,8 @@ TOPDIR = $$clean_path($$PWD/../..)
 # Our library
 BFR_INCLUDE_DIR = $$TOPDIR/src/library
 BFR_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../src/library)
-GUMBO_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../gumbo-parser)
+# Thirdparty libraries
+GUMBO_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../thirdparty/gumbo-parser)
 
 #######################################################################################################################
 
@@ -57,7 +58,7 @@ SOURCES += \
 #   3) Gumbo HTML5 parser library
 
 INCLUDEPATH += $$TOPDIR/thirdparty
-INCLUDEPATH += $$TOPDIR/gumbo-parser/src
+INCLUDEPATH += $$TOPDIR/thirdparty/gumbo-parser/src
 INCLUDEPATH += $$TOPDIR/thirdparty/spdlog/include
 INCLUDEPATH += $$TOPDIR/thirdparty/catch2
 

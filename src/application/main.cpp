@@ -31,8 +31,8 @@
 #include <common/forumthreadurl.h>
 #include <forumreader.h>
 
-// FIXME: minimize use of Qt containers, smart pointers and primitive types (use stdlib ones instead)
 // FIXME: move raw strings (error messages etc.) to separate file and get them thru new LocalizationManager class
+// FIXME: minimize use of Qt containers, smart pointers and primitive types (use stdlib ones instead)
 // FIXME: enforce constness
 // FIXME: enforce strict C++ compiler warnings
 //

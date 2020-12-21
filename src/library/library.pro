@@ -14,7 +14,7 @@ CONFIG -= debug_and_release debug_and_release_target
 
 TOPDIR = $$clean_path($$PWD/../..)
 FLUID_OUT_DIR = $$clean_path($$OUT_PWD/../../thirdparty/fluid/qml)
-GUMBO_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../gumbo-parser)
+GUMBO_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../thirdparty/gumbo-parser)
 
 #######################################################################################################################
 # Platform-specific setup
@@ -128,7 +128,7 @@ CONFIG(debug, debug|release) {
 #   2) cURL library (compiled with OpenSSL support)
 #   3) Gumbo HTML5 parser library
 
-INCLUDEPATH += $$TOPDIR/gumbo-parser/src
+INCLUDEPATH += $$TOPDIR/thirdparty/gumbo-parser/src
 INCLUDEPATH += $$TOPDIR/thirdparty/spdlog/include
 INCLUDEPATH += $$TOPDIR/thirdparty
 
