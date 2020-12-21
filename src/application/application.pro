@@ -49,7 +49,7 @@ android {
 #######################################################################################################################
 
 # General compiler options
-CONFIG += c++17
+CONFIG += c++17 strict_c++ warn_on
 INCLUDEPATH += $$PWD
 INCLUDEPATH += $$TOPDIR
 INCLUDEPATH += $$BFR_INCLUDE_DIR

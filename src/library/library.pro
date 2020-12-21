@@ -23,7 +23,7 @@ GUMBO_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../gumbo-parser)
 #######################################################################################################################
 
 # General compiler options
-CONFIG += c++17
+CONFIG += c++17 strict_c++ warn_on
 INCLUDEPATH += "."
 INCLUDEPATH += $$TOPDIR
 
