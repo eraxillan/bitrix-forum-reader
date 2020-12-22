@@ -97,6 +97,9 @@ windows {
     } else {
         ARCH = x64
     }
+
+    # On Windows libraries have different suffixes for debug and release modes
+    CONFIG(debug, debug|release): SUFFIX = d
 } else:macx {
     # NOTE: modern macOS are 64-bit
     ARCH = x64
@@ -116,11 +119,6 @@ windows {
     ARCH = arm64
 } else {
     error("Unsupported OS")
-}
-
-# ... and have different suffixes for debug and release modes
-CONFIG(debug, debug|release) {
-    SUFFIX = d
 }
 
 # Link with:
