@@ -94,11 +94,13 @@ CONFIG(debug, debug|release) {
 SOURCES += \
     forumreader.cpp \
     task.cpp \
-    main.cpp
+    main.cpp \
+    translator.cpp
 
 HEADERS += \
     forumreader.h \
-    task.h
+    task.h \
+    translator.h
 
 QML_FILES += \
     qml/+android/main.qml \
@@ -291,6 +293,29 @@ QML_DESIGNER_IMPORT_PATH =
 
 # Default rules for deployment
 include($$TOPDIR/src/deployment.pri)
+
+#######################################################################################################################
+# Internationalization
+
+# List of source files containing strings for translation
+
+# NOTE: that way those files will be skipped by C++ compiler
+lupdate_only {
+    SOURCES += $$QML_FILES
+
+    SOURCES += \
+        $$TOPDIR/src/library/website_backend/gumboparserimpl.cpp \
+        $$TOPDIR/src/library/website_backend/websiteinterface.cpp
+}
+
+CONFIG += lrelease embed_translations
+
+TRANSLATIONS += \
+    qml/i18n/base.ts \
+    qml/i18n/qml_en.ts \
+    qml/i18n/qml_ru.ts
+
+#######################################################################################################################
 
 # FIXME: add x86/x86_64 architectures too
 ANDROID_ABIS = armeabi-v7a arm64-v8a

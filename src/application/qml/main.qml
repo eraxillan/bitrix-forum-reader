@@ -41,7 +41,7 @@ ApplicationWindow {
     visible: true
     width:   Screen.width
     height:  Screen.height
-    title:   qsTr("Bitrix Forum Reader: Desktop version")
+    title:   qsTranslate("Desktop_Main", "Bitrix Forum Reader: Desktop version")
     color:   "white"
 
     function dp(x) { return x; }
@@ -111,7 +111,7 @@ ApplicationWindow {
             qmlInit = true;
             pageLoaded = true;
 
-            snbrMain.open(qsTr("Page has been loaded"));
+            snbrMain.open(qsTranslate("Desktop_Main", "Page has been loaded"));
         }
     }
 

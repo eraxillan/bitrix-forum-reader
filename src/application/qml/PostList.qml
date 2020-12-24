@@ -189,7 +189,7 @@ ListView {
         Text {
             anchors.centerIn: parent
             renderType: Text.NativeRendering
-            text: "Footer"
+            //text: "Footer"
         }
     }
 }

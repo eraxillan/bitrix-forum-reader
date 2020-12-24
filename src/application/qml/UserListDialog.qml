@@ -65,7 +65,7 @@ Dialog {
         FluidControls.DialogLabel {
             id: dialogLabel
             wrapMode: Text.Wrap
-            text: qsTr("Manage users");
+            text: qsTranslate("UserListDialog", "Manage users");
 
             Layout.fillWidth: true
         }
@@ -169,7 +169,7 @@ Dialog {
                     Column {
                         Text {
                            id: txtAuthorRegistrationDate_2;
-                           text: "Registered: " + model.registrationDate;
+                           text: qsTranslate("UserListDialog", "Registered: ") + model.registrationDate;
 
                            font.pointSize: 14;
                         }
@@ -177,49 +177,49 @@ Dialog {
                         Text {
                             id: txtAuthorCity_2;
                             visible: '%9' !== "";
-                            text: "City: " + model.city;
+                            text: qsTranslate("UserListDialog", "City: ") + model.city;
 
                             font.pointSize: 14;
                         }
 
                         Text {
                             id: txtAuthorPostCount_2;
-                            text: "Total posts: " + model.globalPostCount;
+                            text: qsTranslate("UserListDialog", "Total posts: ") + model.globalPostCount;
 
                             font.pointSize: 14;
                         }
 
                         Text {
                             id: txtAuthorThreadPostCount_2;
-                            text: "Thread posts: " + model.threadPostCount;
+                            text: qsTranslate("UserListDialog", "Thread posts: ") + model.threadPostCount;
 
                             font.pointSize: 14;
                         }
 
                         Text {
                             id: txtAuthorReputation_2;
-                            text: "Total reputation: " + model.globalReputation;
+                            text: qsTranslate("UserListDialog", "Total reputation: ") + model.globalReputation;
 
                             font.pointSize: 14;
                         }
 
                         Text {
                             id: txtAuthorThreadReputation_2;
-                            text: "Thread reputation: " + model.threadReputation;
+                            text: qsTranslate("UserListDialog", "Thread reputation: ") + model.threadReputation;
 
                             font.pointSize: 14;
                         }
 
                         Text {
                             id: txtAuthorRatio_2;
-                            text: "Ratio: " + model.ratio;
+                            text: qsTranslate("UserListDialog", "Ratio: ") + model.ratio;
 
                             font.pointSize: 14;
                         }
 
                         Text {
                             id: txtAuthorThreadRatio_2;
-                            text: "Thread ratio: " + model.threadRatio;
+                            text: qsTranslate("UserListDialog", "Thread ratio: ") + model.threadRatio;
 
                             font.pointSize: 14;
                         }

@@ -48,7 +48,7 @@ FluidControls.NavigationDrawer {
         spacing: 0;
 
         FluidControls.TitleLabel {
-            text: qsTr("Basic settings");
+            text: qsTranslate("Android_NavigationPanel", "Basic settings");
 
             //Layout.alignment: Qt.AlignHCenter;
             Layout.leftMargin: dp(20);
@@ -62,7 +62,7 @@ FluidControls.NavigationDrawer {
 
             enabled: true;
             checked: true;
-            text: qsTr("Show images");
+            text: qsTranslate("Android_NavigationPanel", "Show images");
         }
 
         Switch {
@@ -73,7 +73,7 @@ FluidControls.NavigationDrawer {
 
             enabled: true;
             checked: true;
-            text: qsTr("Save page locally");
+            text: qsTranslate("Android_NavigationPanel", "Save page locally");
         }
     }
 

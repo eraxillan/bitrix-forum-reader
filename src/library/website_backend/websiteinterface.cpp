@@ -569,6 +569,7 @@ uint PostQuote::getHash(uint seed) const {
 }
 
 QString PostQuote::getQmlString(quint32 randomSeed) const {
+	const QString QUOTE_WRITE_VERB = QCoreApplication::translate("Post", "wrote");
 #ifndef BFR_SHOW_QUOTE
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostQuote'; }\n");
@@ -935,7 +936,7 @@ bool Post::isValid() const { return (m_id > 0) && (m_likeCounter >= 0) && !m_dat
 
 uint Post::getHash(uint seed) const {
 	uint dataHash = 0;
-	for (auto obj : m_data)
+	for (const auto &obj : m_data)
 		dataHash ^= obj->getHash(seed);
 
 	return qHash(m_id, seed) ^ qHash(m_likeCounter, seed) ^ dataHash ^ qHash(m_lastEdit, seed)

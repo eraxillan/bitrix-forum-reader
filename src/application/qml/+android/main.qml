@@ -43,7 +43,7 @@ FluidControls.ApplicationWindow {
     visible: true
     width:   Screen.width
     height:  Screen.height
-    title:   qsTr("Bitrix Forum Reader: Android version")
+    title:   qsTranslate("Android_Main", "Bitrix Forum Reader: Android version")
     color:   "white"
 
     function dp(x) { return x; }
@@ -118,7 +118,7 @@ FluidControls.ApplicationWindow {
             qmlInit = true;
             pageLoaded = true;
 
-            snbrMain.open(qsTr("Page has been loaded"));
+            snbrMain.open(qsTranslate("Android_Main", "Page has been loaded"));
         }
     }
 
@@ -142,7 +142,7 @@ FluidControls.ApplicationWindow {
     }
 
     initialPage: FluidControls.Page {
-        title: qsTr("Page: ") + currentPageIndex;
+        title: qsTranslate("Android_Main", "Page: ") + currentPageIndex;
 
         leftAction: FluidControls.Action {
             icon.source: FluidControls.Utils.iconUrl("navigation/menu");
@@ -156,10 +156,10 @@ FluidControls.ApplicationWindow {
             y: (parent.height - height) / 2;
             //width: 280
 
-            title: qsTr("Go to page");
-            text: qsTr("Please enter the page number");
+            title: qsTranslate("Android_Main", "Go to page");
+            text: qsTranslate("Android_Main", "Please enter the page number");
             textField.inputMask: "D99";
-            textField.placeholderText: qsTr("Type a 3 digits number");
+            textField.placeholderText: qsTranslate("Android_Main", "Type a number from range 1..999");
 
             onAccepted: {
                 currentPageIndex = parseInt(dlgPageNumber.textField.text);
@@ -172,8 +172,8 @@ FluidControls.ApplicationWindow {
             FluidControls.Action {
                 enabled: totalPageCount > 0;
 
-                text: qsTr("First page");
-                toolTip: qsTr("Go to first page");
+                text: qsTranslate("Android_Main", "First page");
+                toolTip: qsTranslate("Android_Main", "Go to first page");
                 onTriggered: currentPageIndex = 1;
 
                 // Icon name from the Google Material Design icon pack
@@ -183,8 +183,8 @@ FluidControls.ApplicationWindow {
             FluidControls.Action {
                 enabled: (totalPageCount > 0) && (currentPageIndex >= 2);
 
-                text: qsTr("Previous page");
-                toolTip: qsTr("Go to previous page");
+                text: qsTranslate("Android_Main", "Previous page");
+                toolTip: qsTranslate("Android_Main", "Go to previous page");
                 onTriggered: {
                     if (currentPageIndex >= 2)
                         currentPageIndex = currentPageIndex - 1;
@@ -196,8 +196,8 @@ FluidControls.ApplicationWindow {
             FluidControls.Action {
                 enabled: (totalPageCount > 0) && (currentPageIndex < totalPageCount);
 
-                text: qsTr("Next page");
-                toolTip: qsTr("Go to next page");
+                text: qsTranslate("Android_Main", "Next page");
+                toolTip: qsTranslate("Android_Main", "Go to next page");
                 onTriggered: {
                     if (currentPageIndex <= totalPageCount - 1)
                         currentPageIndex = currentPageIndex + 1;
@@ -209,8 +209,8 @@ FluidControls.ApplicationWindow {
             FluidControls.Action {
                 enabled: totalPageCount > 0;
 
-                text: qsTr("Last page");
-                toolTip: qsTr("Go to last page");
+                text: qsTranslate("Android_Main", "Last page");
+                toolTip: qsTranslate("Android_Main", "Go to last page");
                 onTriggered: currentPageIndex = totalPageCount;
 
                 icon.source: FluidControls.Utils.iconUrl("navigation/last_page");
@@ -219,8 +219,8 @@ FluidControls.ApplicationWindow {
             FluidControls.Action {
                 enabled: totalPageCount > 0;
 
-                text: qsTr("Go to page");
-                toolTip: qsTr("Go to specified page");
+                text: qsTranslate("Android_Main", "Go to page");
+                toolTip: qsTranslate("Android_Main", "Go to specified page");
                 onTriggered: {
                     console.log("Go to specified page action called");
                     dlgPageNumber.open();

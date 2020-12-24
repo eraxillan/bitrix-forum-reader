@@ -595,7 +595,7 @@ QString ForumPageParser::getPostLastEdit(QtGumboNodePtr postEntryNode) {
 	}
 
 	// FIXME: replace HTML with pure QML code
-	lastEditStr = "Изменено: <a href=\"" + userNameHrefStr + "\" " + "rel=\"" + userNameRelStr + "\">" + userNameStr
+	lastEditStr = "<a href=\"" + userNameHrefStr + "\" " + "rel=\"" + userNameRelStr + "\">" + userNameStr
 		+ "</a> - " + lastEditDateStr + " " + lastEditReasonStr;
 
 	return lastEditStr;
@@ -931,6 +931,7 @@ PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const {
 	// <b>QWASQ</b> <a href="/forum/?PAGE_NAME=message&FID=22&TID=74420&MID=4453640#message4453640" target="_blank" rel="nofollow">пишет</a>:<br />
 	// <b>
 	// NOTE: optional
+	const QString QUOTE_WRITE_VERB = QCoreApplication::translate("Post", "wrote");
 	int tbodyTrTdNodeChildIndex = 0;
 	QtGumboNodePtr tbodyTrTdANode = tbodyTrTdNode->getElementByTag({ HtmlTag::A, 0 });
 	bool tbodyTrTdANodeValid = tbodyTrTdANode && tbodyTrTdANode->isValid();

@@ -37,7 +37,7 @@ ApplicationWindow {
     visible: true
     width:   Screen.width
     height:  Screen.height
-    title:   qsTr("Bitrix Forum Reader: iOS/tvOS/watchOS version")
+    title:   qsTranslate("Ios_Main", "Bitrix Forum Reader: iOS/tvOS/watchOS version")
     color:   "white"
 
     function dp(x) { return x; }
@@ -102,7 +102,7 @@ ApplicationWindow {
             qmlInit = true;
             pageLoaded = true;
 
-            snbrMain.open(qsTr("Page has been loaded"));
+            snbrMain.open(qsTranslate("Ios_Main", "Page has been loaded"));
         }
     }
 
@@ -287,7 +287,7 @@ ApplicationWindow {
             Text {
                 anchors.centerIn: parent
                 renderType: Text.NativeRendering
-                text: "Footer"
+                //text: "Footer"
             }
         }
     }

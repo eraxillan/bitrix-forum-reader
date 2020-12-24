@@ -24,14 +24,15 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlFileSelector>
+#include <QtQml/QQmlContext>
 
 #include <iostream>
 
 #include <common/logger.h>
 #include <common/forumthreadurl.h>
 #include <forumreader.h>
+#include <translator.h>
 
-// FIXME: move raw strings (error messages etc.) to separate file and get them thru new LocalizationManager class
 // FIXME: minimize use of Qt containers, smart pointers and primitive types (use stdlib ones instead)
 // FIXME: enforce constness
 // FIXME: enforce strict C++ compiler warnings
@@ -140,6 +141,9 @@ int main(int argc, char *argv[]) {
 	int exitCode = -1;
 	try {
 		QQmlApplicationEngine engine;
+
+		Translator translator(&engine);
+		engine.rootContext()->setContextProperty("translator", &translator);
 
 #if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
 		QDir appDir(qApp->applicationDirPath());

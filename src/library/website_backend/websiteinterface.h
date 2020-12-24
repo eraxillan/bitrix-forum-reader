@@ -45,7 +45,6 @@
 #endif
 
 namespace bfr {
-const QString QUOTE_WRITE_VERB = "пишет";
 
 #ifdef BFR_SERIALIZATION_ENABLED
 enum PostObjectType {

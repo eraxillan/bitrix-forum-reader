@@ -77,7 +77,7 @@ Column {
 
         renderType: Text.NativeRendering;
 
-        text: model.postLastEdit;
+        text: (model.postLastEdit !== "") ? qsTranslate("Post", "Last edit: ") + model.postLastEdit : "";
         textFormat: Text.RichText;
         onLinkActivated: Qt.openUrlExternally(link);
 
@@ -131,7 +131,7 @@ Column {
 
         font.bold: true;
         font.pointSize: 14;
-        text: model.postLikeCount + " like(s)";
+        text: qsTranslate("Post", "%n like(s)", "", model.postLikeCount);
     }
 
 }    // QML Column end

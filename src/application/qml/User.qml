@@ -57,21 +57,21 @@ Column {
 
     Text {
         id: txtAuthorPostCount_6afb4d56214b4bb69281bf9bbf60396b;
-        text: "Posts: " + _fcfaa58e3305486e872ae962537bdc8e;
+        text: qsTranslate("User", "Posts: ") + _fcfaa58e3305486e872ae962537bdc8e;
 
         font.pointSize: 14;
     }
 
     Text {
        id: txtAuthorRegistrationDate_6afb4d56214b4bb69281bf9bbf60396b;
-       text: "Registered:\n" + '_e0aefa26825e44b58c74a54b5bad32b8';
+       text: qsTranslate("User", "Registered:\n") + '_e0aefa26825e44b58c74a54b5bad32b8';
 
        font.pointSize: 14;
     }
 
     Text {
         id: txtAuthorReputation_6afb4d56214b4bb69281bf9bbf60396b;
-        text: "Reputation: " + _875abbe700a0408891e5c6f73b7e27be;
+        text: qsTranslate("User", "Reputation: ") + _875abbe700a0408891e5c6f73b7e27be;
 
         font.pointSize: 14;
     }
@@ -79,7 +79,7 @@ Column {
     Text {
         id: txtAuthorCity_6afb4d56214b4bb69281bf9bbf60396b;
         visible: '_3cf1b6db9ccf4404b672f7c9d6c78211' !== "";
-        text: "City:\n" + '_3cf1b6db9ccf4404b672f7c9d6c78211';
+        text: qsTranslate("User", "City:\n") + '_3cf1b6db9ccf4404b672f7c9d6c78211';
 
         font.pointSize: 14;
     }
