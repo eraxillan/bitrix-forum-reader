@@ -35,7 +35,6 @@
 
 // FIXME: minimize use of Qt containers, smart pointers and primitive types (use stdlib ones instead)
 // FIXME: enforce constness
-// FIXME: enforce strict C++ compiler warnings
 //
 // FIXME: add user whitelist
 // FIXME: add sorting by user/post reputation option

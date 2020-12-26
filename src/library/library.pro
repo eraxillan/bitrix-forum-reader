@@ -22,9 +22,16 @@ GUMBO_LIBRARY_DIR = $$clean_path($$OUT_PWD/../../thirdparty/gumbo-parser)
 # TODO
 #######################################################################################################################
 
-# General compiler options
+# General compiler/linker options
 CONFIG += c++17 strict_c++ warn_on
-INCLUDEPATH += "."
+# Enable all possible compiler warnings and treat them as errors
+QMAKE_CXXFLAGS += -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Werror
+# Enable Address Sanitizer for debug builds
+# NOTE: it must be installed first, e.g. for Fedora Linux `sudo dnf install libasan`
+QMAKE_CXXFLAGS_DEBUG += -fno-omit-frame-pointer -fsanitize=address -fsanitize=leak
+QMAKE_LFLAGS_DEBUG += -fno-omit-frame-pointer -fsanitize=address -fsanitize=leak
+
+INCLUDEPATH += $$PWD
 INCLUDEPATH += $$TOPDIR
 
 QT += qml quick quickcontrols2
