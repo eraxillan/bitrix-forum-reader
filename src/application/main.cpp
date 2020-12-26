@@ -34,7 +34,6 @@
 #include <translator.h>
 
 // FIXME: minimize use of Qt containers, smart pointers and primitive types (use stdlib ones instead)
-// FIXME: enforce constness
 //
 // FIXME: add user whitelist
 // FIXME: add sorting by user/post reputation option
@@ -49,12 +48,12 @@ bool initLogLibrary() {
 
 		// Console multi threaded logger with color
 #if defined(Q_OS_ANDROID)
-		/*auto android_logger =*/spdlog::android_logger_mt("console", "Bitrix Forum Reader"); // "android"
+		/*auto android_logger =*/spdlog::android_logger_mt("system", "Bitrix Forum Reader");
 #elif defined(Q_OS_UNIX)
-		/*auto console =*/ spdlog::stdout_color_mt("console");
+		/*auto console =*/spdlog::stdout_color_mt("system");
 #else
 		auto sink = std::make_shared<spdlog::sinks::windebug_sink_st>();
-		auto logger = std::make_shared<spdlog::logger>("console", sink);
+		auto logger = std::make_shared<spdlog::logger>("system", sink);
 		spdlog::register_logger(logger);
 #endif
 

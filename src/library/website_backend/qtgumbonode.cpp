@@ -30,6 +30,7 @@ const char* const CLASS_ATTRIBUTE 	= u8"class";
 
 #ifdef QT_GUMBO_METADATA
 void QtGumboNode::fillMetadata(QtGumboNodePropsPtr props) {
+
 	props->m_isValid = isValid();
 	props->m_type = getType();
 	props->m_path = getPath();
@@ -64,11 +65,9 @@ void QtGumboNode::fillMetadata(QtGumboNodePropsPtr props) {
 		props->m_text = getInnerText();
 	}
 }
-#endif
 
-QtGumboNode::QtGumboNode()
-{
-}
+void QtGumboNode::setMetadata(QtGumboNodePropsPtr props) { m_props = props; }
+#endif
 
 QtGumboNode::QtGumboNode(GumboNode *node) : m_node(node)
 {
@@ -79,6 +78,7 @@ bool QtGumboNode::isValid() const { return (m_node != nullptr); }
 bool QtGumboNode::isWhitespace() const { return (getType() == QtGumboNodeType::Whitespace); }
 
 bool QtGumboNode::isElement() const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return false;
@@ -87,6 +87,7 @@ bool QtGumboNode::isElement() const {
 }
 
 bool QtGumboNode::isText() const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return false;
@@ -95,6 +96,7 @@ bool QtGumboNode::isText() const {
 }
 
 bool QtGumboNode::isDocument() const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return false;
@@ -103,6 +105,7 @@ bool QtGumboNode::isDocument() const {
 }
 
 QtGumboNodeType QtGumboNode::getType() const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return QtGumboNodeType::Invalid;
@@ -138,6 +141,7 @@ QtGumboNodeType QtGumboNode::getType() const {
 }
 
 QtGumboNodePtr QtGumboNode::getParent() const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return QtGumboNodePtr();
@@ -149,6 +153,7 @@ QtGumboNodePtr QtGumboNode::getParent() const {
 }
 
 size_t QtGumboNode::getParentIndex() const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return std::numeric_limits<size_t>::infinity();
@@ -157,6 +162,7 @@ size_t QtGumboNode::getParentIndex() const {
 }
 
 QtGumboNodePath QtGumboNode::getPath() const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return QtGumboNodePath();
@@ -181,6 +187,7 @@ QtGumboNodePath QtGumboNode::getPath() const {
 }
 
 bool QtGumboNode::isComment() const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return false;
@@ -189,6 +196,7 @@ bool QtGumboNode::isComment() const {
 }
 
 HtmlTag QtGumboNode::getTag() const {
+
 	if (isElement())
 		return HtmlTag(m_node->v.element.tag);
 
@@ -196,6 +204,7 @@ HtmlTag QtGumboNode::getTag() const {
 }
 
 QString QtGumboNode::getTagName() const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return QString();
@@ -203,7 +212,8 @@ QString QtGumboNode::getTagName() const {
 	return QString(gumbo_normalized_tagname(m_node->v.element.tag));
 }
 
-bool QtGumboNode::hasAttribute(QString name) const {
+bool QtGumboNode::hasAttribute(const QString &name) const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return false;
@@ -215,7 +225,8 @@ bool QtGumboNode::hasAttribute(QString name) const {
 	return (attr != nullptr);
 }
 
-QString QtGumboNode::getAttribute(QString name) const {
+QString QtGumboNode::getAttribute(const QString &name) const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return QString();
@@ -239,6 +250,7 @@ QString QtGumboNode::getIdAttribute() const { return getAttribute(ID_ATTRIBUTE);
 QString QtGumboNode::getClassAttribute() const { return getAttribute(CLASS_ATTRIBUTE); }
 
 size_t QtGumboNode::getAttributeCount() const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return 0;
@@ -246,7 +258,8 @@ size_t QtGumboNode::getAttributeCount() const {
 	return m_node->v.element.attributes.length;
 }
 
-QtGumboNodes QtGumboNode::getChildren(bool elementsOnly) const {
+QtGumboNodes QtGumboNode::getChildren(const bool elementsOnly) const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return QtGumboNodes();
@@ -264,9 +277,10 @@ QtGumboNodes QtGumboNode::getChildren(bool elementsOnly) const {
 	return result;
 }
 
-int QtGumboNode::getChildElementCount(bool elementsOnly) const { return getChildren(elementsOnly).size(); }
+int QtGumboNode::getChildElementCount(const bool elementsOnly) const { return getChildren(elementsOnly).size(); }
 
 QtGumboNodes QtGumboNode::getTextChildren() const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return QtGumboNodes();
@@ -286,6 +300,7 @@ QtGumboNodes QtGumboNode::getTextChildren() const {
 int QtGumboNode::getTextChildrenCount() const { return getTextChildren().size(); }
 
 QString QtGumboNode::getInnerText() const {
+
 	Q_ASSERT(isText());
 	if (!isText())
 		return QString();
@@ -294,6 +309,7 @@ QString QtGumboNode::getInnerText() const {
 }
 
 QString QtGumboNode::getChildrenInnerText() {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return QString();
@@ -310,7 +326,8 @@ QString QtGumboNode::getChildrenInnerText() {
 	return value;
 }
 
-QtGumboNodePtr QtGumboNode::getElementByTag(std::pair<HtmlTag, int> tagDesc, int *foundPos) {
+QtGumboNodePtr QtGumboNode::getElementByTag(const HtmlTagDescription &tagDesc, int *foundPos) {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return QtGumboNodePtr();
@@ -333,8 +350,8 @@ QtGumboNodePtr QtGumboNode::getElementByTag(std::pair<HtmlTag, int> tagDesc, int
 	return QtGumboNodePtr();
 }
 
-QtGumboNodePtr QtGumboNode::getElementByTag(
-	std::initializer_list<std::pair<HtmlTag, int>> tagDescsInitList, int *foundPos) {
+QtGumboNodePtr QtGumboNode::getElementByTag(const HtmlTagDescriptions &tagDescsInitList, int *foundPos) {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return QtGumboNodePtr();
@@ -372,7 +389,8 @@ QtGumboNodePtr QtGumboNode::getElementByTag(
 	return node;
 }
 
-QtGumboNodePtr QtGumboNode::getElementByClass(QString className, HtmlTag childTag) const {
+QtGumboNodePtr QtGumboNode::getElementByClass(const QString &className, const HtmlTag childTag) const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return QtGumboNodePtr();
@@ -390,7 +408,8 @@ QtGumboNodePtr QtGumboNode::getElementByClass(QString className, HtmlTag childTa
 	return QtGumboNodePtr();
 }
 
-QtGumboNodes QtGumboNode::getElementsByClass(QString className, HtmlTag childTag) const {
+QtGumboNodes QtGumboNode::getElementsByClass(const QString &className, const HtmlTag childTag) const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return QtGumboNodes();
@@ -410,7 +429,8 @@ QtGumboNodes QtGumboNode::getElementsByClass(QString className, HtmlTag childTag
 	return result;
 }
 
-QtGumboNodes QtGumboNode::getElementsByClassRecursive(QString className, HtmlTag childTag) const {
+QtGumboNodes QtGumboNode::getElementsByClassRecursive(const QString &className, const HtmlTag childTag) const {
+
 	Q_ASSERT(isValid());
 	if (!isValid())
 		return QtGumboNodes();
@@ -436,6 +456,7 @@ QtGumboNodes QtGumboNode::getElementsByClassRecursive(QString className, HtmlTag
 }
 
 size_t QtGumboNode::getTagLength() const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return 0;
@@ -444,6 +465,7 @@ size_t QtGumboNode::getTagLength() const {
 }
 
 size_t QtGumboNode::getStartPos() const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return 0;
@@ -452,6 +474,7 @@ size_t QtGumboNode::getStartPos() const {
 }
 
 size_t QtGumboNode::getEndPos() const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return 0;
@@ -460,6 +483,7 @@ size_t QtGumboNode::getEndPos() const {
 }
 
 QString QtGumboNode::getHtml() const {
+
 	Q_ASSERT(isElement());
 	if (!isElement())
 		return QString();
@@ -468,6 +492,7 @@ QString QtGumboNode::getHtml() const {
 }
 
 QtGumboNodePool &QtGumboNodePool::globalInstance() {
+
 	// Since it's a static variable, if the class has already been created,
 	// it won't be created again.
 	// And it **is** thread-safe in C++11.
@@ -476,6 +501,7 @@ QtGumboNodePool &QtGumboNodePool::globalInstance() {
 }
 
 QtGumboNodePtr QtGumboNodePool::getNode(GumboNode *node) {
+
 	if (m_nodes.contains(node))
 		return m_nodes[node];
 

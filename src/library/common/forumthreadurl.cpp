@@ -31,22 +31,18 @@ ForumThreadUrl::ForumThreadUrl(QObject *parent)
 	setThreadId(-1);
 }
 
-ForumThreadUrl::ForumThreadUrl(QObject *parent, ForumThreadUrlData urlData)
+ForumThreadUrl::ForumThreadUrl(QObject *parent, const ForumThreadUrlData &urlData)
 	: QObject(parent) {
 	setSectionId(urlData.m_sectionId);
 	setThreadId(urlData.m_threadId);
 }
 
-ForumThreadUrl::ForumThreadUrl(int sectionId, int threadId) {
+ForumThreadUrl::ForumThreadUrl(const int sectionId, const int threadId) {
 	setSectionId(sectionId);
 	setThreadId(threadId);
 }
 
-ForumThreadUrl::~ForumThreadUrl()
-{
-}
-
-ForumThreadUrlData ForumThreadUrl::data() const { return m_data; }
+const ForumThreadUrlData &ForumThreadUrl::data() const { return m_data; }
 
 int ForumThreadUrl::sectionId() const { return m_data.m_sectionId; }
 

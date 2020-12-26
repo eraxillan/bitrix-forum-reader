@@ -64,7 +64,7 @@ public:
 	// Sync API
 	//using ProgressCallback = void (*)(qint64 /*bytesReceived*/, qint64 /*bytesTotal*/);
 	using ProgressCallback = std::function<void(qint64, qint64)>;
-	static bool downloadUrl(QString urlStr, QByteArray &data, ProgressCallback progressCb = nullptr);
+	static bool downloadUrl(const QString &urlStr, QByteArray &data, ProgressCallback progressCb = nullptr);
 
 signals:
 	void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);

@@ -302,7 +302,7 @@ void FileDownloader::onSslErrors(const QList<QSslError> &errors) {
 // Sync API
 
 #ifdef USE_QT_NAM
-bool FileDownloader::downloadUrl(QString urlStr, QByteArray &data, ProgressCallback progressCb) {
+bool FileDownloader::downloadUrl(const QString &urlStr, QByteArray &data, ProgressCallback progressCb) {
 
 	QScopedPointer<FileDownloader> fd(new FileDownloader);
 	fd->m_progressCb = progressCb;

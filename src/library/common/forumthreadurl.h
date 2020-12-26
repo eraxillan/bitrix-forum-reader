@@ -34,7 +34,7 @@ struct ForumThreadUrlData {
 		: m_sectionId(-1)
 		, m_threadId(-1) { }
 
-	constexpr ForumThreadUrlData(int sectionId, int threadId) noexcept
+	constexpr ForumThreadUrlData(const int sectionId, const int threadId) noexcept
 		: m_sectionId(sectionId)
 		, m_threadId(threadId) { }
 
@@ -69,11 +69,11 @@ class ForumThreadUrl : public QObject {
 
 public:
 	explicit ForumThreadUrl(QObject *parent = nullptr);
-	explicit ForumThreadUrl(QObject *parent, ForumThreadUrlData urlData);
-	ForumThreadUrl(int sectionId, int threadId);
-	~ForumThreadUrl();
+	explicit ForumThreadUrl(QObject *parent, const ForumThreadUrlData &urlData);
+	ForumThreadUrl(const int sectionId, const int threadId);
+	~ForumThreadUrl() = default;
 
-	ForumThreadUrlData data() const;
+	const ForumThreadUrlData &data() const;
 	int sectionId() const;
 	int threadId() const;
 	void setSectionId(int sectionId);

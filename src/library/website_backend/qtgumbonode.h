@@ -47,6 +47,7 @@ enum class QtGumboNodeType { Invalid = -1, Document = 0, Element = 1, Text, CDAT
 using QtStringMap = QMap<QString, QString>;
 
 struct QtGumboNodeProps {
+
 	bool m_isValid = false;
 
 	QtGumboNodeType m_type;
@@ -78,26 +79,29 @@ using QtGumboNodePropsPtr = std::shared_ptr<QtGumboNodeProps>;
 #endif
 
 class QtGumboNode {
+
 	GumboNode *m_node;
 
 #ifdef QT_GUMBO_METADATA
 	QtGumboNodePropsPtr m_props;
 #endif
 
-public:
-	QtGumboNode();
-	QtGumboNode(GumboNode *node);
-
-#ifdef QT_GUMBO_METADATA
-	void fillMetadata(QtGumboNodePropsPtr props);
-	void setMetadata(QtGumboNodePropsPtr props) { m_props = props; }
-#endif
-
+private:
 	// Delete copy and move constructors and assign operators
 	QtGumboNode(QtGumboNode const &) = delete; // Copy construct
 	QtGumboNode(QtGumboNode &&) = delete; // Move construct
 	QtGumboNode &operator=(QtGumboNode const &) = delete; // Copy assign
 	QtGumboNode &operator=(QtGumboNode &&) = delete; // Move assign
+
+public:
+	QtGumboNode() = default;
+	QtGumboNode(GumboNode *node);
+	~QtGumboNode() = default;
+
+#ifdef QT_GUMBO_METADATA
+	void fillMetadata(QtGumboNodePropsPtr props);
+	void setMetadata(QtGumboNodePropsPtr props);
+#endif
 
 	bool isValid() const;
 	bool isWhitespace() const;
@@ -116,32 +120,34 @@ public:
 	HtmlTag getTag() const;
 	QString getTagName() const;
 
-	bool hasAttribute(QString name) const;
+	bool hasAttribute(const QString &name) const;
 	bool hasIdAttribute() const;
 	bool hasClassAttribute() const;
 	size_t getAttributeCount() const;
-	QString getAttribute(QString name) const;
+	QString getAttribute(const QString &name) const;
 	QString getIdAttribute() const;
 	QString getClassAttribute() const;
 
-	QtGumboNodes getChildren(bool elementsOnly = true) const;
+	QtGumboNodes getChildren(const bool elementsOnly = true) const;
 	QtGumboNodes getTextChildren() const;
-	int getChildElementCount(bool elementsOnly = true) const;
+	int getChildElementCount(const bool elementsOnly = true) const;
 	int getTextChildrenCount() const;
 
 	QString getInnerText() const;
 	QString getChildrenInnerText();
 
 	// Non-recursive(!) search for the first child node with specified tag, from specified position (index of child)
-	QtGumboNodePtr getElementByTag(std::pair<HtmlTag, int> tagDesc, int *foundPos = nullptr);
-	QtGumboNodePtr getElementByTag(std::initializer_list<std::pair<HtmlTag, int>> tagDescs, int *foundPos = nullptr);
+	using HtmlTagDescription = std::pair<HtmlTag, int>;
+	using HtmlTagDescriptions = std::initializer_list<HtmlTagDescription>;
+	QtGumboNodePtr getElementByTag(const HtmlTagDescription &tagDesc, int *foundPos = nullptr);
+	QtGumboNodePtr getElementByTag(const HtmlTagDescriptions &tagDescs, int *foundPos = nullptr);
 
 	// Non-recursive(!) search for the first child node with specified class name and tag (div by default)
-	QtGumboNodePtr getElementByClass(QString className, HtmlTag childTag = HtmlTag::DIV) const;
-	QtGumboNodes getElementsByClass(QString className, HtmlTag childTag = HtmlTag::DIV) const;
+	QtGumboNodePtr getElementByClass(const QString &className, const HtmlTag childTag = HtmlTag::DIV) const;
+	QtGumboNodes getElementsByClass(const QString &className, const HtmlTag childTag = HtmlTag::DIV) const;
 
 	// Recursive search for the first child node with specified class name and tag (div by default)
-	QtGumboNodes getElementsByClassRecursive(QString className, HtmlTag childTag = HtmlTag::DIV) const;
+	QtGumboNodes getElementsByClassRecursive(const QString &className, const HtmlTag childTag = HtmlTag::DIV) const;
 
 	// Tag text and position in raw HTML text
 	size_t getTagLength() const;
@@ -152,6 +158,12 @@ public:
 
 class QtGumboNodePool
 {
+	// Delete copy and move constructors and assign operators
+	QtGumboNodePool(QtGumboNodePool const &) = delete; // Copy construct
+	QtGumboNodePool(QtGumboNodePool &&) = delete; // Move construct
+	QtGumboNodePool &operator=(QtGumboNodePool const &) = delete; // Copy assign
+	QtGumboNodePool &operator=(QtGumboNodePool &&) = delete; // Move assign
+
 protected:
 	using NodeMap = QMap<GumboNode *, QtGumboNodePtr>;
 	NodeMap m_nodes;
@@ -161,19 +173,14 @@ protected:
 	MetainfoMap m_nodeProps;
 #endif
 
-	QtGumboNodePool() { }
-	~QtGumboNodePool() { }
+	QtGumboNodePool() = default;
+	~QtGumboNodePool() = default;
+
+public:
+	QtGumboNodePtr getNode(GumboNode *node);
 
 public:
 	static QtGumboNodePool &globalInstance();
-
-	// Delete copy and move constructors and assign operators
-	QtGumboNodePool(QtGumboNodePool const &) = delete; // Copy construct
-	QtGumboNodePool(QtGumboNodePool &&) = delete; // Move construct
-	QtGumboNodePool &operator=(QtGumboNodePool const &) = delete; // Copy assign
-	QtGumboNodePool &operator=(QtGumboNodePool &&) = delete; // Move assign
-
-	QtGumboNodePtr getNode(GumboNode *node);
 };
 
 #endif // __BFR_QTGUMBONODE_H__

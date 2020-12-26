@@ -42,7 +42,8 @@ static const QString g_bankiRuHost = "https://www.banki.ru";
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-void ForumPageParser::printTagsRecursively(QtGumboNodePtr node, int &level) {
+void ForumPageParser::printTagsRecursively(const QtGumboNodePtr &node, int &level) const {
+
 	BFR_RETURN_VOID_IF(!node || !node->isValid(), "invalid node");
 
 	if (!node->isElement())
@@ -73,7 +74,8 @@ void ForumPageParser::printTagsRecursively(QtGumboNodePtr node, int &level) {
 #endif
 }
 
-void ForumPageParser::findMsdivNodesRecursively(QtGumboNodePtr node, QVector<QtGumboNodePtr> &msdivNodes) {
+void ForumPageParser::findMsdivNodesRecursively(const QtGumboNodePtr &node, QVector<QtGumboNodePtr> &msdivNodes) const {
+
 	BFR_RETURN_VOID_IF(!node || !node->isValid(), "Invalid input parameters");
 
 	if (!node->isElement())
@@ -100,7 +102,8 @@ void ForumPageParser::findMsdivNodesRecursively(QtGumboNodePtr node, QVector<QtG
 }
 
 namespace {
-int parseUserId(QString userProfileUrl) {
+int parseUserId(const QString &userProfileUrl) {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE_N_VALUE(int, -1);
 
 	// Read the user ID
@@ -116,7 +119,8 @@ int parseUserId(QString userProfileUrl) {
 }
 }
 
-ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(QtGumboNodePtr userInfoNode) {
+ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(const QtGumboNodePtr &userInfoNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(UserBaseInfo);
 
 	BFR_RETURN_DEFAULT_IF(!userInfoNode || !userInfoNode->isValid(), "Invalid input parameters");
@@ -140,7 +144,8 @@ ForumPageParser::UserBaseInfo ForumPageParser::getUserBaseInfo(QtGumboNodePtr us
 	return result;
 }
 
-ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGumboNodePtr userInfoNode) {
+ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(const QtGumboNodePtr &userInfoNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(UserAdditionalInfo);
 
 	BFR_RETURN_DEFAULT_IF(!userInfoNode || !userInfoNode->isValid(), "Invalid input parameters");
@@ -213,7 +218,8 @@ ForumPageParser::UserAdditionalInfo ForumPageParser::getUserAdditionalInfo(QtGum
 	return result;
 }
 
-PostImagePtr ForumPageParser::getUserAvatar(QtGumboNodePtr userInfoNode) {
+PostImagePtr ForumPageParser::getUserAvatar(const QtGumboNodePtr &userInfoNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(PostImagePtr);
 
 	BFR_RETURN_DEFAULT_IF(!userInfoNode || !userInfoNode->isValid(), "Invalid input parameters");
@@ -240,7 +246,8 @@ PostImagePtr ForumPageParser::getUserAvatar(QtGumboNodePtr userInfoNode) {
 	return result;
 }
 
-UserPtr ForumPageParser::getPostUser(QtGumboNodePtr trNode1) {
+UserPtr ForumPageParser::getPostUser(const QtGumboNodePtr &trNode1) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(UserPtr);
 	BFR_RETURN_DEFAULT_IF(!trNode1 || !trNode1->isValid(), "Invalid input parameters");
 
@@ -295,7 +302,8 @@ UserPtr ForumPageParser::getPostUser(QtGumboNodePtr trNode1) {
 	return userInfo;
 }
 
-PostPtr ForumPageParser::getPostValue(QtGumboNodePtr trNode1) {
+PostPtr ForumPageParser::getPostValue(const QtGumboNodePtr &trNode1) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(PostPtr);
 
 	BFR_RETURN_DEFAULT_IF(!trNode1 || !trNode1->isValid(), "Invalid input parameters");
@@ -379,7 +387,8 @@ PostPtr ForumPageParser::getPostValue(QtGumboNodePtr trNode1) {
 	return postInfo;
 }
 
-void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObjects) const {
+void ForumPageParser::parseMessage(const QtGumboNodes &nodes, IPostObjectList &postObjects) const {
+
 	for (auto iChild = nodes.begin(); iChild != nodes.end(); ++iChild) {
 		auto iChildPtr = *iChild;
 		if (iChildPtr->isElement()) {
@@ -540,7 +549,8 @@ void ForumPageParser::parseMessage(QtGumboNodes nodes, IPostObjectList &postObje
 	}
 }
 
-QString ForumPageParser::getPostLastEdit(QtGumboNodePtr postEntryNode) {
+QString ForumPageParser::getPostLastEdit(const QtGumboNodePtr &postEntryNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(QString);
 
 	BFR_RETURN_DEFAULT_IF(!postEntryNode || !postEntryNode->isValid(), "Invalid input parameters");
@@ -601,7 +611,8 @@ QString ForumPageParser::getPostLastEdit(QtGumboNodePtr postEntryNode) {
 	return lastEditStr;
 }
 
-QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode) {
+QString ForumPageParser::getPostUserSignature(const QtGumboNodePtr &postEntryNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(QString);
 
 	BFR_RETURN_DEFAULT_IF(!postEntryNode || !postEntryNode->isValid(), "Invalid input parameters");
@@ -665,7 +676,8 @@ QString ForumPageParser::getPostUserSignature(QtGumboNodePtr postEntryNode) {
 	return userSignatureStr;
 }
 
-IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode) {
+IPostObjectList ForumPageParser::getPostAttachments(const QtGumboNodePtr &postEntryNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(IPostObjectList);
 
 	BFR_RETURN_DEFAULT_IF(!postEntryNode || !postEntryNode->isValid(), "Invalid input parameters");
@@ -701,7 +713,8 @@ IPostObjectList ForumPageParser::getPostAttachments(QtGumboNodePtr postEntryNode
 	return result;
 }
 
-int ForumPageParser::getLikeCounterValue(QtGumboNodePtr trNode2) {
+int ForumPageParser::getLikeCounterValue(const QtGumboNodePtr &trNode2) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE_N_VALUE(int, -1);
 
 	BFR_RETURN_DEFAULT_IF(!trNode2 || !trNode2->isValid(), "Invalid node");
@@ -752,7 +765,8 @@ int ForumPageParser::getLikeCounterValue(QtGumboNodePtr trNode2) {
 	return likeCount;
 }
 
-int ForumPageParser::getPostId(QtGumboNodePtr msdivNode) {
+int ForumPageParser::getPostId(const QtGumboNodePtr &msdivNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE_N_VALUE(int, -1);
 
 	BFR_RETURN_DEFAULT_IF(!msdivNode || !msdivNode->isValid(), "Invalid input parameters");
@@ -767,7 +781,8 @@ int ForumPageParser::getPostId(QtGumboNodePtr msdivNode) {
 	return messageId;
 }
 
-void ForumPageParser::findPageCount(QString rawData, int &pageCount) {
+void ForumPageParser::findPageCount(const QString &rawData, int &pageCount) const {
+
 	pageCount = 0;
 
 	// NOTE: alternative method
@@ -786,7 +801,8 @@ void ForumPageParser::findPageCount(QString rawData, int &pageCount) {
 	BFR_RETURN_VOID_IF(!pageCountOk, "Invalid page count string format: not a number");
 }
 
-void ForumPageParser::fillPostList(QtGumboNodePtr node, PostList &posts) {
+void ForumPageParser::fillPostList(const QtGumboNodePtr &node, PostList &posts) const {
+
 	BFR_RETURN_VOID_IF(!node || !node->isValid(), "Invalid input parameters");
 
 	// XPath: *[@id="msdiv4453758"]
@@ -835,7 +851,8 @@ void ForumPageParser::fillPostList(QtGumboNodePtr node, PostList &posts) {
 	}
 }
 
-PostHyperlinkPtr ForumPageParser::parseHyperlink(QtGumboNodePtr aNode) const {
+PostHyperlinkPtr ForumPageParser::parseHyperlink(const QtGumboNodePtr &aNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(PostHyperlinkPtr);
 	BFR_RETURN_DEFAULT_IF(!aNode || !aNode->isValid() || !aNode->isElement(), "Invalid input parameters");
 
@@ -856,7 +873,8 @@ PostHyperlinkPtr ForumPageParser::parseHyperlink(QtGumboNodePtr aNode) const {
 	return PostHyperlinkPtr(new PostHyperlink(urlStr, titleStr, tipStr, relStr));
 }
 
-PostImagePtr ForumPageParser::parseImage(QtGumboNodePtr imgNode) const {
+PostImagePtr ForumPageParser::parseImage(const QtGumboNodePtr &imgNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(PostImagePtr);
 	BFR_RETURN_DEFAULT_IF(!imgNode || !imgNode->isValid() || !imgNode->isElement(), "Invalid input parameters");
 
@@ -910,7 +928,8 @@ PostImagePtr ForumPageParser::parseImage(QtGumboNodePtr imgNode) const {
 	return result;
 }
 
-PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const {
+PostQuotePtr ForumPageParser::parseQuote(const QtGumboNodePtr &tableNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(PostQuotePtr);
 
 	BFR_RETURN_DEFAULT_IF(!tableNode || !tableNode->isValid(), "Invalid input parameters");
@@ -1000,7 +1019,8 @@ PostQuotePtr ForumPageParser::parseQuote(QtGumboNodePtr tableNode) const {
 	return result;
 }
 
-PostSpoilerPtr ForumPageParser::parseSpoiler(QtGumboNodePtr tableNode) const {
+PostSpoilerPtr ForumPageParser::parseSpoiler(const QtGumboNodePtr &tableNode) const {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(PostSpoilerPtr);
 
 	BFR_RETURN_DEFAULT_IF(!tableNode || !tableNode->isValid(), "Invalid input parameters");
@@ -1050,7 +1070,8 @@ PostSpoilerPtr ForumPageParser::parseSpoiler(QtGumboNodePtr tableNode) const {
 
 namespace
 {
-QByteArray convertHtmlToUft8(QByteArray rawHtmlData) {
+QByteArray convertHtmlToUft8(const QByteArray &rawHtmlData) {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(QByteArray);
 
 	QByteArray result;
@@ -1066,7 +1087,8 @@ QByteArray convertHtmlToUft8(QByteArray rawHtmlData) {
 }
 }
 
-result_code::Type ForumPageParser::getPageCount(QByteArray rawData, int &pageCount) {
+result_code::Type ForumPageParser::getPageCount(const QByteArray &rawData, int &pageCount) {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE_N_VALUE(result_code::Type, result_code::Type::Fail);
 
 	QByteArray utfData = convertHtmlToUft8(rawData);
@@ -1078,7 +1100,7 @@ result_code::Type ForumPageParser::getPageCount(QByteArray rawData, int &pageCou
 	return result_code::Type::Ok;
 }
 
-result_code::Type ForumPageParser::getPagePosts(QByteArray rawData, PostList &userPosts) {
+result_code::Type ForumPageParser::getPagePosts(const QByteArray &rawData, PostList &userPosts) {
 	BFR_DECLARE_DEFAULT_RETURN_TYPE_N_VALUE(result_code::Type, result_code::Type::Fail);
 
 	QByteArray utfData = convertHtmlToUft8(rawData);

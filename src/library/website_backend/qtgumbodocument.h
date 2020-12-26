@@ -37,27 +37,21 @@ class QtGumboDocument {
 	QtGumboNodePtr m_documentNode;
 	QtGumboNodePtr m_rootNode;
 
-	bool Parse();
+	bool parse();
 
 public:
 	QtGumboDocument();
-	QtGumboDocument(QString rawData);
+	QtGumboDocument(const QString &rawData);
 	~QtGumboDocument();
 
 	QtGumboNodePtr documentNode() const;
 	QtGumboNodePtr rootNode() const;
 	// FIXME: implement errors list getter
 
-	void prettify();
+	void prettify() const;
 
 	// User-defined copy assignment, copy-and-swap form
-	QtGumboDocument &operator=(QtGumboDocument other) {
-		std::swap(m_rawHtmlData, other.m_rawHtmlData);
-		std::swap(m_output, other.m_output);
-		std::swap(m_documentNode, other.m_documentNode);
-		std::swap(m_rootNode, other.m_rootNode);
-		return *this;
-	}
+	QtGumboDocument &operator=(QtGumboDocument other);
 };
 
 #endif // __BFR_QTGUMBODOCUMENT_H__

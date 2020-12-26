@@ -36,6 +36,7 @@ QDataStream &operator<<(QDataStream &stream, const bfr::IPostObject &obj) { retu
 QDataStream &operator>>(QDataStream &stream, bfr::IPostObject &obj) { return obj.deserialize(stream); }
 
 QDataStream &operator<<(QDataStream &stream, const bfr::IPostObjectList &postList) {
+
 	stream << postList.size();
 	foreach (const auto &postObj, postList)
 		postObj->serialize(stream);
@@ -44,6 +45,7 @@ QDataStream &operator<<(QDataStream &stream, const bfr::IPostObjectList &postLis
 }
 
 QDataStream &operator>>(QDataStream &stream, bfr::IPostObjectList &postList) {
+
 	int size = 0;
 	stream >> size;
 	Q_ASSERT(size >= 0);
@@ -121,6 +123,7 @@ QDataStream &operator>>(QDataStream &stream, bfr::IPostObjectList &postList) {
 }
 
 QDataStream &operator<<(QDataStream &stream, const bfr::PostList &obj) {
+
 	stream << obj.size();
 	foreach (const auto &post, obj)
 		post->serialize(stream);
@@ -128,6 +131,7 @@ QDataStream &operator<<(QDataStream &stream, const bfr::PostList &obj) {
 	return stream;
 }
 QDataStream &operator>>(QDataStream &stream, bfr::PostList &obj) {
+
 	int size = 0;
 	stream >> size;
 	for (int i = 0; i < size; i++) {
@@ -145,9 +149,7 @@ QDataStream &operator>>(QDataStream &stream, bfr::PostList &obj) {
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::PostSpoiler &obj)
 QDataStream &bfr::PostSpoiler::serialize(QDataStream &stream) const {
-	// QString m_title;
-	// IPostObjectList m_data;
-	//
+
 	stream << SpoilerType;
 	stream << m_title;
 	stream << m_data;
@@ -155,6 +157,7 @@ QDataStream &bfr::PostSpoiler::serialize(QDataStream &stream) const {
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::PostSpoiler &obj)
 QDataStream &bfr::PostSpoiler::deserialize(QDataStream &stream) {
+
 	stream >> m_title;
 	stream >> m_data;
 	return stream;
@@ -162,11 +165,7 @@ QDataStream &bfr::PostSpoiler::deserialize(QDataStream &stream) {
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::PostQuote &obj)
 QDataStream &bfr::PostQuote::serialize(QDataStream &stream) const {
-	// QString m_title;
-	// QString m_userName;
-	// QUrl m_url;
-	// IPostObjectList m_data;
-	//
+
 	stream << QuoteType;
 	stream << m_title;
 	stream << m_userName;
@@ -176,6 +175,7 @@ QDataStream &bfr::PostQuote::serialize(QDataStream &stream) const {
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::PostQuote &obj)
 QDataStream &bfr::PostQuote::deserialize(QDataStream &stream) {
+
 	stream >> m_title;
 	stream >> m_userName;
 	stream >> m_url;
@@ -185,14 +185,7 @@ QDataStream &bfr::PostQuote::deserialize(QDataStream &stream) {
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::PostImage &obj)
 QDataStream &bfr::PostImage::serialize(QDataStream &stream) const {
-	// QString m_url;
-	// int m_width = -1;
-	// int m_height = -1;
-	// int m_border = -1;
-	// QString m_altName;
-	// QString m_id;
-	// QString m_className;
-	//
+
 	stream << ImageType;
 	stream << m_url;
 	stream << m_width;
@@ -205,6 +198,7 @@ QDataStream &bfr::PostImage::serialize(QDataStream &stream) const {
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::PostImage &obj)
 QDataStream &bfr::PostImage::deserialize(QDataStream &stream) {
+
 	stream >> m_url;
 	stream >> m_width;
 	stream >> m_height;
@@ -217,6 +211,7 @@ QDataStream &bfr::PostImage::deserialize(QDataStream &stream) {
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::PostLineBreak &obj)
 QDataStream &bfr::PostLineBreak::serialize(QDataStream &stream) const {
+
 	stream << LineBreakType;
 	return stream;
 }
@@ -225,27 +220,21 @@ QDataStream &bfr::PostLineBreak::deserialize(QDataStream &stream) { return strea
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::PostPlainText &obj)
 QDataStream &bfr::PostPlainText::serialize(QDataStream &stream) const {
-	// QString m_text;
-	//
+
 	stream << PlainTextType;
 	stream << m_text;
 	return stream;
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::PostPlainText &obj)
 QDataStream &bfr::PostPlainText::deserialize(QDataStream &stream) {
+
 	stream >> m_text;
 	return stream;
 }
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::PostRichText &obj)
 QDataStream &bfr::PostRichText::serialize(QDataStream &stream) const {
-	// QString m_text;
-	// QString m_color = "black";
-	// bool m_isBold = false;
-	// bool m_isItalic = false;
-	// bool m_isUnderlined = false;
-	// bool m_isStrikedOut = false;
-	//
+
 	stream << RichTextType;
 	stream << m_text;
 	stream << m_color;
@@ -257,6 +246,7 @@ QDataStream &bfr::PostRichText::serialize(QDataStream &stream) const {
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::PostRichText &obj)
 QDataStream &bfr::PostRichText::deserialize(QDataStream &stream) {
+
 	stream >> m_text;
 	stream >> m_color;
 	stream >> m_isBold;
@@ -268,9 +258,7 @@ QDataStream &bfr::PostRichText::deserialize(QDataStream &stream) {
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::PostVideo &obj)
 QDataStream &bfr::PostVideo::serialize(QDataStream &stream) const {
-	// QString m_urlStr;
-	// QUrl m_url;
-	//
+
 	stream << VideoType;
 	stream << m_urlStr;
 	stream << m_url;
@@ -278,6 +266,7 @@ QDataStream &bfr::PostVideo::serialize(QDataStream &stream) const {
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::PostVideo &obj)
 QDataStream &bfr::PostVideo::deserialize(QDataStream &stream) {
+
 	stream >> m_urlStr;
 	stream >> m_url;
 	return stream;
@@ -285,12 +274,7 @@ QDataStream &bfr::PostVideo::deserialize(QDataStream &stream) {
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::PostHyperlink &obj)
 QDataStream &bfr::PostHyperlink::serialize(QDataStream &stream) const {
-	// QString m_urlStr;
-	// QUrl m_url;
-	// QString m_title;
-	// QString m_tip;
-	// QString m_rel;
-	//
+
 	stream << HyperlinkType;
 	stream << m_urlStr;
 	stream << m_url;
@@ -301,6 +285,7 @@ QDataStream &bfr::PostHyperlink::serialize(QDataStream &stream) const {
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::PostHyperlink &obj)
 QDataStream &bfr::PostHyperlink::deserialize(QDataStream &stream) {
+
 	stream >> m_urlStr;
 	stream >> m_url;
 	stream >> m_title;
@@ -311,14 +296,7 @@ QDataStream &bfr::PostHyperlink::deserialize(QDataStream &stream) {
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::Post &obj)
 QDataStream &bfr::Post::serialize(QDataStream &stream) const {
-	// int m_id = -1;
-	// int m_likeCounter = -1;
-	// IPostObjectList m_data;
-	// QString m_lastEdit;
-	// QString m_userSignature;
-	// QDateTime m_date;
-	// UserPtr m_author;
-	//
+
 	stream << PostType;
 	stream << m_id;
 	stream << m_likeCounter;
@@ -331,6 +309,7 @@ QDataStream &bfr::Post::serialize(QDataStream &stream) const {
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::Post &obj)
 QDataStream &bfr::Post::deserialize(QDataStream &stream) {
+
 	stream >> m_id;
 	stream >> m_likeCounter;
 	stream >> m_data;
@@ -347,20 +326,7 @@ QDataStream &bfr::Post::deserialize(QDataStream &stream) {
 
 // QDataStream &operator<<(QDataStream &stream, const bfr::User &obj)
 QDataStream &bfr::User::serialize(QDataStream &stream) const {
-	// int m_userId = -1;
-	// QString m_userName;
-	// QUrl m_userProfileUrl;
-	// PostImagePtr m_userAvatar;
-	// QUrl m_allPostsUrl;
-	// int m_postCount = -1;
-	// int m_threadPostCount = 0;
-	// QDate m_registrationDate;
-	// int m_reputation = -1;
-	// int m_threadReputation = 0;
-	// double m_ratio = 0.0;
-	// double m_threadRatio = 0.0;
-	// QString m_city;
-	//
+
 	stream << UserType;
 	stream << m_userId;
 	stream << m_userName;
@@ -383,6 +349,7 @@ QDataStream &bfr::User::serialize(QDataStream &stream) const {
 }
 // QDataStream &operator>>(QDataStream &stream, bfr::User &obj)
 QDataStream &bfr::User::deserialize(QDataStream &stream) {
+
 	stream >> m_userId;
 	stream >> m_userName;
 	stream >> m_userProfileUrl;
@@ -412,6 +379,7 @@ QDataStream &bfr::User::deserialize(QDataStream &stream) {
 namespace bfr {
 
 result_code::Type serializePosts(const bfr::PostList &posts) {
+
 	QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 	if (!localDataDir.endsWith(QDir::separator()))
 		localDataDir += QDir::separator();
@@ -441,7 +409,7 @@ result_code::Type serializePosts(const bfr::PostList &posts) {
 	out << (quint32)BFR_SERIALIZATION_MAGIC;
 	out << (quint32)BFR_SERIALIZATION_VERSION;
 
-	out.setVersion(QDataStream::Qt_5_10);
+	out.setVersion(QDataStream::Qt_5_15);
 
 	// Write the data
 	out << posts;
@@ -450,6 +418,7 @@ result_code::Type serializePosts(const bfr::PostList &posts) {
 }
 
 result_code::Type deserializePosts(bfr::PostList &posts) {
+
 	QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 	if (!localDataDir.endsWith(QDir::separator()))
 		localDataDir += QDir::separator();
@@ -498,7 +467,8 @@ result_code::Type deserializePosts(bfr::PostList &posts) {
 
 #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
 namespace {
-static bool WriteTextFile(QString fileName, QString fileContents) {
+bool writeTextFile(const QString &fileName, const QString &fileContents) {
+
 	QFile file(fileName);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
 		return false;
@@ -510,33 +480,28 @@ static bool WriteTextFile(QString fileName, QString fileContents) {
 }
 #endif  // #ifdef BFR_DUMP_GENERATED_QML_IN_FILES
 
-namespace bfr
-{
-
-IPostObject::~IPostObject()
-{
-}
-
-// ----------------------------------------------------------------------------------------------------------------------------
 namespace {
-QString readQmlFile(QString fileName) {
+QString readQmlFile(const QString &fileName) {
+
 	BFR_DECLARE_DEFAULT_RETURN_TYPE(QString);
 
 	QFile f(fileName);
 	BFR_RETURN_DEFAULT_IF(!f.open(QIODevice::ReadOnly | QIODevice::Text), "Unable to open QML file");
 	return f.readAll();
 }
-}
+} // namespace
 
-PostSpoiler::PostSpoiler()
+// ----------------------------------------------------------------------------------------------------------------------------
+
+namespace bfr
 {
-}
 
 bool PostSpoiler::isValid() const { return !m_data.isEmpty(); }
 
-uint PostSpoiler::getHash(uint seed) const { return qHash(m_title, seed) ^ qHash(m_data, seed); }
+uint PostSpoiler::getHash(const uint seed) const { return qHash(m_title, seed) ^ qHash(m_data, seed); }
 
-QString PostSpoiler::getQmlString(quint32 randomSeed) const {
+QString PostSpoiler::getQmlString(const quint32 randomSeed) const {
+
 #ifndef BFR_SHOW_SPOILER
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostSpoiler'; }\n");
@@ -558,17 +523,12 @@ QString PostSpoiler::getQmlString(quint32 randomSeed) const {
 
 // PostQuote
 
-PostQuote::PostQuote()
-{
-}
-
 bool PostQuote::isValid() const { return !m_data.isEmpty(); }
 
-uint PostQuote::getHash(uint seed) const {
-	return qHash(m_title, seed) ^ qHash(m_userName, seed) ^ qHash(m_url, seed) ^ qHash(m_data, seed);
-}
+uint PostQuote::getHash(const uint seed) const { return qHash(m_title, seed) ^ qHash(m_userName, seed) ^ qHash(m_url, seed) ^ qHash(m_data, seed); }
 
-QString PostQuote::getQmlString(quint32 randomSeed) const {
+QString PostQuote::getQmlString(const quint32 randomSeed) const {
+
 	const QString QUOTE_WRITE_VERB = QCoreApplication::translate("Post", "wrote");
 #ifndef BFR_SHOW_QUOTE
 	Q_UNUSED(randomSeed);
@@ -600,10 +560,6 @@ QString PostQuote::getQmlString(quint32 randomSeed) const {
 // ----------------------------------------------------------------------------------------------------------------------------
 // PostImage
 
-PostImage::PostImage()
-{
-}
-
 PostImage::PostImage(QString url, int width, int height, int border, QString altName, QString id, QString className)
 	: m_url(url)
 	, m_width(width)
@@ -614,17 +570,20 @@ PostImage::PostImage(QString url, int width, int height, int border, QString alt
 	, m_className(className) { }
 
 bool PostImage::isValid() const {
+
 	// NOTE: image with only correct URL specified is still valid
 	return !m_url.isEmpty() /*&& (m_width > 0 && m_height > 0)*/;
 }
 
-uint PostImage::getHash(uint seed) const {
+uint PostImage::getHash(const uint seed) const {
+
 	// NOTE: m_id is auto-generated each time page reloaded, so it is useless for hashing purposes
 	return qHash(m_url, seed) ^ qHash(m_width, seed) ^ qHash(m_height, seed) ^ qHash(m_border, seed)
 		^ qHash(m_altName, seed) /* ^ qHash(m_id, seed) */ ^ qHash(m_className, seed);
 }
 
-QString PostImage::getQmlString(quint32 randomSeed) const {
+QString PostImage::getQmlString(const quint32 randomSeed) const {
+
 #ifndef BFR_SHOW_IMAGE
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostImage'; }\n");
@@ -649,15 +608,13 @@ QString PostImage::getQmlString(quint32 randomSeed) const {
 
 // ----------------------------------------------------------------------------------------------------------------------------
 // PostLineBreak
-PostLineBreak::PostLineBreak()
-{
-}
 
 bool PostLineBreak::isValid() const { return true; }
 
-uint PostLineBreak::getHash(uint seed) const { return qHash(0, seed); }
+uint PostLineBreak::getHash(const uint seed) const { return qHash(0, seed); }
 
-QString PostLineBreak::getQmlString(quint32 randomSeed) const {
+QString PostLineBreak::getQmlString(const quint32 randomSeed) const {
+
 #ifndef BFR_SHOW_LINEBREAK
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostLineBreak'; }\n");
@@ -674,18 +631,15 @@ QString PostLineBreak::getQmlString(quint32 randomSeed) const {
 // ----------------------------------------------------------------------------------------------------------------------------
 // PostPlainText
 
-PostPlainText::PostPlainText()
-{
-}
-
 PostPlainText::PostPlainText(QString text)
 	: m_text(text) { }
 
 bool PostPlainText::isValid() const { return !m_text.isEmpty(); }
 
-uint PostPlainText::getHash(uint seed) const { return qHash(m_text, seed); }
+uint PostPlainText::getHash(const uint seed) const { return qHash(m_text, seed); }
 
-QString PostPlainText::getQmlString(quint32 randomSeed) const {
+QString PostPlainText::getQmlString(const quint32 randomSeed) const {
+
 #ifndef BFR_SHOW_PLAINTEXT
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostPlainText'; }\n");
@@ -706,10 +660,6 @@ QString PostPlainText::getQmlString(quint32 randomSeed) const {
 // ----------------------------------------------------------------------------------------------------------------------------
 // PostRichText
 
-PostRichText::PostRichText()
-{
-}
-
 PostRichText::PostRichText(
 	QString text, QString color, bool isBold, bool isItalic, bool isUnderlined, bool isStrikedOut)
 	: m_text(text)
@@ -721,12 +671,14 @@ PostRichText::PostRichText(
 
 bool PostRichText::isValid() const { return !m_text.isEmpty(); }
 
-uint PostRichText::getHash(uint seed) const {
-	return qHash(m_text, seed) ^ qHash(m_color, seed) ^ qHash(m_isBold, seed) ^ qHash(m_isItalic, seed)
-		^ qHash(m_isUnderlined, seed) ^ qHash(m_isStrikedOut, seed);
+uint PostRichText::getHash(const uint seed) const {
+
+	return qHash(m_text, seed) ^ qHash(m_color, seed) ^ qHash(m_isBold, seed) ^ qHash(m_isItalic, seed) ^ qHash(m_isUnderlined, seed)
+		^ qHash(m_isStrikedOut, seed);
 }
 
-QString PostRichText::getQmlString(quint32 randomSeed) const {
+QString PostRichText::getQmlString(const quint32 randomSeed) const {
+
 #ifndef BFR_SHOW_RICHTEXT
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostRichText'; }\n");
@@ -751,14 +703,10 @@ QString PostRichText::getQmlString(quint32 randomSeed) const {
 // ----------------------------------------------------------------------------------------------------------------------------
 // PostVideo
 
-PostVideo::PostVideo()
-{
-}
-
 /*
 namespace {
 #ifndef Q_OS_IOS
-static bool findBestVideoUrl(QByteArray aJsonData, QString& aVideoUrlStr)
+static bool findBestVideoUrl(const QByteArray &aJsonData, QString& aVideoUrlStr)
 {
     aVideoUrlStr = "";
 
@@ -866,9 +814,10 @@ PostVideo::PostVideo(QString urlStr)
 
 bool PostVideo::isValid() const { return !m_urlStr.isEmpty() && m_url.isValid(); }
 
-uint PostVideo::getHash(uint seed) const { return qHash(m_urlStr, seed) ^ qHash(m_url, seed); }
+uint PostVideo::getHash(const uint seed) const { return qHash(m_urlStr, seed) ^ qHash(m_url, seed); }
 
-QString PostVideo::getQmlString(quint32 randomSeed) const {
+QString PostVideo::getQmlString(const quint32 randomSeed) const {
+
 #ifndef BFR_SHOW_VIDEO
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostVideo';}\n");
@@ -885,10 +834,6 @@ QString PostVideo::getQmlString(quint32 randomSeed) const {
 // ----------------------------------------------------------------------------------------------------------------------------
 // PostHyperLink
 
-PostHyperlink::PostHyperlink()
-{
-}
-
 PostHyperlink::PostHyperlink(QString urlStr, QString title, QString tip, QString rel)
 	: m_urlStr(urlStr)
 	, m_url(urlStr)
@@ -902,11 +847,13 @@ PostHyperlink::PostHyperlink(QString urlStr, QString title, QString tip, QString
 
 bool PostHyperlink::isValid() const { return !m_urlStr.isEmpty() && m_url.isValid(); }
 
-uint PostHyperlink::getHash(uint seed) const {
+uint PostHyperlink::getHash(const uint seed) const {
+
 	return qHash(m_urlStr, seed) ^ qHash(m_url, seed) ^ qHash(m_title, seed) ^ qHash(m_tip, seed) ^ qHash(m_rel, seed);
 }
 
-QString PostHyperlink::getQmlString(quint32 randomSeed) const {
+QString PostHyperlink::getQmlString(const quint32 randomSeed) const {
+
 #ifndef BFR_SHOW_HYPERLINK
 	Q_UNUSED(randomSeed);
 	return QString("        Text { font.pointSize: 14; text: 'PostHyperlink'; }\n");
@@ -925,16 +872,10 @@ QString PostHyperlink::getQmlString(quint32 randomSeed) const {
 // ----------------------------------------------------------------------------------------------------------------------------
 // IForumPageReader
 
-IForumPageReader::~IForumPageReader() {}
-
-//void Post::addObject(IPostObjectPtr obj)
-//{
-//    m_data.append(obj);
-//}
-
 bool Post::isValid() const { return (m_id > 0) && (m_likeCounter >= 0) && !m_data.isEmpty() && m_date.isValid(); }
 
-uint Post::getHash(uint seed) const {
+uint Post::getHash(const uint seed) const {
+
 	uint dataHash = 0;
 	for (const auto &obj : m_data)
 		dataHash ^= obj->getHash(seed);
@@ -943,7 +884,8 @@ uint Post::getHash(uint seed) const {
 		^ qHash(m_userSignature, seed) ^ qHash(m_date, seed);
 }
 
-QString Post::getQmlString(quint32 randomSeed) const {
+QString Post::getQmlString(const quint32 randomSeed) const {
+
 	QString qmlStr = readQmlFile("://qml/Post.qml");
 
 	int validItemsCount = 0;
@@ -959,12 +901,12 @@ QString Post::getQmlString(quint32 randomSeed) const {
 	if (validItemsCount == 0)
 		return QString();
 	if (validItemsCount == 1) {
-		randomSeed = QRandomGenerator::global()->generate();
-		internalQml += m_data[0]->getQmlString(randomSeed);
+		const uint randomSeed2 = QRandomGenerator::global()->generate();
+		internalQml += m_data[0]->getQmlString(randomSeed2);
 	} else {
 		for (auto iObj = m_data.begin(); iObj != m_data.end(); ++iObj) {
-			randomSeed = QRandomGenerator::global()->generate();
-			internalQml += (*iObj)->getQmlString(randomSeed);
+			const uint randomSeed3 = QRandomGenerator::global()->generate();
+			internalQml += (*iObj)->getQmlString(randomSeed3);
 			// internalQml = internalQml.trimmed();
 		}
 	}
@@ -998,7 +940,7 @@ QString Post::getQmlString(quint32 randomSeed) const {
 	static int index = 1;
 	const QString qmlFilePath = appDataDir.absoluteFilePath("page_" + QString::number(pageNo) + "_post_" + QString::number(index) + ".qml");
 
-	BFR_RETURN_VALUE_IF(!WriteTextFile(qmlFilePath, qmlStr), QString(), "unable to dump qml file!");
+	BFR_RETURN_VALUE_IF(!writeTextFile(qmlFilePath, qmlStr), QString(), "unable to dump qml file!");
 	index++;
 #endif
 #endif
@@ -1007,17 +949,19 @@ QString Post::getQmlString(quint32 randomSeed) const {
 }
 
 bool User::isValid() const {
-	return (m_userId > 0) && !m_userName.isEmpty() && m_userProfileUrl.isValid() && m_allPostsUrl.isValid()
-		&& (m_postCount > 0) && m_registrationDate.isValid() && (m_reputation >= 0);
+
+	return (m_userId > 0) && !m_userName.isEmpty() && m_userProfileUrl.isValid() && m_allPostsUrl.isValid() && (m_postCount > 0)
+		&& m_registrationDate.isValid() && (m_reputation >= 0);
 }
 
-uint User::getHash(uint seed) const {
-	return qHash(m_userId, seed) ^ qHash(m_userName, seed) ^ qHash(m_userProfileUrl, seed)
-		^ (m_userAvatar ? m_userAvatar->getHash(seed) : 0) ^ qHash(m_allPostsUrl, seed) ^ qHash(m_postCount, seed)
-		^ qHash(m_registrationDate, seed) ^ qHash(m_reputation, seed) ^ qHash(m_city, seed);
+uint User::getHash(const uint seed) const {
+
+	return qHash(m_userId, seed) ^ qHash(m_userName, seed) ^ qHash(m_userProfileUrl, seed) ^ (m_userAvatar ? m_userAvatar->getHash(seed) : 0)
+		^ qHash(m_allPostsUrl, seed) ^ qHash(m_postCount, seed) ^ qHash(m_registrationDate, seed) ^ qHash(m_reputation, seed) ^ qHash(m_city, seed);
 }
 
-QString User::getQmlString(quint32 randomSeed) const {
+QString User::getQmlString(const quint32 randomSeed) const {
+
 	QString qmlStr = readQmlFile("://qml/User.qml");
 
 	qmlStr.replace("_6afb4d56214b4bb69281bf9bbf60396b", QString::number(randomSeed));

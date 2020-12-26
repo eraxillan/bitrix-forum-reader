@@ -28,12 +28,12 @@ BfrTask::BfrTask()
 	, m_url()
 	, m_pageNo(INVALID_PAGENO) { }
 
-BfrTask::BfrTask(BfrTask::Action action, ForumThreadUrlData url)
+BfrTask::BfrTask(const BfrTask::Action action, const ForumThreadUrlData &url)
 	: m_action(action)
 	, m_url(url)
 	, m_pageNo(INVALID_PAGENO) { }
 
-BfrTask::BfrTask(BfrTask::Action action, ForumThreadUrlData url, int pageNo)
+BfrTask::BfrTask(const BfrTask::Action action, const ForumThreadUrlData &url, const int pageNo)
 	: m_action(action)
 	, m_url(url)
 	, m_pageNo(pageNo) { }
@@ -42,3 +42,9 @@ bool BfrTask::isValid() const {
 	// TODO: implement and use
 	return (m_action != Action::Invalid);
 }
+
+BfrTask::Action BfrTask::action() const { return m_action; }
+
+const ForumThreadUrlData &BfrTask::url() const { return m_url; }
+
+int BfrTask::pageNo() const { return m_pageNo; }

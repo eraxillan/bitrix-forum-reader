@@ -35,6 +35,12 @@
 class ForumThreadPool : public QObject {
 	Q_OBJECT
 
+	// Delete copy and move constructors and assign operators
+	ForumThreadPool(ForumThreadPool const &) = delete; // Copy construct
+	ForumThreadPool(ForumThreadPool &&) = delete; // Move construct
+	ForumThreadPool &operator=(ForumThreadPool const &) = delete; // Copy assign
+	ForumThreadPool &operator=(ForumThreadPool &&) = delete; // Move assign
+
 protected:
 	using PagePostMap = QMap<int /*pageNo*/, bfr::PostList /*pagePosts*/>;
 	using ThreadPagePostMap = QMap<ForumThreadUrlData /*forumThreadUrl*/, PagePostMap /*forumThreadPagesPosts*/>;
@@ -44,7 +50,7 @@ protected:
 	ThreadPagePostMap m_threadPagePostCollection;
 
 	explicit ForumThreadPool(QObject *parent = nullptr);
-	~ForumThreadPool();
+	~ForumThreadPool() = default;
 
 	size_t pageCountCacheSize() const;
 	size_t pagePostsCacheSize() const;
@@ -54,12 +60,6 @@ protected:
 public:
 	static ForumThreadPool &globalInstance();
 
-	// Delete copy and move constructors and assign operators
-	ForumThreadPool(ForumThreadPool const &) = delete; // Copy construct
-	ForumThreadPool(ForumThreadPool &&) = delete; // Move construct
-	ForumThreadPool &operator=(ForumThreadPool const &) = delete; // Copy assign
-	ForumThreadPool &operator=(ForumThreadPool &&) = delete; // Move assign
-
 public:
 	// FIXME: implement
 	//enum class Policy { Invalid = -1, CachedOnly, PreferCached, PreferNew, NewOnly, Count };
@@ -67,11 +67,9 @@ public:
 	// FIXME: implement
 	//void setMaximumMemoryUsage(quint64 maxCacheMem);
 
-	/*SYNC*/ result_code::Type getForumThreadPageCount(ForumThreadUrlData urlData, int &pageCount);
-
-	/*SYNC*/ result_code::Type getForumPagePosts(ForumThreadUrlData urlData, int pageNo, bfr::PostList &posts);
-
-	/*SYNC*/ result_code::Type getForumThreadPosts(ForumThreadUrlData urlData, bfr::PostList &posts);
+	/*SYNC*/ result_code::Type getForumThreadPageCount(const ForumThreadUrlData &urlData, int &pageCount);
+	/*SYNC*/ result_code::Type getForumPagePosts(const ForumThreadUrlData &urlData, const int pageNo, bfr::PostList &posts);
+	/*SYNC*/ result_code::Type getForumThreadPosts(const ForumThreadUrlData &urlData, bfr::PostList &posts);
 
 signals:
 	void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);

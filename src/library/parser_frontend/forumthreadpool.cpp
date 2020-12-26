@@ -29,11 +29,8 @@ ForumThreadPool::ForumThreadPool(QObject *parent) : QObject(parent)
 {
 }
 
-ForumThreadPool::~ForumThreadPool()
-{
-}
-
 size_t ForumThreadPool::pageCountCacheSize() const {
+
 	return static_cast<size_t>(m_threadPageCountCollection.size()) * (sizeof(ForumThreadUrlData) + sizeof(int));
 }
 
@@ -42,11 +39,14 @@ size_t postListSize(const bfr::PostList &posts) { return static_cast<size_t>(pos
 }
 
 size_t ForumThreadPool::pagePostsCacheSize() const {
+
 	size_t result = 0;
-	for (const auto &urlKey : m_threadPagePostCollection.keys()) {
+	const auto &allKeys = m_threadPagePostCollection.keys();
+	for (const auto &urlKey : allKeys) {
 		result += sizeof(ForumThreadUrlData);
 
-		for (const auto &pageNoKey : m_threadPagePostCollection.value(urlKey).keys()) {
+		const auto &keys = m_threadPagePostCollection.value(urlKey).keys();
+		for (const auto &pageNoKey : keys) {
 			result += sizeof(int);
 			result += postListSize(m_threadPagePostCollection.value(urlKey).value(pageNoKey));
 		}
@@ -55,17 +55,20 @@ size_t ForumThreadPool::pagePostsCacheSize() const {
 }
 
 void ForumThreadPool::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal) {
+	
 	emit downloadProgress(bytesReceived, bytesTotal);
 }
 
 ForumThreadPool &ForumThreadPool::globalInstance() {
+
 	// Since it's a static variable, if the class has already been created, it won't be created again.
 	// And it **is** thread-safe in C++11.
 	static ForumThreadPool instance;
 	return instance;
 }
 
-result_code::Type ForumThreadPool::getForumThreadPageCount(ForumThreadUrlData urlData, int &pageCount) {
+result_code::Type ForumThreadPool::getForumThreadPageCount(const ForumThreadUrlData &urlData, int &pageCount) {
+
 	QScopedPointer<ForumThreadUrl> url(new ForumThreadUrl(urlData.m_sectionId, urlData.m_threadId));
 
 	if (m_threadPageCountCollection.contains(urlData)) {
@@ -104,7 +107,8 @@ result_code::Type ForumThreadPool::getForumThreadPageCount(ForumThreadUrlData ur
 	return result_code::Type::Ok;
 }
 
-result_code::Type ForumThreadPool::getForumPagePosts(ForumThreadUrlData urlData, int pageNo, bfr::PostList &posts) {
+result_code::Type ForumThreadPool::getForumPagePosts(const ForumThreadUrlData &urlData, const int pageNo, bfr::PostList &posts) {
+
 	QScopedPointer<ForumThreadUrl> url(new ForumThreadUrl(urlData.m_sectionId, urlData.m_threadId));
 
 	if (m_threadPagePostCollection.contains(urlData)) {
@@ -152,7 +156,8 @@ result_code::Type ForumThreadPool::getForumPagePosts(ForumThreadUrlData urlData,
 	return result_code::Type::Ok;
 }
 
-result_code::Type ForumThreadPool::getForumThreadPosts(ForumThreadUrlData urlData, bfr::PostList &posts) {
+result_code::Type ForumThreadPool::getForumThreadPosts(const ForumThreadUrlData &urlData, bfr::PostList &posts) {
+
 	QScopedPointer<ForumThreadUrl> url(new ForumThreadUrl(urlData.m_sectionId, urlData.m_threadId));
 
 	// 1) Get thread page count

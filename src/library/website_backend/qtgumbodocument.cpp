@@ -27,7 +27,8 @@
 
 #include <iostream>
 
-bool QtGumboDocument::Parse() {
+bool QtGumboDocument::parse() {
+
 	GumboOptions options = kGumboDefaultOptions;
 
 	// Parse web page contents
@@ -45,7 +46,8 @@ QtGumboDocument::QtGumboDocument() : m_output(nullptr)
 {
 }
 
-QtGumboDocument::QtGumboDocument(QString rawData) {
+QtGumboDocument::QtGumboDocument(const QString &rawData) {
+
 	QTextCodec *htmlCodec = QTextCodec::codecForHtml(rawData.toLocal8Bit());
 
 #ifdef BFR_PRINT_DEBUG_OUTPUT
@@ -63,10 +65,11 @@ QtGumboDocument::QtGumboDocument(QString rawData) {
 #error "Unsupported platform, needs testing"
 #endif
 
-	Parse();
+	parse();
 }
 
 QtGumboDocument::~QtGumboDocument() {
+
 	if (m_output)
 		gumbo_destroy_output(&kGumboDefaultOptions, m_output);
 }
@@ -89,6 +92,7 @@ static inline void rtrim(std::string &s) { s.erase(s.find_last_not_of(" \n\r\t")
 static inline void ltrim(std::string &s) { s.erase(0, s.find_first_not_of(" \n\r\t")); }
 
 static void replace_all(std::string &s, const char *s1, const char *s2) {
+
 	std::string t1(s1);
 	size_t len = t1.length();
 	size_t pos = s.find(t1);
@@ -99,6 +103,7 @@ static void replace_all(std::string &s, const char *s1, const char *s2) {
 }
 
 static std::string substitute_xml_entities_into_text(const std::string &text) {
+
 	std::string result = text;
 	// replacing & must come first
 	replace_all(result, "&", "&amp;");
@@ -108,6 +113,7 @@ static std::string substitute_xml_entities_into_text(const std::string &text) {
 }
 
 static std::string substitute_xml_entities_into_attributes(char quote, const std::string &text) {
+
 	std::string result = substitute_xml_entities_into_text(text);
 	if (quote == '"') {
 		replace_all(result, "\"", "&quot;");
@@ -118,6 +124,7 @@ static std::string substitute_xml_entities_into_attributes(char quote, const std
 }
 
 static std::string handle_unknown_tag(GumboStringPiece *text) {
+
 	std::string tagname = "";
 	if (text->data == NULL) {
 		return tagname;
@@ -136,6 +143,7 @@ static std::string handle_unknown_tag(GumboStringPiece *text) {
 }
 
 static std::string get_tag_name(GumboNode *node) {
+
 	std::string tagname;
 	// work around lack of proper name for document node
 	if (node->type == GUMBO_NODE_DOCUMENT) {
@@ -150,6 +158,7 @@ static std::string get_tag_name(GumboNode *node) {
 }
 
 static std::string build_doctype(GumboNode *node) {
+
 	std::string results = "";
 	if (node->v.document.has_doctype) {
 		results.append("<!DOCTYPE ");
@@ -168,6 +177,7 @@ static std::string build_doctype(GumboNode *node) {
 }
 
 static std::string build_attributes(GumboAttribute *at, bool no_entities) {
+
 	std::string atts = "";
 	atts.append(" ");
 	atts.append(at->name);
@@ -207,6 +217,7 @@ static std::string prettyprint(GumboNode*, int lvl, const std::string indent_cha
 // prettyprint children of a node
 // may be invoked recursively
 static std::string prettyprint_contents(GumboNode *node, int lvl, const std::string indent_chars) {
+
 	std::string contents = "";
 	std::string tagname = get_tag_name(node);
 	std::string key = "|" + tagname + "|";
@@ -267,6 +278,7 @@ static std::string prettyprint_contents(GumboNode *node, int lvl, const std::str
 // may be invoked recursively
 
 static std::string prettyprint(GumboNode *node, int lvl, const std::string indent_chars) {
+
 	// special case the document node
 	if (node->type == GUMBO_NODE_DOCUMENT) {
 		std::string results = build_doctype(node);
@@ -345,7 +357,17 @@ static std::string prettyprint(GumboNode *node, int lvl, const std::string inden
 	return results;
 }
 
-void QtGumboDocument::prettify() {
+void QtGumboDocument::prettify() const {
+
 	std::string indent_chars = "  ";
 	std::cout << prettyprint(m_output->document, 0, indent_chars) << std::endl;
+}
+
+QtGumboDocument &QtGumboDocument::operator=(QtGumboDocument other) {
+
+	std::swap(m_rawHtmlData, other.m_rawHtmlData);
+	std::swap(m_output, other.m_output);
+	std::swap(m_documentNode, other.m_documentNode);
+	std::swap(m_rootNode, other.m_rootNode);
+	return *this;
 }

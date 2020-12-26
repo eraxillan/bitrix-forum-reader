@@ -30,6 +30,7 @@
 namespace bfr {
 
 class ForumPageParser : public IForumPageReader {
+
 	struct UserBaseInfo {
 		int m_id = -1;
 		QString m_name;
@@ -49,32 +50,32 @@ class ForumPageParser : public IForumPageReader {
 	mutable bool m_textQuoteFlag = false;
 
 private:
-	void printTagsRecursively(QtGumboNodePtr node, int &level);
-	void findMsdivNodesRecursively(QtGumboNodePtr node, QVector<QtGumboNodePtr> &msdivNodes);
-	void findPageCount(QString rawData, int &pageCount);
-	UserBaseInfo getUserBaseInfo(QtGumboNodePtr userInfoNode);
-	UserAdditionalInfo getUserAdditionalInfo(QtGumboNodePtr userInfoNode);
-	PostImagePtr getUserAvatar(QtGumboNodePtr userInfoNode);
-	UserPtr getPostUser(QtGumboNodePtr trNode1);
-	PostPtr getPostValue(QtGumboNodePtr trNode1);
-	QString getPostLastEdit(QtGumboNodePtr postEntryNode);
-	QString getPostUserSignature(QtGumboNodePtr postEntryNode);
-	IPostObjectList getPostAttachments(QtGumboNodePtr postEntryNode);
-	int getLikeCounterValue(QtGumboNodePtr trNode2);
-	int getPostId(QtGumboNodePtr msdivNode);
-	void fillPostList(QtGumboNodePtr node, PostList &posts);
+	void printTagsRecursively(const QtGumboNodePtr &node, int &level) const;
+	void findMsdivNodesRecursively(const QtGumboNodePtr &node, QVector<QtGumboNodePtr> &msdivNodes) const;
+	void findPageCount(const QString &rawData, int &pageCount) const;
+	UserBaseInfo getUserBaseInfo(const QtGumboNodePtr &userInfoNode) const;
+	UserAdditionalInfo getUserAdditionalInfo(const QtGumboNodePtr &userInfoNode) const;
+	PostImagePtr getUserAvatar(const QtGumboNodePtr &userInfoNode) const;
+	UserPtr getPostUser(const QtGumboNodePtr &trNode1) const;
+	PostPtr getPostValue(const QtGumboNodePtr &trNode1) const;
+	QString getPostLastEdit(const QtGumboNodePtr &postEntryNode) const;
+	QString getPostUserSignature(const QtGumboNodePtr &postEntryNode) const;
+	IPostObjectList getPostAttachments(const QtGumboNodePtr &postEntryNode) const;
+	int getLikeCounterValue(const QtGumboNodePtr &trNode2) const;
+	int getPostId(const QtGumboNodePtr &msdivNode) const;
+	void fillPostList(const QtGumboNodePtr &node, PostList &posts) const;
 
-	PostHyperlinkPtr parseHyperlink(QtGumboNodePtr aNode) const;
-	PostImagePtr parseImage(QtGumboNodePtr imgNode) const;
-	PostQuotePtr parseQuote(QtGumboNodePtr tableNode) const;
-	PostSpoilerPtr parseSpoiler(QtGumboNodePtr tableNode) const;
+	PostHyperlinkPtr parseHyperlink(const QtGumboNodePtr &aNode) const;
+	PostImagePtr parseImage(const QtGumboNodePtr &imgNode) const;
+	PostQuotePtr parseQuote(const QtGumboNodePtr &tableNode) const;
+	PostSpoilerPtr parseSpoiler(const QtGumboNodePtr &tableNode) const;
 
-	void parseMessage(QtGumboNodes nodes, IPostObjectList &postObjects) const;
+	void parseMessage(const QtGumboNodes &nodes, IPostObjectList &postObjects) const;
 
 public:
 	// IForumPageReader implementation
-	result_code::Type getPageCount(QByteArray rawData, int &pageCount) override;
-	result_code::Type getPagePosts(QByteArray rawData, PostList &userPosts) override;
+	result_code::Type getPageCount(const QByteArray &rawData, int &pageCount) override;
+	result_code::Type getPagePosts(const QByteArray &rawData, PostList &userPosts) override;
 };
 }
 

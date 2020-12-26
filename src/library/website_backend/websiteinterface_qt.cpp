@@ -28,6 +28,7 @@
 PostQtWrapper::PostQtWrapper() : m_authorQml(), m_authorSignature(), m_date(), m_contentQml(), m_lastEdit(), m_likeCount(0) {}
 
 PostQtWrapper::PostQtWrapper(bfr::PostPtr post) {
+
 	m_authorQml = post->m_author->getQmlString(QRandomGenerator::global()->generate());
 	m_authorSignature = post->m_userSignature;
 	m_date = post->m_date;

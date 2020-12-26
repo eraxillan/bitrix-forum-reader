@@ -53,17 +53,14 @@ private:
 
 public:
 	BfrTask();
-
-	BfrTask(Action action, ForumThreadUrlData url);
-
-	BfrTask(Action action, ForumThreadUrlData url, int pageNo);
+	BfrTask(const Action action, const ForumThreadUrlData &url);
+	BfrTask(const Action action, const ForumThreadUrlData &url, const int pageNo);
+	~BfrTask() = default;
 
 	bool isValid() const;
-
-	Action action() const { return m_action; }
-	ForumThreadUrlData url() const { return m_url; }
-	int pageNo() const { return m_pageNo; }
+	Action action() const;
+	const ForumThreadUrlData &url() const;
+	int pageNo() const;
 };
 
 #endif // __BFR_TASK_H__
-

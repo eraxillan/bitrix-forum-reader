@@ -36,12 +36,12 @@ bool initLogLibrary() {
 
 		// Console multi threaded logger with color
 #if defined(Q_OS_ANDROID)
-		/*auto android_logger =*/spdlog::android_logger_mt("console", "Bitrix Forum Reader"); // "android"
+		/*auto android_logger =*/spdlog::android_logger_mt("system", "Bitrix Forum Reader"); // "android"
 #elif defined(Q_OS_UNIX)
-		/*auto console =*/spdlog::stdout_color_mt("console");
+		/*auto console =*/spdlog::stdout_color_mt("system");
 #else
 		auto sink = std::make_shared<spdlog::sinks::windebug_sink_st>();
-		auto logger = std::make_shared<spdlog::logger>("console", sink);
+		auto logger = std::make_shared<spdlog::logger>("system", sink);
 		spdlog::register_logger(logger);
 #endif
 
@@ -72,7 +72,6 @@ void deinitLogLibrary() {
 } // namespace
 
 int main(int argc, char *argv[]) {
-	// global setup...
 	if (!initLogLibrary())
 		return 1;
 
@@ -81,8 +80,6 @@ int main(int argc, char *argv[]) {
 
 	int result = Catch::Session().run(argc, argv);
 
-	// global clean-up...
 	deinitLogLibrary();
-
 	return result;
 }
